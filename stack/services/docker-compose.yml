@@ -1,0 +1,195 @@
+version: "3"
+
+services:
+    consul:
+        image: consul:latest
+        labels:
+            - SERVICE_8300_IGNORE=true
+            - SERVICE_8301_IGNORE=true
+            - SERVICE_8302_IGNORE=true
+            - SERVICE_8500_NAME=consul-http
+            - SERVICE_8500_CHECK_TCP=true
+            - SERVICE_8500_CHECK_INITIAL_STATUS=passing
+            - SERVICE_8500_TAGS=${SERVICE_CONSUL_HTTP_TAGS}
+            - SERVICE_8600_IGNORE=true
+        ports:
+            - 8500:8500
+        volumes:
+            - consul:/consul/data
+
+    elasticsearch:
+        image: docker.elastic.co/elasticsearch/elasticsearch:5.2.2
+        environment:
+            - ES_JAVA_OPTS=-Xmx1024m -Xms1024m
+            - xpack.security.enabled=false
+            - xpack.monitoring.enabled=false
+            - xpack.graph.enabled=false
+            - xpack.watcher.enabled=false
+        labels:
+            - SERVICE_9200_NAME=elasticsearch-http
+            - SERVICE_9200_CHECK_TCP=true
+            - SERVICE_9200_CHECK_INITIAL_STATUS=passing
+            - SERVICE_9200_TAGS=${SERVICE_ELASTICSEARCH_HTTP_TAGS}
+            - SERVICE_9300_NAME=elasticsearch-tcp
+            - SERVICE_9300_CHECK_TCP=true
+            - SERVICE_9300_CHECK_INITIAL_STATUS=passing
+        ports:
+            - 9200:9200
+            - 9300:9300
+        volumes:
+            - ./docker/elasticsearch/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+            - elasticsearch:/usr/share/elasticsearch/data
+
+    fabio:
+        command: /fabio -registry.backend "consul" -registry.consul.addr "consul:8500" -proxy.addr ":80,:443;cs=local" -proxy.cs "cs=local;type=file;cert=/certs/${SSL_HOSTNAME}.crt;key=/certs/${SSL_HOSTNAME}.key"
+        depends_on:
+            - consul
+        image: fabiolb/fabio:latest
+        labels:
+            - SERVICE_80_NAME=fabio-http
+            - SERVICE_80_CHECK_TCP=true
+            - SERVICE_80_CHECK_INITIAL_STATUS=passing
+            - SERVICE_443_NAME=fabio-https
+            - SERVICE_443_CHECK_TCP=true
+            - SERVICE_443_CHECK_INITIAL_STATUS=passing
+            - SERVICE_9998_NAME=fabio.admin-http
+            - SERVICE_9998_CHECK_TCP=true
+            - SERVICE_9998_CHECK_INITIAL_STATUS=passing
+            - SERVICE_9998_TAGS=${SERVICE_FABIO_ADMIN_HTTP_TAGS}
+            - SERVICE_9999_IGNORE=true
+        ports:
+            - 80:80
+            - 443:443
+            - 9998
+        volumes:
+            - ssl-certs:/certs
+
+    kibana:
+        depends_on:
+            - elasticsearch
+        image: docker.elastic.co/kibana/kibana:5.2.2
+        environment:
+            - ELASTICSEARCH_URL="http://elasticsearch:9200"
+        labels:
+            - SERVICE_5601_NAME=kibana-http
+            - SERVICE_5601_CHECK_TCP=true
+            - SERVICE_5601_CHECK_INITIAL_STATUS=passing
+            - SERVICE_5601_TAGS=${SERVICE_KIBANA_HTTP_TAGS}
+        ports:
+            - 5601
+
+    mailcatcher:
+        image: 1001pharmadev/mailcatcher
+        labels:
+            - SERVICE_1025_NAME=mailcatcher-smtp
+            - SERVICE_1025_CHECK_TCP=true
+            - SERVICE_1025_CHECK_INITIAL_STATUS=passing
+            - SERVICE_1080_NAME=mailcatcher-http
+            - SERVICE_1080_CHECK_TCP=true
+            - SERVICE_1080_CHECK_INITIAL_STATUS=passing
+            - SERVICE_1080_TAGS=${SERVICE_MAILCATCHER_HTTP_TAGS}
+        ports:
+            - 1025:1025
+            - 1080
+
+    memcached:
+        image: memcached:alpine
+        labels:
+            - SERVICE_11211_NAME=memcached-tcp
+            - SERVICE_11211_CHECK_TCP=true
+            - SERVICE_11211_CHECK_INITIAL_STATUS=passing
+        ports:
+            - 11211:11211
+
+    mysql:
+        environment:
+            - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+        image: mariadb:latest
+        labels:
+            - SERVICE_3306_NAME=mysql-tcp
+        ports:
+            - 3306:3306
+        volumes:
+            - mysql:/var/lib/mysql
+
+    rabbitmq:
+        image: rabbitmq:management-alpine
+        labels:
+            - SERVICE_4369_IGNORE=true
+            - SERVICE_5671_IGNORE=true
+            - SERVICE_5672_NAME=rabbitmq-amqp
+            - SERVICE_5672_CHECK_TCP=true
+            - SERVICE_5672_CHECK_INITIAL_STATUS=passing
+            - SERVICE_15672_NAME=rabbitmq-http
+            - SERVICE_15672_CHECK_TCP=true
+            - SERVICE_15672_CHECK_INITIAL_STATUS=passing
+            - SERVICE_15672_TAGS=${SERVICE_RABBITMQ_HTTP_TAGS}
+            - SERVICE_25672_IGNORE=true
+        ports:
+            - 5672:5672
+            - 15672
+        volumes:
+            - rabbitmq:/var/lib/rabbitmq
+
+    redis:
+        image: redis:alpine
+        labels:
+            - SERVICE_6379_NAME=redis-tcp
+            - SERVICE_6379_CHECK_TCP=true
+            - SERVICE_6379_CHECK_INITIAL_STATUS=passing
+        ports:
+            - 6379:6379
+
+    registrator:
+        command: -internal consul://consul:8500
+        depends_on:
+            - consul
+        image: gliderlabs/registrator:latest
+        volumes:
+            - /var/run/docker.sock:/tmp/docker.sock
+
+    ssh.agent:
+        image: 1001pharmadev/ssh-agent:latest
+        volumes:
+            - ssh-agent:/tmp/ssh-agent
+
+    toggle.api:
+        depends_on:
+          - redis
+        image: 1001pharmadev/toggle-api
+        labels:
+            - SERVICE_80_NAME=toggle.api-http
+            - SERVICE_80_CHECK_TCP=true
+            - SERVICE_80_CHECK_INITIAL_STATUS=passing
+            - SERVICE_80_TAGS=${SERVICE_TOGGLE_API_HTTP_TAGS}
+        environment:
+          - TOGGLE__REDIS_DSN=tcp://redis:6379
+        ports:
+            - 80
+
+    toggle.ui:
+        depends_on:
+          - toggle.api
+        image: 1001pharmadev/toggle-ui
+        labels:
+            - SERVICE_80_NAME=toggle.ui-http
+            - SERVICE_80_CHECK_TCP=true
+            - SERVICE_80_CHECK_INITIAL_STATUS=passing
+            - SERVICE_80_TAGS=${SERVICE_TOGGLE_UI_HTTP_TAGS}
+        ports:
+            - 80
+        volumes:
+          - ./docker/toggle/ui/config.js:/var/www/html/web/js/config.js
+
+volumes:
+    consul:
+    elasticsearch:
+    mysql:
+    rabbitmq:
+    ssh-agent:
+    ssl-certs:
+
+networks:
+    default:
+        external:
+            name: ${DOCKER_NETWORK}

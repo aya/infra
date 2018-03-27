@@ -1,0 +1,15 @@
+KEYMAPOPTS="fr fr"
+HOSTNAMEOPTS="-n alpine"
+INTERFACESOPTS="auto lo
+iface lo inet loopback
+auto eth0
+iface eth0 inet dhcp
+      hostname alpine
+"
+DNSOPTS="-d 1001pharmacies.com 8.8.8.8"
+TIMEZONEOPTS="-z Europe/Paris"
+PROXYOPTS="none"
+APKREPOSOPTS="http://dl-cdn.alpinelinux.org/alpine/v3.6/main"
+SSHDOPTS="-c openssh"
+NTPOPTS="-c openntpd"
+DISKOPTS="-s 0 -m sys /dev/vda"
