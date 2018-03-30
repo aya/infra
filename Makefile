@@ -1,3 +1,5 @@
+-include ../subrepo.mk
+
 # Load .env
 include env.mk
 SUBREPO        := $(notdir $(CURDIR))
@@ -14,18 +16,6 @@ bootstrap-git:
 	if ! git config remote.subrepo/$(SUBREPO).url > /dev/null ; \
 		then git remote add subrepo/$(SUBREPO) $(REMOTE); \
 	fi
-
-## Update subrepo
-update-subrepo: bootstrap-git stash subrepo-push unstash
-
-subrepo-push:
-	$(MAKE) --directory=.. subrepo-push $(SUBREPO)
-
-stash:
-	$(MAKE) --directory=.. stash
-
-unstash:
-	$(MAKE) --directory=.. unstash
 
 ##
 # INSTALL
