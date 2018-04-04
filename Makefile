@@ -1,5 +1,3 @@
--include ../subrepo.mk
-
 # Load .env
 include env.mk
 SUBREPO        := $(notdir $(CURDIR))
@@ -11,6 +9,8 @@ DOCKERS        := $(dir $(wildcard docker/*/))
 
 ##
 # SUBREPO
+
+-include ../subrepo.mk
 
 bootstrap-git:
 	if ! git config remote.subrepo/$(SUBREPO).url > /dev/null ; \
