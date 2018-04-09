@@ -18,6 +18,21 @@ bootstrap-git:
 	fi
 
 ##
+# COMMON
+
+up: install
+
+down:
+
+start: install
+
+stop:
+
+update:
+
+tests:
+
+##
 # INSTALL
 
 all: docker-build $(ENV) ## Build and deploy infra
