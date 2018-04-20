@@ -20,17 +20,23 @@ bootstrap-git:
 ##
 # COMMON
 
-up: install
-
 down:
+
+rebuild:
+
+recreate:
+
+restart:
 
 start: install
 
 stop:
 
-update:
-
 tests:
+
+up: install
+
+update:
 
 ##
 # INSTALL
