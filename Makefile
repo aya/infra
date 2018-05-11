@@ -4,7 +4,7 @@ SUBREPO        := $(notdir $(CURDIR))
 CONTEXT        += SUBREPO
 include help.mk
 
-DOCKERS        := $(dir $(wildcard docker/*/))
+DOCKERS        := $(dir $(wildcard */docker/*/))
 .PHONY: help packer $(DOCKERS)
 
 ##

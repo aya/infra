@@ -25,7 +25,7 @@ packer:
 	$(call packer,$(ARGS))
 
 docker-build: ## Build docker image
-	$(MAKE) --directory=.. docker-build DOCKERS=docker/packer
+	$(MAKE) --directory=.. docker-build DOCKERS=packer/docker/packer
 
 build: docker-build $(TEMPLATES) ## Build iso images
 
