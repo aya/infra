@@ -22,6 +22,9 @@ endef
 define docker-compose
 	docker run --rm --name infra_docker-compose -it -v /var/run/docker.sock:/var/run/docker.sock -v $$PWD:$$PWD -w $$PWD docker/compose:1.14.0 -p $(COMPOSE_PROJECT_NAME) $(1)
 endef
+define openstack
+	docker run --rm --name infra_openstack -it $(OPENSTACK_ENV) -v $$PWD:/pwd -w /pwd openstack $(1)
+endef
 define packer
 	docker run --rm --name infra_packer --privileged -it $(PACKER_ENV) -v /lib/modules:/lib/modules -v $$HOME/.ssh:/root/.ssh -v $$PWD:/pwd -w /pwd packer $(1)
 endef
@@ -37,6 +40,9 @@ define aws
 endef
 define docker-compose
 	docker-compose -p $(COMPOSE_PROJECT_NAME) $(1)
+endef
+define openstack
+	$(OPENSTACK_ENV) openstack $(1)
 endef
 define packer
 	 $(PACKER_ENV) packer $(1)
