@@ -1,4 +1,5 @@
-CONTEXT        := $(shell awk 'BEGIN {FS="="}; {print $$1}' .env.dist 2>/dev/null)
+BRANCH         := $(shell git branch --no-color 2>/dev/null |awk '$$1 == "*" {match($$0, "("FS")+"); print substr($$0, RSTART+RLENGTH);}')
+CONTEXT        += BRANCH $(shell awk 'BEGIN {FS="="}; {print $$1}' .env.dist 2>/dev/null)
 
 .env: .env.dist
 	$(call generate_env, .env)
