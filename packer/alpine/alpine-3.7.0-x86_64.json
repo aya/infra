@@ -3,7 +3,8 @@
         "hostname": "alpine",
         "password": "alpine",
         "disk_size": "512",
-        "id_rsa.pub": "{{env `HOME`}}/.ssh/id_rsa.pub"
+        "id_rsa.pub": "{{env `HOME`}}/.ssh/id_rsa.pub",
+        "vnc_port_max": "6000"
     },
     "builders":
     [
@@ -25,6 +26,7 @@
     "ssh_port": 22,
     "ssh_wait_timeout": "16s",
     "vm_name": "alpine-3.7.0-x86_64.iso",
+    "vnc_port_max": "{{user `vnc_port_max`}}",
     "net_device": "virtio-net",
     "disk_interface": "virtio",
     "boot_wait": "8s",
