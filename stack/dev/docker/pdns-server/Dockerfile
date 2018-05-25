@@ -1,9 +1,11 @@
 FROM alpine:latest
-LABEL maintainer "yann.autissier@1001pharmacies.com"
-ENV PDNS_RECURSOR_VERSION 4.0.6
-ENV PDNS_AUTHORITATIVE_VERSION 4.0.4
+LABEL maintainer "yann.autissier@gmail.com"
+ARG VERSION_PDNS_REC=4.1.3
+ARG VERSION_PDNS_AUTH=4.1.2
+ARG VERSION_PDNS_DNSDIST=1.3.0
 
-RUN apk add --no-cache --virtual .builddeps \
+RUN apk upgrade --no-cache \
+ && apk add --no-cache --virtual build-deps \
         autoconf \
         automake \
         bison \
@@ -16,33 +18,42 @@ RUN apk add --no-cache --virtual .builddeps \
         flex \
         g++ \
         git \
-        openssl-dev \
+        py-virtualenv \
+        libedit-dev \
+        libressl-dev \
         libstdc++ \
         libtool \
+        lua-dev \
         make \
         musl \
         ragel \
  && git clone https://github.com/PowerDNS/pdns \
  && cd pdns \
- && git checkout tags/auth-${PDNS_AUTHORITATIVE_VERSION} -b auth-${PDNS_AUTHORITATIVE_VERSION} \
- && ./bootstrap \
- && ./configure --with-modules="" --without-lua \
- && make \
+ && git checkout tags/auth-${VERSION_PDNS_AUTH} -b auth-${VERSION_PDNS_AUTH} \
+ && autoreconf -vi \
+ && ./configure --enable-static --disable-systemd --without-systemd --with-modules="" \
  && make install clean \
- && git checkout tags/rec-${PDNS_RECURSOR_VERSION} -b rec-${PDNS_RECURSOR_VERSION} \
+ && git checkout tags/rec-${VERSION_PDNS_REC} -b rec-${VERSION_PDNS_REC} \
  && cd pdns/recursordist \
- && ./bootstrap \
- && ./configure \
- && make \
- && make install \
+ && autoreconf -vi \
+ && ./configure --enable-static --disable-systemd --without-systemd \
+ && make install clean \
+ && cd ../.. \
+ && git checkout tags/dnsdist-${VERSION_PDNS_DNSDIST} -b dnsdist-${VERSION_PDNS_DNSDIST} \
+ && cd pdns/dnsdistdist \
+ && autoreconf -vi \
+ && ./configure --enable-static --disable-systemd --without-systemd \
+ && make install clean \
  && cd ../../.. \
  && rm -fr pdns \
- && apk del .builddeps
+ && apk del build-deps
 
 RUN apk add --no-cache \
         boost \
-        libcrypto1.0 \
-        libstdc++
+        libressl2.6-libcrypto \
+        libstdc++ \
+        libedit \
+        lua
 
 COPY docker-entrypoint.sh /
 ENTRYPOINT ["/docker-entrypoint.sh"]
