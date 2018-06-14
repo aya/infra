@@ -9,10 +9,11 @@ alerting:
   alertmanagers:
   - static_configs:
     - targets:
-      # - alertmanager:9093
+      - alertmanager:9093
 
 # Load rules once and periodically evaluate them according to the global 'evaluation_interval'.
 rule_files:
+  - "alert-rules.yml"
   # - "alert.rules"
   # - "first_rules.yml"
   # - "second_rules.yml"
@@ -34,6 +35,7 @@ scrape_configs:
         - http://api.1001pharmacies.com/doc
         - http://media.1001pharmacies.com/doc
         - http://ui-toggle.1001pharmacies.com
+        - http://192.168.1.135
     relabel_configs:
       - source_labels: [__address__]
         regex: (.*)(:80)?
@@ -47,49 +49,3 @@ scrape_configs:
         regex: .*
         target_label: __address__
         replacement: blackbox:9115
-  - job_name: 'latency-at-http_2xx'
-    bearer_token: '67i_nCASrmmzd1bAb1wPZQ6P0acma0Xk'
-    scrape_interval:    55s
-    metrics_path: /probe
-    params:
-      module: [http_2xx]
-    static_configs:
-      - targets:
-#        - https://www.1001pharmacies.com@sfo1.do
-#        - https://www.1001pharmacies.com@nyc1.do
-        - https://www.1001pharmacies.com@fra1.do
-#        - https://www.1001pharmacies.com@blr1.do
-#        - https://www.1001pharmacies.com@sgp1.do
-    relabel_configs: &relabel_config
-      - source_labels: [__address__]
-        regex: (.*)@(.*)(:80)?
-        target_label: __param_target
-        replacement: ${1}
-      - source_labels: [__param_target]
-        regex: (.*)
-        target_label: instance
-        replacement: ${1}
-      - source_labels: [__address__]
-        regex: .*@([^.]*).*
-        target_label: region
-        replacement: ${1}
-      - source_labels: [__address__]
-        regex: .*@[^.]*.(.*)
-        target_label: provider
-        replacement: ${1}
-      - source_labels: [region,provider]
-        separator: .
-        regex: (.*)
-        target_label: __address__
-        replacement: ${1}.mon.latency.at
-      - source_labels: []
-        target_label: __scheme__
-        replacement: https
-  - job_name: 'latency-at-account'
-    bearer_token: '67i_nCASrmmzd1bAb1wPZQ6P0acma0Xk'
-    scheme: https
-    metrics_path: /api/metrics
-    static_configs:
-      - targets:
-        - api.latency.at
-

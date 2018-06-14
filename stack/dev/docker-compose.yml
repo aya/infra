@@ -13,7 +13,25 @@ services:
     restart: always
     volumes:
         - prometheus:/prometheus
-        - ./docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+        - ./docker/prometheus:/etc/prometheus
+
+
+  alertmanager:
+    build: docker/alertmanager
+    environment:
+      - SLACK_WEBHOOK_ID=${SERVICE_ALERTMANAGER_SLACK_WEBHOOK_ID}
+    labels:
+      - SERVICE_9093_NAME=alertmanager-http
+      - SERVICE_9093_CHECK_TCP=true
+      - SERVICE_9093_CHECK_INITIAL_STATUS=passing
+      - SERVICE_9093_TAGS=${SERVICE_ALERTMANAGER_HTTP_TAGS}
+    ports:
+      - 9093
+    restart: always
+#    volumes:
+#      - ./docker/alertmanager/config.tmpl:/etc/alertmanager/config.tmpl
+
+
   blackbox:
     image: quay.io/prometheus/blackbox-exporter:latest
     labels:
