@@ -2,9 +2,10 @@ version: "3"
 
 services:
   prometheus:
-    build: docker/prometheus
-    environment:
-      - LATENCYAT_TOKEN=${SERVICE_ALERTMANAGER_TOKEN_LATENCYAT}
+    build:
+      context: docker/prometheus
+      args:
+        - LATENCYAT_TOKEN=${TOKEN_LATENCYAT}
     labels:
       - SERVICE_9090_NAME=prometheus-http
       - SERVICE_9090_CHECK_TCP=true
@@ -19,9 +20,10 @@ services:
 
 
   alertmanager:
-    build: docker/alertmanager
-    environment:
-      - SLACK_WEBHOOK_ID=${SERVICE_ALERTMANAGER_SLACK_WEBHOOK_ID}
+    build: 
+      context: docker/alertmanager
+      args:
+        - SLACK_WEBHOOK_ID=${SLACK_WEBHOOK_ID}
     labels:
       - SERVICE_9093_NAME=alertmanager-http
       - SERVICE_9093_CHECK_TCP=true

@@ -5,9 +5,7 @@ set -x
 
 trap 'kill -SIGQUIT $PID' INT
 
-sed 's@TOKEN_LATENCYAT@'"${LATENCYAT_TOKEN:-UNDEFINED}"'@g' /etc/prometheus/prometheus.tmpl > /prometheus/prometheus.yml
-
 # Launch alertmanager by default, or paramater
-[ $# -eq 0 ] && /bin/prometheus || exec "$@" &
+[ $# -eq 0 ] && /bin/prometheus --config.file=/etc/prometheus/prometheus.yml --storage.tsdb.path=/prometheus --storage.tsdb.no-lockfile || exec "$@" &
 PID=$! && wait
 
