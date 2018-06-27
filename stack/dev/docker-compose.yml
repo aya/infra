@@ -2,7 +2,9 @@ version: "3"
 
 services:
   prometheus:
-    image: quay.io/prometheus/prometheus:latest
+    build: docker/prometheus
+    environment:
+      - LATENCYAT_TOKEN=${SERVICE_ALERTMANAGER_TOKEN_LATENCYAT}
     labels:
       - SERVICE_9090_NAME=prometheus-http
       - SERVICE_9090_CHECK_TCP=true
@@ -13,7 +15,7 @@ services:
     restart: always
     volumes:
         - prometheus:/prometheus
-        - ./docker/prometheus:/etc/prometheus
+#        - ./docker/prometheus:/etc/prometheus
 
 
   alertmanager:

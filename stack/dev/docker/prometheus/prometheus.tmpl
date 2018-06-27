@@ -2,6 +2,7 @@
 global:
   scrape_interval:     5s # Set the scrape interval to every 15 seconds. Default is every 1 minute.
   evaluation_interval: 5s # Evaluate rules every 15 seconds. The default is every 1 minute.
+
   # scrape_timeout is set to the global default (10s).
 
 # Alertmanager configuration
@@ -35,7 +36,7 @@ scrape_configs:
         - http://api.1001pharmacies.com/doc
         - http://media.1001pharmacies.com/doc
         - http://ui-toggle.1001pharmacies.com
-#        - http://192.168.1.135 # Demo
+        - http://192.168.1.137 # Demo
     relabel_configs:
       - source_labels: [__address__]
         regex: (.*)(:80)?
@@ -50,13 +51,10 @@ scrape_configs:
         target_label: __address__
         replacement: blackbox:9115
 
-### latency.at ###
-global:
-  scrape_interval: 54s
 
-scrape_configs:
   - job_name: 'latency-at-http_2xx'
-    bearer_token: '7vPeMi-9z0g2o7mgdA36l383Wu_dZzeW'
+    bearer_token: 'TOKEN_LATENCYAT'
+    scrape_interval: 54s 
     metrics_path: /probe
     params:
       module: [http_2xx]
@@ -91,9 +89,11 @@ scrape_configs:
 
   ### Account metrics
   - job_name: 'latency-at-account'
-    bearer_token: '7vPeMi-9z0g2o7mgdA36l383Wu_dZzeW'
+    bearer_token: 'TOKEN_LATENCYAT'
     scheme: https
     metrics_path: /api/metrics
     static_configs:
       - targets:
         - api.latency.at
+
+
