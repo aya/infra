@@ -26,17 +26,14 @@ route:
   # firing shortly after another are batched together on the first
   # notification.
   group_wait: 30s
-#  group_wait: 2s
 
   # When the first notification was sent, wait 'group_interval' to send a batch
   # of new alerts that started firing for that group.
   group_interval: 5m
-#  group_interval: 10s
 
   # If an alert has successfully been sent, wait 'repeat_interval' to
   # resend them.
   repeat_interval: 3h
-#  repeat_interval: 20s
 
 
   # All the above attributes are inherited by all child routes and can 
@@ -127,7 +124,6 @@ receivers:
   slack_configs:
   - api_url: SLACK_WEBHOOK_ID
     send_resolved: true
-    channel: alertes
     username: 'Chouette Vigilante [severity - medium]'
     icon_emoji: ':owl:'
     title: ':sun_behind_rain_cloud: {{ .Status|toUpper }} issue on {{ .CommonLabels.instance }}'
@@ -138,7 +134,6 @@ receivers:
   slack_configs:
   - api_url: SLACK_WEBHOOK_ID
     send_resolved: true
-    channel: alertes
     username: 'Chouette Vigilante [severity - high]'
     icon_emoji: ':fallen_leaf:'
     title: ':tornado: {{ .Status|toUpper }} issue on {{ .CommonLabels.instance }}'
@@ -149,7 +144,6 @@ receivers:
   slack_configs:
   - api_url: SLACK_WEBHOOK_ID
     send_resolved: true
-    channel: alertes
     username: 'Chouette Vigilante [severity - critical]'
     icon_emoji: ':fire:'
     title: ':boom: {{ .Status|toUpper }} issue on {{ .CommonLabels.instance }}'
@@ -160,7 +154,6 @@ receivers:
   slack_configs:
   - api_url: SLACK_WEBHOOK_ID
     send_resolved: true
-    channel: temp_alertes
     username: 'Chouette Vigilante [default]'
     icon_emoji: ':owl:'
 
