@@ -1,4 +1,4 @@
-version: "3"
+version: "2"
 
 services:
   prometheus:
@@ -16,9 +16,6 @@ services:
     restart: always
     volumes:
         - prometheus:/prometheus
-#        - ./docker/prometheus:/etc/prometheus
-
-
   alertmanager:
     build: 
       context: docker/alertmanager
@@ -32,12 +29,11 @@ services:
     ports:
       - 9093
     restart: always
-#    volumes:
-#      - ./docker/alertmanager/config.tmpl:/etc/alertmanager/config.tmpl
-
-
   blackbox:
     image: quay.io/prometheus/blackbox-exporter:latest
+    dns_opt:
+      - use-vc
+      - no-tld-query
     labels:
       - SERVICE_9115_NAME=blackbox-http
       - SERVICE_9115_CHECK_TCP=true
@@ -60,8 +56,6 @@ services:
       - static:/usr/share/nginx/html:ro
   grafana:
     image: grafana/grafana:latest
-    env_file:
-      - .env
     environment:
       - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource
     labels:
