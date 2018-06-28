@@ -36,7 +36,6 @@ scrape_configs:
         - http://api.1001pharmacies.com/doc
         - http://media.1001pharmacies.com/doc
         - http://ui-toggle.1001pharmacies.com
-        - http://192.168.1.137 # Demo
     relabel_configs:
       - source_labels: [__address__]
         regex: (.*)(:80)?
