@@ -47,7 +47,7 @@ install: $(ENV) ## Install $(ENV) infra
 
 local: stack-services
 
-dev: stack-dev stack-services
+dev: stack-services stack-dev
 
 ##
 # DOCKER

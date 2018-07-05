@@ -1,0 +1,61 @@
+groups:
+- name: example
+  rules:
+
+  # Alert for any instance that is unreachable for a few seconds.
+  - alert: InstanceDown-01-low
+    expr: probe_success == 0
+    for: 10s
+#    for: 1s # Demo
+    labels:
+      severity: "low"
+      type: "timeout"
+    annotations:
+      summary: "Instance {{ $labels.instance }} down"
+      description: "Instance {{ $labels.instance }} of job {{ $labels.job }} has been down for a few seconds."
+
+
+
+  # Alert for any instance that is unreachable for some time.
+  - alert: InstanceDown-02-medium
+    expr: probe_success == 0
+    for: 10m
+#    for: 1m
+    labels:
+      severity: "medium"
+      type: "timeout"
+    annotations:
+      summary: "Instance {{ $labels.instance }} down"
+      description: "Instance {{ $labels.instance }} of job {{ $labels.job }} has been down for 10 minutes"
+
+
+
+  # Alert for any instance that is unreachable for a long time.
+  - alert: InstanceDown-03-high
+    expr: probe_success == 0
+    for: 1h
+#    for: 2m
+    labels:
+      severity: "high"
+      type: "timeout"
+    annotations:
+      summary: "Instance {{ $labels.instance }} down"
+      description: "Instance {{ $labels.instance }} of job {{ $labels.job }} has been down for 1 hour"
+
+
+
+  # Alert for any instance that is unreachable for a very long time.
+  - alert: InstanceDown-04-critical
+    expr: probe_success == 0
+    for: 12h
+#    for: 3m
+    labels:
+      severity: "critical"
+      type: "timeout"
+    annotations:
+      summary: "Instance {{ $labels.instance }} down"
+      description: "Instance {{ $labels.instance }} of job {{ $labels.job }} has been down for more than 12 hours"
+
+
+
+
