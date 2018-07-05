@@ -1,0 +1,98 @@
+# my global config
+global:
+  scrape_interval:     5s # Set the scrape interval to every 15 seconds. Default is every 1 minute.
+  evaluation_interval: 5s # Evaluate rules every 15 seconds. The default is every 1 minute.
+
+  # scrape_timeout is set to the global default (10s).
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+  - static_configs:
+    - targets:
+      - alertmanager:9093
+
+# Load rules once and periodically evaluate them according to the global 'evaluation_interval'.
+rule_files:
+  - "alert-rules.yml"
+  # - "alert.rules"
+  # - "first_rules.yml"
+  # - "second_rules.yml"
+
+scrape_configs:
+  - job_name: 'blackbox'
+    metrics_path: /probe
+    params:
+      module:
+      - http_2xx
+    static_configs:
+      - targets:
+        - http://conseils.1001pharmacies.com
+        - https://blog.1001pharmacies.com
+        - https://www.1001pharmacies.com
+        - https://www.1001pharmacies.com/panier
+        - https://www.1001pharmacies.com/search?q=garancia
+        - http://v2.1001pharmacies.com/admin
+        - http://api.1001pharmacies.com/doc
+        - http://media.1001pharmacies.com/doc
+        - http://ui-toggle.1001pharmacies.com
+    relabel_configs:
+      - source_labels: [__address__]
+        regex: (.*)(:80)?
+        target_label: __param_target
+        replacement: ${1}
+      - source_labels: [__param_target]
+        regex: (.*)
+        target_label: instance
+        replacement: ${1}
+      - source_labels: []
+        regex: .*
+        target_label: __address__
+        replacement: blackbox:9115
+
+
+  - job_name: 'latency-at-http_2xx'
+    bearer_token: 'TOKEN_LATENCYAT'
+    scrape_interval: 54s 
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    static_configs:
+      - targets:
+        - https://www.1001pharmacies.com@fra1.do
+    relabel_configs: &relabel_config
+      - source_labels: [__address__]
+        regex: (.*)@(.*)(:80)?
+        target_label: __param_target
+        replacement: ${1}
+      - source_labels: [__param_target]
+        regex: (.*)
+        target_label: instance
+        replacement: ${1}
+      - source_labels: [__address__]
+        regex: .*@([^.]*).*
+        target_label: region
+        replacement: ${1}
+      - source_labels: [__address__]
+        regex: .*@[^.]*.(.*)
+        target_label: provider
+        replacement: ${1}
+      - source_labels: [region,provider]
+        separator: .
+        regex: (.*)
+        target_label: __address__
+        replacement: ${1}.mon.latency.at
+      - source_labels: []
+        target_label: __scheme__
+        replacement: https
+
+  ### Account metrics
+  - job_name: 'latency-at-account'
+    bearer_token: 'TOKEN_LATENCYAT'
+    scheme: https
+    metrics_path: /api/metrics
+    static_configs:
+      - targets:
+        - api.latency.at
+
+
