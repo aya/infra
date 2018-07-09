@@ -3,15 +3,16 @@
         "hostname": "alpine",
         "password": "alpine",
         "disk_size": "512",
-        "id_rsa.pub": "{{env `HOME`}}/.ssh/id_rsa.pub"
+        "id_rsa.pub": "{{env `HOME`}}/.ssh/id_rsa.pub",
+        "vnc_port_max": "6000"
     },
     "builders":
     [
     {
     "type": "qemu",
     "accelerator": "kvm",
-    "iso_url": "http://dl-cdn.alpinelinux.org/alpine/v3.6/releases/x86_64/alpine-virt-3.6.2-x86_64.iso",
-    "iso_checksum": "92c80e151143da155fb99611ed8f0f3672fba4de228a85eb5f53bcb261bf4b0a",
+    "iso_url": "http://dl-cdn.alpinelinux.org/alpine/v3.7/releases/x86_64/alpine-virt-3.7.0-x86_64.iso",
+    "iso_checksum": "5a4b2588afd32e7024dd61d9558b77b03a4f3189cb4c9fc05e9e944fb780acdd",
     "iso_checksum_type": "sha256",
     "output_directory": "iso",
     "shutdown_command": "poweroff",
@@ -24,18 +25,20 @@
     "ssh_password": "{{user `password`}}",
     "ssh_port": 22,
     "ssh_wait_timeout": "16s",
-    "vm_name": "alpine-meup-3.6.2-x86_64.iso",
+    "vm_name": "alpine-3.7.0-x86_64.iso",
+    "vnc_port_max": "{{user `vnc_port_max`}}",
     "net_device": "virtio-net",
     "disk_interface": "virtio",
-    "boot_wait": "4s",
+    "boot_wait": "8s",
     "boot_command":
     [
+        "<wait5>",
         "root<enter>",
         "passwd<enter>{{user `password`}}<enter>{{user `password`}}<enter>",
         "apk add openssh<enter>",
         "echo 'PermitRootLogin yes' >> /etc/ssh/sshd_config<enter>",
         "ifconfig eth0 up && udhcpc -i eth0<enter>",
-        "/etc/init.d/sshd start<enter><wait>"
+        "/etc/init.d/sshd start<enter>"
     ]
     }
     ],    "provisioners": [
