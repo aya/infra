@@ -1,6 +1,3 @@
-BRANCH         := $(shell git branch --no-color 2>/dev/null |awk '$$1 == "*" {match($$0, "("FS")+"); print substr($$0, RSTART+RLENGTH);}')
-CONTEXT        += BRANCH
-
 .SILENT:
 .PHONY: blank1 blank2 context help target usage
 

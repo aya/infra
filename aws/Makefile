@@ -22,7 +22,7 @@ aws:
 	$(call aws,$(ARGS))
 
 docker-build: ## Build docker image
-	$(MAKE) --directory=.. docker-build DOCKERS=docker/aws
+	$(MAKE) --directory=.. docker-build DOCKERS=aws/docker/aws
 
 policy: policy-role policy-trust
 
@@ -33,7 +33,7 @@ policy-role:
 	$(call aws, iam put-role-policy --role-name vmimport --policy-name vmimport --policy-document file://policy/role.json)
 
 snapshot-upload:
-	$(call aws, s3 cp packer/iso/alpine-meup-3.6.2-x86_64.iso s3://$(AWS_S3_BUCKET))
+	$(call aws, s3 cp ../packer/iso/alpine-3.7.0-x86_64.iso s3://$(AWS_S3_BUCKET))
 
 snapshot-import:
 	$(call aws, import-snapshot --disk-container file://snapshot.json)
