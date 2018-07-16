@@ -27,15 +27,7 @@ scrape_configs:
       - http_2xx
     static_configs:
       - targets:
-        - http://conseils.1001pharmacies.com
-        - https://blog.1001pharmacies.com
-        - https://www.1001pharmacies.com
-        - https://www.1001pharmacies.com/panier
-        - https://www.1001pharmacies.com/search?q=garancia
-        - http://v2.1001pharmacies.com/admin
-        - http://api.1001pharmacies.com/doc
-        - http://media.1001pharmacies.com/doc
-        - http://ui-toggle.1001pharmacies.com
+MONITORING_TARGETS_BLACKBOX
     relabel_configs:
       - source_labels: [__address__]
         regex: (.*)(:80)?
@@ -59,7 +51,7 @@ scrape_configs:
       module: [http_2xx]
     static_configs:
       - targets:
-        - https://www.1001pharmacies.com@fra1.do
+MONITORING_TARGETS_LATENCYAT
     relabel_configs: &relabel_config
       - source_labels: [__address__]
         regex: (.*)@(.*)(:80)?
