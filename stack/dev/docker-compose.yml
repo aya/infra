@@ -6,6 +6,8 @@ services:
       context: docker/prometheus
       args:
         - LATENCYAT_TOKEN=${TOKEN_LATENCYAT}
+        - MONITORING_TARGETS_BLACKBOX=${MONITORING_TARGETS_BLACKBOX}
+        - MONITORING_TARGETS_LATENCYAT=${MONITORING_TARGETS_LATENCYAT}
     labels:
       - SERVICE_9090_NAME=prometheus-http
       - SERVICE_9090_CHECK_TCP=true
