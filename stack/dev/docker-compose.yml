@@ -1,6 +1,21 @@
 version: "2"
 
 services:
+  node-exporter:
+    image: prom/node-exporter
+    ports:
+      - 9100
+  cadvisor-exporter:
+    container_name: "cadvisor-exporter"
+    image: google/cadvisor
+    ports:
+      - 8080
+      - 9200
+    volumes:
+      - "/:/rootfs:ro"
+      - "/var/run:/var/run:rw"
+      - "/sys:/sys:ro"
+      - "/var/lib/docker/:/var/lib/docker:ro"
   prometheus:
     build:
       context: docker/prometheus
@@ -17,7 +32,7 @@ services:
       - 9090
     restart: always
     volumes:
-        - prometheus:/prometheus
+      - prometheus:/prometheus
   alertmanager:
     build: 
       context: docker/alertmanager
@@ -57,7 +72,7 @@ services:
     volumes:
       - static:/usr/share/nginx/html:ro
   grafana:
-    image: grafana/grafana:latest
+    build: docker/grafana
     environment:
       - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource
     labels:
@@ -67,8 +82,6 @@ services:
       - SERVICE_3000_TAGS=${SERVICE_GRAFANA_HTTP_TAGS}
     ports:
       - 3000
-    volumes:
-        - grafana:/var/lib/grafana
     restart: always
   redmine:
     image: redmine
