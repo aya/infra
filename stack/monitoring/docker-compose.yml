@@ -28,7 +28,11 @@ services:
     ports:
       - 9115
   grafana:
-    build: ../monitoring/docker/grafana
+    build:
+      context:  ../monitoring/docker/grafana
+      args:
+        - AWS_ACCESS_KEY=${AWS_ACCESS_KEY}
+        - AWS_SECRET_KEY=${AWS_SECRET_KEY}
     environment:
       - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource
     labels:
