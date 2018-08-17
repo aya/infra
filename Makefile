@@ -1,76 +1,38 @@
-# Load .env
 include env.mk
-SUBREPO        := $(notdir $(CURDIR))
-CONTEXT        += SUBREPO
+include def.mk
 include help.mk
-
-DOCKERS        := $(dir $(wildcard */docker/*/))
-.PHONY: help packer $(DOCKERS)
-
-##
-# SUBREPO
-
+include $(filter-out env.mk def.mk help.mk,$(wildcard *.mk))
 -include ../subrepo.mk
 
-bootstrap-git:
-	if ! git config remote.subrepo/$(SUBREPO).url > /dev/null ; \
-		then git remote add subrepo/$(SUBREPO) $(REMOTE); \
-	fi
+DOCKERS        := $(dir $(wildcard */docker/*/))
 
-##
-# COMMON
-
-down:
-
-rebuild:
-
-recreate:
-
-restart:
-
-start: install
-
-stop:
-
-tests:
-
-up: install
-
-update:
+.PHONY: help stack-% $(DOCKERS)
+.SILENT:
 
 ##
 # INSTALL
 
-all: docker-build $(ENV) ## Build and deploy infra
+all: bootstrap build up ## Build and deploy infra
 
-install: $(ENV) ## Install $(ENV) infra
-
-local: stack-services
-
-dev: stack-services stack-dev
+install: bootstrap up ## Install docker $(STACK) services
 
 ##
-# DOCKER
+# CLEAN
 
-docker-build: $(DOCKERS) ## Build docker images
+clean: clean-app docker-down clean-env
+
+clean-app:
+
+clean-env:
+	rm -i .env || true
+	rm -i stack/*/.env || true
+
+##
+# BUILD
+
+build: $(DOCKERS)
 
 $(DOCKERS):
 	if [ $(DOCKER) = "true" ]; then \
 		docker build -t $(lastword $(subst /, ,$@)) $@; \
 	fi
-
-##
-# STACK
-
-stack-dev: ## Start dev stack
-	$(MAKE) -C stack/dev install
-
-stack-services: ## Start docker services
-	$(MAKE) -C stack/services install
-
-##
-# PACKER
-
-packer: ## Build iso images
-	$(MAKE) --directory=$@ all
-

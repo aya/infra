@@ -25,8 +25,6 @@ openstack:
 image-create:
 	$(call openstack,$(OPENSTACK_ARGS) image create --disk-format raw --container-format bare --file ./iso/alpine-3.7.0-x86_64.iso "Alpine 3.7.0")
 
-docker-build: ## Build docker image
-	$(MAKE) --directory=.. docker-build DOCKERS=openstack/docker/openstack
-
-build: docker-build
+build: ## Build docker image
+	$(MAKE) --directory=.. build DOCKERS=openstack/docker/openstack
 
