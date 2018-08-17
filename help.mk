@@ -1,4 +1,3 @@
-.SILENT:
 .PHONY: blank1 blank2 context help target usage
 
 COLOR_RESET    := \033[0m
@@ -18,11 +17,13 @@ usage:
 blank1 blank2:
 	printf "\n"
 
-target: ## Show available targets
+## Show available targets
+target:
 	printf "${COLOR_BROWN}Targets:${COLOR_RESET}\n"
 	awk 'BEGIN {FS = ":.*?## "}; $$0 ~ /^[a-zA-Z_-]+:.*?## .*$$/ {printf "${COLOR_BLUE}%-30s${COLOR_RESET} %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
-context: ## Show current context
+## Show current context
+context:
 	printf "${COLOR_BROWN}Context:${COLOR_RESET}\n"
 	$(MAKE) context-list
 
@@ -31,4 +32,4 @@ context-list: $(CONTEXT)
 $(CONTEXT):
 	$(MAKE) print-$@
 
-print-%: ; @printf "${COLOR_BLUE}%-30s${COLOR_RESET} ${COLOR_GREEN}%s${COLOR_RESET}\n" $* $($*)
+print-%: ; @printf "${COLOR_BLUE}%-30s${COLOR_RESET} ${COLOR_GREEN}%s${COLOR_RESET}\n" $* "$($*)"

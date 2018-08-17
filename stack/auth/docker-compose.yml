@@ -1,0 +1,38 @@
+version: "3"
+
+services:
+  opendj:
+    build: ../auth/docker/opendj
+    environment:
+      - OPENDJ_JAVA_ARGS=-server -Xmx512m -XX:+UseG1GC
+    labels:
+      - SERVICE_389_NAME=${ENV}-${APP}-opendj-ldap
+      - SERVICE_389_CHECK_INITITAL_STATUS=passing
+      - SERVICE_389_CHECK_TCP=true
+      - SERVICE_636_NAME=${ENV}-${APP}-opendj-ldaps
+      - SERVICE_636_CHECK_INITITAL_STATUS=passing
+      - SERVICE_636_CHECK_TCP=true
+      - SERVICE_4444_NAME=${ENV}-${APP}-opendj-admin-tcp
+      - SERVICE_4444_CHECK_INITITAL_STATUS=passing
+      - SERVICE_4444_CHECK_TCP=true
+      - SERVICE_8989_NAME=${ENV}-${APP}-opendj-dsrepli-tcp
+      - SERVICE_8989_CHECK_INITITAL_STATUS=passing
+      - SERVICE_8989_CHECK_TCP=true
+    ports:
+      - 389
+      - 636
+      - 4444
+      - 8989
+    volumes:
+      - opendj:/opt/opendj/data
+      - opendj-secrets:/var/secrets/opendj
+
+volumes:
+    opendj:
+    opendj-secrets:
+
+networks:
+  default:
+    external:
+      name: ${DOCKER_NETWORK}
+

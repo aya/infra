@@ -7,7 +7,7 @@ endif
 ifeq ($(FORCE), true)
 	PACKER_BUILD_ARGS+= -force
 endif
-ifeq ($(ENV), dev)
+ifeq ($(_ENV), dev)
 	PACKER_ENV+= PACKER_LOG=1
 	PACKER_BUILD_ARGS+= -var vnc_port_max=5900
 endif
@@ -23,15 +23,15 @@ TEMPLATES:=$(wildcard */*.json)
 
 .PHONY: help packer $(TEMPLATES)
 
-all: build
+all: build-iso
 
 packer:
 	$(call packer,$(ARGS))
 
-docker-build: ## Build docker image
-	$(MAKE) --directory=.. docker-build DOCKERS=packer/docker/packer
+build: ## Build docker image
+	$(MAKE) --directory=.. build DOCKERS=packer/docker/packer
 
-build: docker-build $(TEMPLATES) ## Build iso images
+build-iso: build $(TEMPLATES) ## Build iso images
 
 $(TEMPLATES):
 	$(call packer, build $(PACKER_BUILD_ARGS) $@)

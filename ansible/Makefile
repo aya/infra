@@ -18,10 +18,8 @@ include ../help.mk
 
 all: build
 
-docker-build: ## Build docker image
-	$(MAKE) --directory=.. docker-build DOCKERS=ansible/docker/ansible
-
-build: docker-build
+build: ## Build docker image
+	$(MAKE) --directory=.. build DOCKERS=ansible/docker/ansible
 
 ansible:
 	$(call ansible,$(ARGS))

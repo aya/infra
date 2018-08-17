@@ -21,8 +21,8 @@ all: build
 aws: 
 	$(call aws,$(ARGS))
 
-docker-build: ## Build docker image
-	$(MAKE) --directory=.. docker-build DOCKERS=aws/docker/aws
+build: ## Build docker image
+	$(MAKE) --directory=.. build DOCKERS=aws/docker/aws
 
 policy: policy-role policy-trust
 
@@ -37,5 +37,3 @@ snapshot-upload:
 
 snapshot-import:
 	$(call aws, import-snapshot --disk-container file://snapshot.json)
-
-build: docker-build ## Build iso images
