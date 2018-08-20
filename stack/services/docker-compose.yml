@@ -98,10 +98,13 @@ services:
             - rabbitmq:/var/lib/rabbitmq
     redis:
         image: redis:alpine
+        command: redis-server --appendonly yes
         labels:
             - SERVICE_6379_NAME=${ENV}-${APP}-redis-tcp
             - SERVICE_6379_CHECK_TCP=true
             - SERVICE_6379_CHECK_INITIAL_STATUS=passing
+        volumes:
+            - redis:/data
         ports:
             - 6379
     ssh-agent:
@@ -139,6 +142,7 @@ volumes:
     elasticsearch:
     mysql:
     rabbitmq:
+    redis:
     ssh-agent:
 
 networks:
