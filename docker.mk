@@ -2,7 +2,7 @@
 # DOCKER
 
 docker-build: stack
-	$(call docker-compose,build --pull)
+	$(call docker-compose,build --pull $(SERVICE))
 
 docker-down: stack
 	$(call docker-compose,down)
@@ -10,9 +10,12 @@ docker-down: stack
 docker-down-rm: stack
 	$(call docker-compose,down --rmi local -v)
 
+docker-config: stack docker-up
+	$(call docker-compose,config)
+
 docker-connect: SERVICE ?= $(DOCKER_SERVICE)
 docker-connect: stack docker-up
-	$(call docker-compose,exec $(SERVICE) /bin/bash || true)
+	$(call docker-compose,exec $(SERVICE) /bin/sh || true)
 
 docker-exec: SERVICE ?= $(DOCKER_SERVICE)
 docker-exec: stack docker-up
@@ -30,16 +33,21 @@ docker-network-rm:
 	[ -z "$(shell docker network ls -q --filter name='^$(DOCKER_NETWORK)$$' 2>/dev/null)" ] \
 	  || { echo -n "Removing docker network $(DOCKER_NETWORK) ... " && docker network rm $(DOCKER_NETWORK) >/dev/null 2>&1 && echo "done" || echo "ERROR"; }
 
+docker-node:
+ifneq (,$(filter $(MAKECMDGOALS),install ps start up))
+	ENV=$(ENV) $(MAKE) -C ../infra $(patsubst %,node-%,$(MAKECMDGOALS)) STACK_NODE=node || true
+endif
+
 docker-ps: stack
 	$(call docker-compose,ps)
 
 docker-rebuild: stack
-	$(call docker-compose,build --pull --no-cache)
+	$(call docker-compose,build --pull --no-cache $(SERVICE))
 
 docker-recreate: stack docker-down docker-up
 
 docker-restart: stack
-	$(call docker-compose,restart)
+	$(call docker-compose,restart $(SERVICE))
 
 docker-services:
 ifneq (,$(filter $(MAKECMDGOALS),install ps start up))
@@ -47,10 +55,10 @@ ifneq (,$(filter $(MAKECMDGOALS),install ps start up))
 endif
 
 docker-start: stack
-	$(call docker-compose,start)
+	$(call docker-compose,start $(SERVICE))
 
 docker-stop: stack
-	$(call docker-compose,stop)
+	$(call docker-compose,stop $(SERVICE))
 
 docker-up: stack
-	$(call docker-compose,up -d)
+	$(call docker-compose,up -d $(SERVICE))
