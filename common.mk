@@ -8,11 +8,13 @@ bootstrap-git:
 		then git remote add subrepo/$(SUBREPO) $(REMOTE); \
 	fi
 
-connect: docker-connect ## Connect to application docker
-
 build: docker-build ## Build application dockers images
 
+connect: docker-connect ## Connect to docker $(SERVICE)
+
 down: docker-down ## Remove application dockers
+
+exec: docker-exec ## Exec a command in docker $(SERVICE)
 
 logs: docker-logs ## Display application dockers logs
 
