@@ -30,7 +30,7 @@ services:
         volumes:
           - consul:/consul/data
     fabio:
-        command: /fabio -registry.backend "consul" -registry.consul.addr "consul:8500" -proxy.addr ":21;proto=tcp,:80,:443;cs=local" -proxy.cs "cs=local;type=file;cert=/certs/${SSL_HOSTNAME}.crt;key=/certs/${SSL_HOSTNAME}.key"
+        command: /fabio -registry.backend "consul" -registry.consul.addr "consul:8500" -proxy.addr ":21;proto=tcp,:80,:443;cs=local,:3306;proto=tcp" -proxy.cs "cs=local;type=file;cert=/certs/${SSL_HOSTNAME}.crt;key=/certs/${SSL_HOSTNAME}.key"
         depends_on:
           - consul
         image: fabiolb/fabio:latest

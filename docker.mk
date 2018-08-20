@@ -10,11 +10,16 @@ docker-down: stack
 docker-down-rm: stack
 	$(call docker-compose,down --rmi local -v)
 
+docker-connect: SERVICE ?= $(DOCKER_SERVICE)
 docker-connect: stack docker-up
-	$(call docker-compose,exec $(DOCKER_SERVICE) /bin/bash || true)
+	$(call docker-compose,exec $(SERVICE) /bin/bash || true)
+
+docker-exec: SERVICE ?= $(DOCKER_SERVICE)
+docker-exec: stack docker-up
+	$(call docker-compose-exec,$(SERVICE),$(ARGS) || true)
 
 docker-logs: stack docker-up
-	$(call docker-compose,logs -f $(DOCKER_SERVICE) || true)
+	$(call docker-compose,logs -f --tail=100 $(SERVICE) || true)
 
 docker-network:
 	[ -n "$(shell docker network ls -q --filter name='^$(DOCKER_NETWORK)$$' 2>/dev/null)" ] \
@@ -37,7 +42,9 @@ docker-restart: stack
 	$(call docker-compose,restart)
 
 docker-services:
+ifneq (,$(filter $(MAKECMDGOALS),install ps start up))
 	ENV=$(ENV) $(MAKE) -C ../infra $(MAKECMDGOALS) STACK=services || true
+endif
 
 docker-start: stack
 	$(call docker-compose,start)

@@ -71,6 +71,7 @@ services:
         image: mariadb:latest
         labels:
             - SERVICE_3306_NAME=${ENV}-${APP}-mysql-tcp
+            - SERVICE_3306_TAGS=urlprefix-:3306 proto=tcp
         ports:
             - 3306
         volumes:

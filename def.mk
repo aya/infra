@@ -1,18 +1,21 @@
-BRANCH                  := $(shell git branch --no-color 2>/dev/null |awk '$$1 == "*" {match($$0, "("FS")+"); print substr($$0, RSTART+RLENGTH);}')
+BRANCH                  := $(shell git rev-parse --abbrev-ref HEAD)
 CMDS                    := ansible ansible-playbook aws openstack packer
-CONTEXT                 := BRANCH SUBREPO COMPOSE_PROJECT_NAME $(shell awk 'BEGIN {FS="="}; {print $$1}' .env.dist 2>/dev/null) ENV_SYSTEM
+CONTEXT                 := SUBREPO COMPOSE_PROJECT_NAME $(shell awk 'BEGIN {FS="="}; {print $$1}' .env.dist 2>/dev/null) ENV_SYSTEM
+COMMIT                  := $(shell git rev-parse HEAD)
 COMPOSE_VERSION         := 1.22.0
 COMPOSE_IGNORE_ORPHANS  ?= true
 COMPOSE_PROJECT_NAME    ?= $(ENV)_$(APP)
 DEBUG                   ?= false
 DOCKER                  ?= true
 DOCKER_NETWORK          ?= $(ENV)
+DOCKER_SERVICE          ?= mysql
 DRONE                   ?= false
 ENV                     ?= local
 ENV_FILE                ?= .env
-ENV_SYSTEM              := $(shell printenv |awk -F '=' 'NR == FNR { A[$$1]; next } ($$1 in A)' .env.dist - 2>/dev/null |awk '{print} END {print "ENV=$(ENV)\nCOMPOSE_IGNORE_ORPHANS=$(COMPOSE_IGNORE_ORPHANS)"}' |awk -F "=" '!seen[$$1]++')
+ENV_SYSTEM              := $(shell printenv |awk -F '=' 'NR == FNR { A[$$1]; next } ($$1 in A)' .env.dist - 2>/dev/null |awk '{print} END {print "ENV=$(ENV)\nBRANCH=$(BRANCH)\nCOMMIT=$(COMMIT)\nTAG=$(TAG)\nCOMPOSE_IGNORE_ORPHANS=$(COMPOSE_IGNORE_ORPHANS)"}' |awk -F "=" '!seen[$$1]++')
 STACK                   ?= services
 SUBREPO                 := $(notdir $(CURDIR))
+TAG                     := $(shell git tag -l --points-at HEAD)
 
 ifneq (,$(filter true,$(DOCKER) $(DRONE)))
 	ENV_SYSTEM:=$(patsubst %,-e %,$(ENV_SYSTEM))
