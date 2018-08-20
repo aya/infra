@@ -14,6 +14,7 @@ ENV                     ?= local
 ENV_FILE                ?= .env
 ENV_SYSTEM              := $(shell printenv |awk -F '=' 'NR == FNR { A[$$1]; next } ($$1 in A)' .env.dist - 2>/dev/null |awk '{print} END {print "ENV=$(ENV)\nBRANCH=$(BRANCH)\nCOMMIT=$(COMMIT)\nTAG=$(TAG)\nCOMPOSE_IGNORE_ORPHANS=$(COMPOSE_IGNORE_ORPHANS)"}' |awk -F "=" '!seen[$$1]++')
 STACK                   ?= services
+STACK_NODE              ?= node
 SUBREPO                 := $(notdir $(CURDIR))
 TAG                     := $(shell git tag -l --points-at HEAD)
 
@@ -42,18 +43,18 @@ define docker-compose-exec
 endef
 else ifeq ($(DOCKER), true)
 define docker-compose
-    docker run $(ENV_SYSTEM) $(ENV_FILE) --rm -it -v /var/run/docker.sock:/var/run/docker.sock -v $$PWD:$$PWD -w $$PWD docker/compose:$(COMPOSE_VERSION) $(COMPOSE_FILE) -p $(COMPOSE_PROJECT_NAME) $(1)
+	docker run $(ENV_SYSTEM) $(ENV_FILE) --rm -it -v /var/run/docker.sock:/var/run/docker.sock -v $$PWD:$$PWD -w $$PWD docker/compose:$(COMPOSE_VERSION) $(COMPOSE_FILE) -p $(COMPOSE_PROJECT_NAME) $(1)
 endef
 define docker-compose-exec
-    docker run $(ENV_SYSTEM) $(ENV_FILE) --rm -v /var/run/docker.sock:/var/run/docker.sock -v $$PWD:$$PWD -w $$PWD docker/compose:$(COMPOSE_VERSION) $(COMPOSE_FILE) -p $(COMPOSE_PROJECT_NAME) exec -T $(1) sh -c '$(2)'
+	docker run $(ENV_SYSTEM) $(ENV_FILE) --rm -v /var/run/docker.sock:/var/run/docker.sock -v $$PWD:$$PWD -w $$PWD docker/compose:$(COMPOSE_VERSION) $(COMPOSE_FILE) -p $(COMPOSE_PROJECT_NAME) exec -T $(1) sh -c '$(2)'
 endef
 else
 SHELL := /bin/bash
 define docker-compose
-    IFS=$$'\n'; env $(ENV_SYSTEM) $$(cat $(ENV_FILE) 2>/dev/null |awk -F "=" '!seen[$$1]++') docker-compose $(COMPOSE_FILE) -p $(COMPOSE_PROJECT_NAME) $(1)
+	IFS=$$'\n'; env $(ENV_SYSTEM) $$(cat $(ENV_FILE) 2>/dev/null |awk -F "=" '!seen[$$1]++') docker-compose $(COMPOSE_FILE) -p $(COMPOSE_PROJECT_NAME) $(1)
 endef
 define docker-compose-exec
-    IFS=$$'\n'; env $(ENV_SYSTEM) $$(cat $(ENV_FILE) 2>/dev/null |awk -F "=" '!seen[$$1]++') docker-compose $(COMPOSE_FILE) -p $(COMPOSE_PROJECT_NAME) exec -T $(1) sh -c '$(2)'
+	IFS=$$'\n'; env $(ENV_SYSTEM) $$(cat $(ENV_FILE) 2>/dev/null |awk -F "=" '!seen[$$1]++') docker-compose $(COMPOSE_FILE) -p $(COMPOSE_PROJECT_NAME) exec -T $(1) sh -c '$(2)'
 endef
 endif
 
@@ -87,6 +88,6 @@ define openstack
 	$(ENV_SYSTEM) $(OPENSTACK_ENV) openstack $(1)
 endef
 define packer
-	 $(ENV_SYSTEM) $(PACKER_ENV) packer $(1)
+	$(ENV_SYSTEM) $(PACKER_ENV) packer $(1)
 endef
 endif

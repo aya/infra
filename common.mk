@@ -10,6 +10,8 @@ bootstrap-git:
 
 build: docker-build ## Build application dockers images
 
+config: docker-config ## View docker compose file
+
 connect: docker-connect ## Connect to docker $(SERVICE)
 
 down: docker-down ## Remove application dockers
@@ -22,13 +24,13 @@ ps: docker-ps ## List application dockers
 
 rebuild: docker-rebuild ## Rebuild application dockers images
 
-recreate: docker-recreate ## Recreate application dockers
+recreate: docker-recreate start-up ## Recreate application dockers
 
 reinstall: clean ## Reinstall application
 	$(MAKE) .env
 	$(MAKE) install
 
-restart: docker-restart ## Restart application
+restart: docker-restart start-up ## Restart application
 
 start: docker-start ## Start application dockers
 
