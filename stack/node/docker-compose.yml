@@ -1,19 +1,6 @@
 version: "3"
 
 services:
-    cadvisor-exporter:
-        image: google/cadvisor
-        labels:
-          - SERVICE_8080_IGNORE=true
-          - SERVICE_9200_IGNORE=true
-        ports:
-          - 8080
-          - 9200
-        volumes:
-          - /:/rootfs:ro
-          - /var/run:/var/run:rw
-          - /sys:/sys:ro
-          - /var/lib/docker/:/var/lib/docker:ro
     consul:
         image: consul:latest
         labels:
@@ -27,17 +14,15 @@ services:
           - SERVICE_8600_IGNORE=true
         ports:
           - 8500
+        restart: always
         volumes:
           - consul:/consul/data
     fabio:
-        command: /fabio -registry.backend "consul" -registry.consul.addr "consul:8500" -proxy.addr ":21;proto=tcp,:80,:443;cs=local,:3306;proto=tcp" -proxy.cs "cs=local;type=file;cert=/certs/${SSL_HOSTNAME}.crt;key=/certs/${SSL_HOSTNAME}.key"
+        command: /fabio -registry.backend "consul" -registry.consul.addr "consul:8500" -proxy.addr ":80,:443;cs=local" -proxy.cs "cs=local;type=file;cert=/certs/${SSL_HOSTNAME}.crt;key=/certs/${SSL_HOSTNAME}.key"
         depends_on:
           - consul
         image: fabiolb/fabio:latest
         labels:
-          - SERVICE_21_NAME=node-infra-fabio-lb-ftp
-          - SERVICE_21_CHECK_TCP=true
-          - SERVICE_21_CHECK_INITIAL_STATUS=passing
           - SERVICE_80_NAME=node-infra-fabio-lb-http
           - SERVICE_80_CHECK_TCP=true
           - SERVICE_80_CHECK_INITIAL_STATUS=passing
@@ -50,23 +35,18 @@ services:
           - SERVICE_9998_TAGS=${SERVICE_FABIO_ADMIN_HTTP_TAGS}
           - SERVICE_9999_IGNORE=true
         ports:
-          - 21:21
           - 80:80
           - 443:443
           - 9998
+        restart: always
         volumes:
           - ssl-certs:/certs
-    node-exporter:
-        image: prom/node-exporter
-        labels:
-          - SERVICE_9100_IGNORE=true
-        ports:
-          - 9100
     registrator:
         command: -internal consul://consul:8500
         depends_on:
             - consul
         image: gliderlabs/registrator:latest
+        restart: always
         volumes:
             - /var/run/docker.sock:/tmp/docker.sock
 
@@ -78,4 +58,3 @@ networks:
     default:
         external:
             name: ${DOCKER_NETWORK}
-

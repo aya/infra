@@ -6,6 +6,8 @@ services:
     command: agent
     depends_on:
       - drone-server
+    labels:
+      - SERVICE_3000_IGNORE=true
     environment:
       - DRONE_SERVER=drone-server:9000
       - DRONE_SECRET=${DRONE_SECRET}
@@ -26,6 +28,8 @@ services:
       - DRONE_GITHUB_SECRET=${DRONE_GITHUB_SECRET}
       - DRONE_SECRET=${DRONE_SECRET}
     labels:
+      - SERVICE_80_IGNORE=true
+      - SERVICE_443_IGNORE=true
       - SERVICE_8000_NAME=${ENV}-${APP}-drone-server-http
       - SERVICE_8000_CHECK_TCP=true
       - SERVICE_8000_CHECK_INITIAL_STATUS=passing

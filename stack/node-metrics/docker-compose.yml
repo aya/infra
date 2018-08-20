@@ -1,0 +1,34 @@
+version: "3"
+
+services:
+    cadvisor-exporter:
+        image: google/cadvisor
+        labels:
+          - SERVICE_8080_NAME=${ENV}-${APP}-cadvisor-exporter-http
+          - SERVICE_8080_CHECK_TCP=true
+          - SERVICE_8080_CHECK_INITIAL_STATUS=passing
+          - SERVICE_8080_TAGS=${SERVICE_CADVISOR_EXPORTER_HTTP_TAGS}
+          - SERVICE_9200_IGNORE=true
+        ports:
+          - 8080
+        restart: always
+        volumes:
+          - /:/rootfs:ro
+          - /var/run:/var/run:rw
+          - /sys:/sys:ro
+          - /var/lib/docker/:/var/lib/docker:ro
+    node-exporter:
+        image: prom/node-exporter
+        labels:
+          - SERVICE_9100_NAME=${ENV}-${APP}-node-exporter-http
+          - SERVICE_9100_CHECK_TCP=true
+          - SERVICE_9100_CHECK_INITIAL_STATUS=passing
+          - SERVICE_9100_TAGS=${SERVICE_NODE_EXPORTER_HTTP_TAGS}
+        ports:
+          - 9100
+        restart: always
+
+networks:
+    default:
+        external:
+            name: ${DOCKER_NETWORK}
