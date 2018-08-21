@@ -33,6 +33,9 @@ services:
       args:
         - AWS_ACCESS_KEY=${AWS_ACCESS_KEY}
         - AWS_SECRET_KEY=${AWS_SECRET_KEY}
+        - MYSQL_GRAFANA_USER=${MYSQL_GRAFANA_USER}
+        - MYSQL_GRAFANA_PASSWORD=${MYSQL_GRAFANA_PASSWORD}
+        - MYSQL_GRAFANA_DB=${MYSQL_GRAFANA_DB}
     environment:
       - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource
     labels:
