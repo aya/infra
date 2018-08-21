@@ -114,7 +114,7 @@ services:
     toggle-api:
         depends_on:
           - redis
-        image: 1001pharmadev/toggle-api
+        image: 1001pharmadev/qandidate-toggle-api
         labels:
           - SERVICE_80_NAME=${ENV}-${APP}-toggle-api-http
           - SERVICE_80_CHECK_TCP=true
@@ -127,16 +127,16 @@ services:
     toggle-ui:
         depends_on:
           - toggle-api
-        image: 1001pharmadev/toggle-ui
+        image: 1001pharmadev/qandidate-toggle-ui
         labels:
           - SERVICE_80_NAME=${ENV}-${APP}-toggle-ui-http
           - SERVICE_80_CHECK_TCP=true
           - SERVICE_80_CHECK_INITIAL_STATUS=passing
           - SERVICE_80_TAGS=${SERVICE_TOGGLE_UI_HTTP_TAGS}
+        environment:
+          - TOGGLE__API_BASE_URL=${TOGGLE__API_BASE_URL}
         ports:
           - 80
-        volumes:
-          - ../services/docker/toggle/ui/config.js:/var/www/html/web/js/config.js:ro
 
 volumes:
     elasticsearch:
