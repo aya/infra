@@ -60,6 +60,10 @@ services:
       - SERVICE_9090_CHECK_TCP=true
       - SERVICE_9090_CHECK_INITIAL_STATUS=passing
       - SERVICE_9090_TAGS=${SERVICE_PROMETHEUS_HTTP_TAGS}
+    networks:
+      - env
+      - node
+
     ports:
       - 9090
     restart: always
@@ -71,6 +75,12 @@ volumes:
     prometheus:
 
 networks:
+  env:
+    external:
+      name: ${DOCKER_NETWORK}
+  node:
+    external:
+      name: node
   default:
     external:
       name: ${DOCKER_NETWORK}
