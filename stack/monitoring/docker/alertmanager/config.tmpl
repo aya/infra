@@ -113,7 +113,6 @@ receivers:
   slack_configs:
   - api_url: SLACK_WEBHOOK_ID
     send_resolved: true
-    channel: alertes
     username: 'Chouette Vigilante [severity - low]'
     icon_emoji: ':owl:'
     title: ':mostly_sunny: {{ .Status|toUpper }} issue on {{ .CommonLabels.instance }}'
