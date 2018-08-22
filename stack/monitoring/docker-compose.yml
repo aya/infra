@@ -46,7 +46,7 @@ services:
     ports:
       - 3000
     volumes:
-        - grafana:/var/lib/grafana
+      - grafana:/var/lib/grafana
     restart: always
   prometheus:
     build:
@@ -61,7 +61,6 @@ services:
     networks:
       - env
       - node
-
     ports:
       - 9090
     restart: always
