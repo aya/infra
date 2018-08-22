@@ -44,10 +44,13 @@ docker-ps: stack
 docker-rebuild: stack
 	$(call docker-compose,build --pull --no-cache $(SERVICE))
 
-docker-recreate: stack docker-down docker-up
+docker-recreate: stack docker-rm docker-up
 
 docker-restart: stack
 	$(call docker-compose,restart $(SERVICE))
+
+docker-rm: stack
+	$(call docker-compose,rm -fs $(SERVICE))
 
 docker-services:
 ifneq (,$(filter $(MAKECMDGOALS),install ps start up))
