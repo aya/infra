@@ -1,19 +1,19 @@
-version: "3"
+version: '3.6'
 
 services:
-  pdns-recursor:
-    build: ../dns/docker/pdns-server
-    command: /usr/local/sbin/pdns_recursor --local-address='192.168.1.1:53' --allow-from='127.0.0.0/8, 192.168.1.0/24' --forward-zones='1001pharmacies.net=192.168.1.254'
-    image: pdns:alpine
-    labels:
-      - SERVICE_53_NAME=${ENV}-${APP}-pdns-recursor-dns
-      - SERVICE_53_CHECK_TCP=true
-      - SERVICE_53_CHECK_INITIAL_STATUS=passing
-    restart: always
-    network_mode: host
+    pdns-recursor:
+        build: ../dns/docker/pdns-server
+        command: /usr/local/sbin/pdns_recursor --local-address='192.168.1.1:53' --allow-from='127.0.0.0/8, 192.168.1.0/24' --forward-zones='1001pharmacies.net=192.168.1.254'
+        image: pdns:alpine
+        labels:
+          - SERVICE_53_NAME=${ENV}-${APP}-pdns-recursor-dns
+          - SERVICE_53_CHECK_TCP=true
+          - SERVICE_53_CHECK_INITIAL_STATUS=passing
+        restart: always
+        network_mode: host
 
 networks:
-  default:
-    external:
-      name: ${DOCKER_NETWORK}
+    default:
+        external:
+            name: ${DOCKER_NETWORK}
 

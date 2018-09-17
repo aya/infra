@@ -1,0 +1,7 @@
+version: '3.6'
+
+services:
+    consul:
+        environment:
+            CONSUL_LOCAL_CONFIG: '{"log_level": "info"}'
+
