@@ -9,24 +9,7 @@ docker-openssl:
 	docker run --rm --mount source=$(COMPOSE_PROJECT_NAME)_ssl-certs,target=/certs alpine:latest [ -f /certs/$(SSL_HOSTNAME).crt -a -f /certs/$(SSL_HOSTNAME).key ] \
 	  || docker run --rm -e COMMON_NAME=$(SSL_HOSTNAME) -e KEY_NAME=$(SSL_HOSTNAME) --mount source=$(COMPOSE_PROJECT_NAME)_ssl-certs,target=/certs centurylink/openssl:latest
 
-node: node-up
+node: docker-openssl node-network node-up docker-network-connect
 
-node-config:
-	DOCKER_NETWORK=node COMPOSE_PROJECT_NAME=node_infra $(MAKE) docker-config STACK="$(STACK_NODE)"
-
-node-down:
-	DOCKER_NETWORK=node COMPOSE_PROJECT_NAME=node_infra $(MAKE) docker-down STACK="$(STACK_NODE)" DOCKER_NETWORK=node
-
-node-down-rm:
-	DOCKER_NETWORK=node COMPOSE_PROJECT_NAME=node_infra $(MAKE) docker-down-rm docker-network-rm STACK="$(STACK_NODE)" DOCKER_NETWORK=node
-
-node-install:
-
-node-ps:
-	DOCKER_NETWORK=node COMPOSE_PROJECT_NAME=node_infra $(MAKE) docker-ps STACK="$(STACK_NODE)"
-
-node-start:
-	DOCKER_NETWORK=node COMPOSE_PROJECT_NAME=node_infra $(MAKE) docker-start STACK="$(STACK_NODE)"
-
-node-up:
-	DOCKER_NETWORK=node COMPOSE_PROJECT_NAME=node_infra $(MAKE) docker-network docker-openssl docker-up docker-network-connect STACK="$(STACK_NODE)" DOCKER_NETWORK=node
+node-%: bootstrap
+	DOCKER_NETWORK=node COMPOSE_PROJECT_NAME=node_infra $(MAKE) docker-$* STACK="$(STACK_NODE)" DOCKER_NETWORK=node ARGS=$(ARGS)

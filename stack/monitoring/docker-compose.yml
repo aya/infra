@@ -1,84 +1,84 @@
-version: "3"
+version: '3.6'
 
 services:
-  alertmanager:
-    build: 
-      context: ../monitoring/docker/alertmanager
-      args:
-        - SLACK_WEBHOOK_ID=${SLACK_WEBHOOK_ID}
-    labels:
-      - SERVICE_9093_NAME=${ENV}-${APP}-alertmanager-http
-      - SERVICE_9093_CHECK_TCP=true
-      - SERVICE_9093_CHECK_INITIAL_STATUS=passing
-      - SERVICE_9093_TAGS=${SERVICE_ALERTMANAGER_HTTP_TAGS}
-    ports:
-      - 9093
-    restart: always
-  blackbox:
-    image: quay.io/prometheus/blackbox-exporter:latest
-    # command: /bin/sh -c "echo 'nameserver 192.168.1.254' > /etc/resolv.conf && /bin/blackbox_exporter --config.file=/etc/blackbox_exporter/config.yml"
-    # entrypoint: ''
-    dns:
-      - 192.168.1.254
-    labels:
-      - SERVICE_9115_NAME=${ENV}-${APP}-blackbox-http
-      - SERVICE_9115_CHECK_TCP=true
-      - SERVICE_9115_CHECK_INITIAL_STATUS=passing
-      - SERVICE_9115_TAGS=${SERVICE_BLACKBOX_HTTP_TAGS}
-    ports:
-      - 9115
-  grafana:
-    build:
-      context:  ../monitoring/docker/grafana
-      args:
-        - AWS_ACCESS_KEY=${AWS_ACCESS_KEY}
-        - AWS_SECRET_KEY=${AWS_SECRET_KEY}
-        - MYSQL_GRAFANA_USER=${MYSQL_GRAFANA_USER}
-        - MYSQL_GRAFANA_PASSWORD=${MYSQL_GRAFANA_PASSWORD}
-        - MYSQL_GRAFANA_DB=${MYSQL_GRAFANA_DB}
-    environment:
-      - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource
-    labels:
-      - SERVICE_3000_NAME=${ENV}-${APP}-grafana-http
-      - SERVICE_3000_CHECK_TCP=true
-      - SERVICE_3000_CHECK_INITIAL_STATUS=passing
-      - SERVICE_3000_TAGS=${SERVICE_GRAFANA_HTTP_TAGS}
-    ports:
-      - 3000
-    volumes:
-      - grafana:/var/lib/grafana
-    restart: always
-  prometheus:
-    build:
-      context: ../monitoring/docker/prometheus
-      args:
-        - MONITORING_TARGETS_BLACKBOX=${MONITORING_TARGETS_BLACKBOX}
-    labels:
-      - SERVICE_9090_NAME=${ENV}-${APP}-prometheus-http
-      - SERVICE_9090_CHECK_TCP=true
-      - SERVICE_9090_CHECK_INITIAL_STATUS=passing
-      - SERVICE_9090_TAGS=${SERVICE_PROMETHEUS_HTTP_TAGS}
-    networks:
-      - env
-      - node
-    ports:
-      - 9090
-    restart: always
-    volumes:
-        - prometheus:/prometheus
+    alertmanager:
+        build:
+            context: ../monitoring/docker/alertmanager
+            args:
+              - SLACK_WEBHOOK_ID=${SLACK_WEBHOOK_ID}
+        labels:
+          - SERVICE_9093_NAME=${ENV}-${APP}-alertmanager-http
+          - SERVICE_9093_CHECK_TCP=true
+          - SERVICE_9093_CHECK_INITIAL_STATUS=passing
+          - SERVICE_9093_TAGS=${SERVICE_ALERTMANAGER_HTTP_TAGS}
+        ports:
+          - 9093
+        restart: always
+    blackbox:
+        image: quay.io/prometheus/blackbox-exporter:latest
+        # command: /bin/sh -c "echo 'nameserver 192.168.1.254' > /etc/resolv.conf && /bin/blackbox_exporter --config.file=/etc/blackbox_exporter/config.yml"
+        # entrypoint: ''
+        dns:
+          - 192.168.1.254
+        labels:
+          - SERVICE_9115_NAME=${ENV}-${APP}-blackbox-http
+          - SERVICE_9115_CHECK_TCP=true
+          - SERVICE_9115_CHECK_INITIAL_STATUS=passing
+          - SERVICE_9115_TAGS=${SERVICE_BLACKBOX_HTTP_TAGS}
+        ports:
+          - 9115
+    grafana:
+        build:
+            context:  ../monitoring/docker/grafana
+            args:
+              - AWS_ACCESS_KEY=${AWS_ACCESS_KEY}
+              - AWS_SECRET_KEY=${AWS_SECRET_KEY}
+              - MYSQL_GRAFANA_USER=${MYSQL_GRAFANA_USER}
+              - MYSQL_GRAFANA_PASSWORD=${MYSQL_GRAFANA_PASSWORD}
+              - MYSQL_GRAFANA_DB=${MYSQL_GRAFANA_DB}
+        environment:
+          - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource
+        labels:
+          - SERVICE_3000_NAME=${ENV}-${APP}-grafana-http
+          - SERVICE_3000_CHECK_TCP=true
+          - SERVICE_3000_CHECK_INITIAL_STATUS=passing
+          - SERVICE_3000_TAGS=${SERVICE_GRAFANA_HTTP_TAGS}
+        ports:
+          - 3000
+        volumes:
+          - grafana:/var/lib/grafana
+        restart: always
+    prometheus:
+        build:
+            context: ../monitoring/docker/prometheus
+            args:
+              - MONITORING_TARGETS_BLACKBOX=${MONITORING_TARGETS_BLACKBOX}
+        labels:
+          - SERVICE_9090_NAME=${ENV}-${APP}-prometheus-http
+          - SERVICE_9090_CHECK_TCP=true
+          - SERVICE_9090_CHECK_INITIAL_STATUS=passing
+          - SERVICE_9090_TAGS=${SERVICE_PROMETHEUS_HTTP_TAGS}
+        networks:
+          - env
+          - node
+        ports:
+          - 9090
+        restart: always
+        volumes:
+          - prometheus:/prometheus
 
 volumes:
     grafana:
     prometheus:
 
 networks:
-  env:
-    external:
-      name: ${DOCKER_NETWORK}
-  node:
-    external:
-      name: node
-  default:
-    external:
-      name: ${DOCKER_NETWORK}
+    env:
+        external:
+            name: ${DOCKER_NETWORK}
+    node:
+        external:
+            name: node
+    default:
+        external:
+            name: ${DOCKER_NETWORK}
 
