@@ -11,18 +11,7 @@ services:
           - apparmor:unconfined
         labels:
           - SERVICE_21_NAME=${ENV}-${APP}-vsftpd-s3-ftp
-          - SERVICE_21_CHECK_TCP=true
-          - SERVICE_21_CHECK_INITIAL_STATUS=passing
           - SERVICE_22_IGNORE=true
           - SERVICE_65000_IGNORE=true
-        ports:
-          - 21:21
-          - 65000:65000
-        restart: always
         network_mode: host
-
-networks:
-    default:
-        external:
-            name: ${DOCKER_NETWORK}
-
+        restart: always

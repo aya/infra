@@ -12,16 +12,18 @@ services:
           - SERVICE_8500_CHECK_INITIAL_STATUS=passing
           - SERVICE_8500_TAGS=${SERVICE_CONSUL_HTTP_TAGS}
           - SERVICE_8600_IGNORE=true
+        networks:
+          - frontend
         ports:
           - 8500
         restart: always
         volumes:
           - consul:/consul/data
     fabio:
+        image: fabiolb/fabio:latest
         command: /fabio -registry.backend "consul" -registry.consul.addr "consul:8500" -proxy.addr ":80,:443;cs=local" -proxy.cs "cs=local;type=file;cert=/certs/${SSL_HOSTNAME}.crt;key=/certs/${SSL_HOSTNAME}.key"
         depends_on:
           - consul
-        image: fabiolb/fabio:latest
         labels:
           - SERVICE_80_NAME=node-infra-fabio-lb-http
           - SERVICE_80_CHECK_TCP=true
@@ -34,6 +36,8 @@ services:
           - SERVICE_9998_CHECK_INITIAL_STATUS=passing
           - SERVICE_9998_TAGS=${SERVICE_FABIO_ADMIN_HTTP_TAGS}
           - SERVICE_9999_IGNORE=true
+        networks:
+          - frontend
         ports:
           - 80:80
           - 443:443
@@ -42,10 +46,12 @@ services:
         volumes:
           - ssl-certs:/certs
     registrator:
+        image: gliderlabs/registrator:latest
         command: -internal -cleanup=true -resync=30 consul://consul:8500
         depends_on:
           - consul
-        image: gliderlabs/registrator:latest
+        networks:
+          - frontend
         restart: always
         volumes:
           - /var/run/docker.sock:/tmp/docker.sock
@@ -55,6 +61,6 @@ volumes:
     ssl-certs:
 
 networks:
-    default:
+    frontend:
         external:
-            name: ${DOCKER_NETWORK}
+            name: node
