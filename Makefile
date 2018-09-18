@@ -1,6 +1,5 @@
 include env.mk
 include def.mk
-include def.*.mk
 include help.mk
 include $(filter-out env.mk def.mk $(wildcard def.*.mk) help.mk,$(wildcard *.mk))
 -include ../subrepo.mk
