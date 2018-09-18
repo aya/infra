@@ -26,15 +26,19 @@ services:
           - SERVICE_9300_NAME=${ENV}-${APP}-elasticsearch-tcp
           - SERVICE_9300_CHECK_TCP=true
           - SERVICE_9300_CHECK_INITIAL_STATUS=passing
+        networks:
+          - backend
+          - frontend
         ports:
           - 9200
           - 9300
         volumes:
           - elasticsearch:/usr/share/elasticsearch/data
+        restart: always
     kibana:
+        image: docker.elastic.co/kibana/kibana:5.3.3
         depends_on:
           - elasticsearch
-        image: docker.elastic.co/kibana/kibana:5.3.3
         environment:
           - ELASTICSEARCH_URL="http://elasticsearch:9200"
         labels:
@@ -42,8 +46,12 @@ services:
           - SERVICE_5601_CHECK_TCP=true
           - SERVICE_5601_CHECK_INITIAL_STATUS=passing
           - SERVICE_5601_TAGS=${SERVICE_KIBANA_HTTP_TAGS}
+        networks:
+          - backend
+          - frontend
         ports:
           - 5601
+        restart: always
     mailcatcher:
         image: 1001pharmadev/mailcatcher
         labels:
@@ -54,29 +62,41 @@ services:
           - SERVICE_1080_CHECK_TCP=true
           - SERVICE_1080_CHECK_INITIAL_STATUS=passing
           - SERVICE_1080_TAGS=${SERVICE_MAILCATCHER_HTTP_TAGS}
+        networks:
+          - backend
+          - frontend
         ports:
           - 1025
           - 1080
+        restart: always
     memcached:
         image: memcached:alpine
         labels:
           - SERVICE_11211_NAME=${ENV}-${APP}-memcached-tcp
           - SERVICE_11211_CHECK_TCP=true
           - SERVICE_11211_CHECK_INITIAL_STATUS=passing
+        networks:
+          - backend
+          - frontend
         ports:
           - 11211
+        restart: always
     mysql:
+        image: mariadb:latest
         environment:
           - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
-        image: mariadb:latest
         labels:
           - SERVICE_3306_NAME=${ENV}-${APP}-mysql-tcp
           - SERVICE_3306_CHECK_TCP=true
           - SERVICE_3306_CHECK_INITIAL_STATUS=passing
+        networks:
+          - backend
+          - frontend
         ports:
           - 3306
         volumes:
           - mysql:/var/lib/mysql
+        restart: always
     rabbitmq:
         image: rabbitmq:management-alpine
         labels:
@@ -91,11 +111,15 @@ services:
           - SERVICE_15672_CHECK_INITIAL_STATUS=passing
           - SERVICE_15672_TAGS=${SERVICE_RABBITMQ_HTTP_TAGS}
           - SERVICE_25672_IGNORE=true
+        networks:
+          - backend
+          - frontend
         ports:
           - 5672
           - 15672
         volumes:
           - rabbitmq:/var/lib/rabbitmq
+        restart: always
     redis:
         image: redis:alpine
         command: redis-server --appendonly yes
@@ -103,40 +127,55 @@ services:
           - SERVICE_6379_NAME=${ENV}-${APP}-redis-tcp
           - SERVICE_6379_CHECK_TCP=true
           - SERVICE_6379_CHECK_INITIAL_STATUS=passing
-        volumes:
-          - redis:/data
+        networks:
+          - backend
+          - frontend
         ports:
           - 6379
+        volumes:
+          - redis:/data
+        restart: always
     ssh-agent:
         image: 1001pharmadev/ssh-agent:latest
+        networks:
+          - backend
         volumes:
           - ssh-agent:/tmp/ssh-agent
+        restart: always
     toggle-api:
+        image: 1001pharmadev/qandidate-toggle-api
         depends_on:
           - redis
-        image: 1001pharmadev/qandidate-toggle-api
+        environment:
+          - TOGGLE__REDIS_DSN=tcp://redis:6379
         labels:
           - SERVICE_80_NAME=${ENV}-${APP}-toggle-api-http
           - SERVICE_80_CHECK_TCP=true
           - SERVICE_80_CHECK_INITIAL_STATUS=passing
           - SERVICE_80_TAGS=${SERVICE_TOGGLE_API_HTTP_TAGS}
-        environment:
-          - TOGGLE__REDIS_DSN=tcp://redis:6379
+        networks:
+          - backend
+          - frontend
         ports:
           - 80
+        restart: always
     toggle-ui:
+        image: 1001pharmadev/qandidate-toggle-ui
         depends_on:
           - toggle-api
-        image: 1001pharmadev/qandidate-toggle-ui
+        environment:
+          - TOGGLE__API_BASE_URL=${TOGGLE__API_BASE_URL}
         labels:
           - SERVICE_80_NAME=${ENV}-${APP}-toggle-ui-http
           - SERVICE_80_CHECK_TCP=true
           - SERVICE_80_CHECK_INITIAL_STATUS=passing
           - SERVICE_80_TAGS=${SERVICE_TOGGLE_UI_HTTP_TAGS}
-        environment:
-          - TOGGLE__API_BASE_URL=${TOGGLE__API_BASE_URL}
+        networks:
+          - backend
+          - frontend
         ports:
           - 80
+        restart: always
 
 volumes:
     elasticsearch:
@@ -146,6 +185,9 @@ volumes:
     ssh-agent:
 
 networks:
-    default:
+    backend:
         external:
             name: ${DOCKER_NETWORK}
+    frontend:
+        external:
+            name: node

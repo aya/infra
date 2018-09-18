@@ -1,8 +1,8 @@
-FROM alpine:latest
+FROM alpine:3.7
 LABEL maintainer "yann.autissier@gmail.com"
-ARG VERSION_PDNS_REC=4.1.3
-ARG VERSION_PDNS_AUTH=4.1.2
-ARG VERSION_PDNS_DNSDIST=1.3.0
+ARG VERSION_PDNS_REC=4.1.4
+ARG VERSION_PDNS_AUTH=4.1.4
+ARG VERSION_PDNS_DNSDIST=1.3.2
 
 RUN apk upgrade --no-cache \
  && apk add --no-cache --virtual build-deps \

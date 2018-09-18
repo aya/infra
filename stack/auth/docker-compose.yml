@@ -18,11 +18,15 @@ services:
           - SERVICE_8989_NAME=${ENV}-${APP}-opendj-dsrepli-tcp
           - SERVICE_8989_CHECK_INITITAL_STATUS=passing
           - SERVICE_8989_CHECK_TCP=true
+        networks:
+          - backend
+          - frontend
         ports:
           - 389
           - 636
           - 4444
           - 8989
+        restart: always
         volumes:
           - opendj:/opt/opendj/data
           - opendj-secrets:/var/secrets/opendj
@@ -32,7 +36,10 @@ volumes:
     opendj-secrets:
 
 networks:
-    default:
+    backend:
         external:
             name: ${DOCKER_NETWORK}
+    frontend:
+        external:
+            name: node
 

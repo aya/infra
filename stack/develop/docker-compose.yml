@@ -20,6 +20,9 @@ services:
           - SERVICE_80_CHECK_TCP=true
           - SERVICE_80_CHECK_INITIAL_STATUS=passing
           - SERVICE_80_TAGS=${SERVICE_REDMINE_HTTP_TAGS}
+        networks:
+          - backend
+          - frontend
         ports:
           - 80
         restart: always
@@ -33,6 +36,9 @@ services:
           - SERVICE_80_CHECK_TCP=true
           - SERVICE_80_CHECK_INITIAL_STATUS=passing
           - SERVICE_80_TAGS=${SERVICE_STATIC_HTTP_TAGS}
+        networks:
+          - backend
+          - frontend
         ports:
           - 80
         restart: always
@@ -44,7 +50,10 @@ volumes:
     static:
 
 networks:
-    default:
+    backend:
         external:
             name: ${DOCKER_NETWORK}
+    frontend:
+        external:
+            name: node
 

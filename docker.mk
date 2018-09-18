@@ -27,7 +27,6 @@ docker-logs: stack docker-up
 docker-network:
 	[ -n "$(shell docker network ls -q --filter name='^$(DOCKER_NETWORK)$$' 2>/dev/null)" ] \
 	  || { echo -n "Creating docker network $(DOCKER_NETWORK) ... " && docker network create $(DOCKER_NETWORK) >/dev/null 2>&1 && echo "done" || echo "ERROR"; }
-	docker ps -q --no-trunc --filter name=node_infra_ |while read docker; do docker inspect $(DOCKER_NETWORK) |grep $${docker} >/dev/null 2>&1 || docker network connect $(DOCKER_NETWORK) $${docker}; done
 
 docker-network-rm:
 	[ -z "$(shell docker network ls -q --filter name='^$(DOCKER_NETWORK)$$' 2>/dev/null)" ] \

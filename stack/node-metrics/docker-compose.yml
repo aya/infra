@@ -9,6 +9,8 @@ services:
           - SERVICE_8080_CHECK_INITIAL_STATUS=passing
           - SERVICE_8080_TAGS=${SERVICE_CADVISOR_EXPORTER_HTTP_TAGS}
           - SERVICE_9200_IGNORE=true
+        networks:
+          - frontend
         ports:
           - 8080
         restart: always
@@ -24,11 +26,13 @@ services:
           - SERVICE_9100_CHECK_TCP=true
           - SERVICE_9100_CHECK_INITIAL_STATUS=passing
           - SERVICE_9100_TAGS=${SERVICE_NODE_EXPORTER_HTTP_TAGS}
+        networks:
+          - frontend
         ports:
           - 9100
         restart: always
 
 networks:
-    default:
+    frontend:
         external:
-            name: ${DOCKER_NETWORK}
+            name: node

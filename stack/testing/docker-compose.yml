@@ -6,12 +6,14 @@ services:
         command: agent
         depends_on:
           - drone-server
-        labels:
-          - SERVICE_3000_IGNORE=true
         environment:
           - DRONE_SERVER=drone-server:9000
           - DRONE_SECRET=${DRONE_SECRET}
           - DRONE_MAX_PROCS=${DRONE_MAX_PROCS}
+        labels:
+          - SERVICE_3000_IGNORE=true
+        networks:
+          - backend
         restart: always
         volumes:
           - /var/run/docker.sock:/var/run/docker.sock
@@ -37,6 +39,9 @@ services:
           - SERVICE_9000_NAME=${ENV}-${APP}-drone-server-grpc
           - SERVICE_9000_CHECK_TCP=true
           - SERVICE_9000_CHECK_INITIAL_STATUS=passing
+        networks:
+          - backend
+          - frontend
         ports:
           - 8000
           - 9000
@@ -48,7 +53,10 @@ volumes:
     drone:
 
 networks:
-    default:
+    backend:
         external:
             name: ${DOCKER_NETWORK}
+    frontend:
+        external:
+            name: node
 
