@@ -1,6 +1,6 @@
 docker-openssl:
-	docker run --rm --mount source=$(COMPOSE_PROJECT_NAME)_ssl-certs,target=/certs alpine:latest [ -f /certs/$(SSL_HOSTNAME).crt -a -f /certs/$(SSL_HOSTNAME).key ] \
-	  || docker run --rm -e COMMON_NAME=$(SSL_HOSTNAME) -e KEY_NAME=$(SSL_HOSTNAME) --mount source=$(COMPOSE_PROJECT_NAME)_ssl-certs,target=/certs centurylink/openssl:latest
+	docker run --rm --mount source=node_infra_ssl-certs,target=/certs alpine:latest [ -f /certs/$(SSL_HOSTNAME).crt -a -f /certs/$(SSL_HOSTNAME).key ] \
+	  || docker run --rm -e COMMON_NAME=$(SSL_HOSTNAME) -e KEY_NAME=$(SSL_HOSTNAME) --mount source=node_infra_ssl-certs,target=/certs centurylink/openssl:latest
 
 node: docker-openssl node-network node-up
 

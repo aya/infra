@@ -5,10 +5,7 @@ docker-build: stack
 	$(call docker-compose,build --pull $(SERVICE))
 
 docker-down: stack
-	$(call docker-compose,down)
-
-docker-down-rm: stack
-	$(call docker-compose,down --rmi local -v)
+	$(call docker-compose,down $(DOCKER_COMPOSE_DOWN_OPTIONS))
 
 docker-config: stack
 	$(call docker-compose,config)

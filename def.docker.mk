@@ -2,6 +2,7 @@ COMPOSE_VERSION                 ?= 1.22.0
 COMPOSE_PROJECT_NAME            ?= $(ENV)_$(APP)
 DOCKER                          ?= true
 DOCKER_BUILD_TARGET             ?= local
+DOCKER_COMPOSE_DOWN_OPTIONS     ?=
 DOCKER_NETWORK                  ?= $(ENV)
 
 ifeq ($(DRONE), true)

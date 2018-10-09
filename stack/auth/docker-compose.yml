@@ -6,16 +6,16 @@ services:
         environment:
           - OPENDJ_JAVA_ARGS=-server -Xmx512m -XX:+UseG1GC
         labels:
-          - SERVICE_389_NAME=${ENV}-${APP}-opendj-ldap
+          - SERVICE_389_NAME=${COMPOSE_PROJECT_NAME}_opendj-389
           - SERVICE_389_CHECK_INITITAL_STATUS=passing
           - SERVICE_389_CHECK_TCP=true
-          - SERVICE_636_NAME=${ENV}-${APP}-opendj-ldaps
+          - SERVICE_636_NAME=${COMPOSE_PROJECT_NAME}_opendj-636
           - SERVICE_636_CHECK_INITITAL_STATUS=passing
           - SERVICE_636_CHECK_TCP=true
-          - SERVICE_4444_NAME=${ENV}-${APP}-opendj-admin-tcp
+          - SERVICE_4444_NAME=${COMPOSE_PROJECT_NAME}_opendj-4444
           - SERVICE_4444_CHECK_INITITAL_STATUS=passing
           - SERVICE_4444_CHECK_TCP=true
-          - SERVICE_8989_NAME=${ENV}-${APP}-opendj-dsrepli-tcp
+          - SERVICE_8989_NAME=${COMPOSE_PROJECT_NAME}_opendj-8989
           - SERVICE_8989_CHECK_INITITAL_STATUS=passing
           - SERVICE_8989_CHECK_TCP=true
         networks:

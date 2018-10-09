@@ -2,9 +2,9 @@
 # STACK
 include stack/*.mk
 
-bootstrap-docker: docker-network docker-sysctl
+bootstrap-docker: docker-network
 
-stack: $(patsubst %,stack-%,$(STACK))
+stack: docker-sysctl $(patsubst %,stack-%,$(STACK))
 	$(call .env)
 	$(eval COMPOSE_FILE:=$(patsubst %,-f %,$(COMPOSE_FILE)))
 ifneq (,$(filter true,$(DOCKER) $(DRONE)))
