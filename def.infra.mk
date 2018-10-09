@@ -1,9 +1,8 @@
-APP                             ?= subrepo
+APP                             ?= $(SUBREPO)
 CMDS                            ?= ansible ansible-playbook aws docker-exec exec node-exec openstack packer
 COMPOSE_IGNORE_ORPHANS          ?= true
-CONTEXT                         ?= $(shell awk 'BEGIN {FS="="}; {print $$1}' .env.dist 2>/dev/null) COMPOSE_PROJECT_NAME ENV_SYSTEM SUBREPO
+CONTEXT                         += COMPOSE_PROJECT_NAME
 DOCKER_SERVICE                  ?= mysql
-ENV_SYSTEM                      ?= $(shell printenv |awk -F '=' 'NR == FNR { A[$$1]; next } ($$1 in A)' .env.dist - 2>/dev/null |awk '{print} END {print "APP=$(APP)\nBRANCH=$(BRANCH)\nCOMMIT=$(COMMIT)\nCOMPOSE_IGNORE_ORPHANS=$(COMPOSE_IGNORE_ORPHANS)\nENV=$(ENV)\nTAG=$(TAG)"}' |awk -F "=" '!seen[$$1]++')
 REMOTE                          ?= ssh://git@github.com/1001Pharmacies/$(SUBREPO)
 STACK                           ?= services
 STACK_NODE                      ?= node

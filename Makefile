@@ -25,7 +25,7 @@ clean-app:
 
 clean-env:
 	rm -i .env || true
-	rm -i stack/*/.env || true
+	rm -i stack/*/.env || true
 
 ##
 # BUILD
