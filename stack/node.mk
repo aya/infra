@@ -5,4 +5,4 @@ docker-openssl:
 node: docker-openssl node-network node-up
 
 node-%: bootstrap
-	DOCKER_NETWORK=node COMPOSE_PROJECT_NAME=node_infra $(MAKE) docker-$* STACK="$(STACK_NODE)" DOCKER_NETWORK=node ARGS=$(ARGS)
+	DOCKER_NETWORK=node COMPOSE_IGNORE_ORPHANS=$(COMPOSE_IGNORE_ORPHANS) COMPOSE_PROJECT_NAME=node_infra $(MAKE) docker-$* STACK="$(STACK_NODE)" DOCKER_NETWORK=node COMPOSE_PROJECT_NAME=node_infra ARGS=$(ARGS)

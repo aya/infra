@@ -1,15 +1,16 @@
-APP                             ?= $(SUBREPO)
 CMDS                            ?= ansible ansible-playbook aws docker-exec exec node-exec openstack packer
 COMPOSE_IGNORE_ORPHANS          ?= true
+COMPOSE_PROJECT_NAME            := $(ENV)_$(APP)
 CONTEXT                         += COMPOSE_PROJECT_NAME
 DOCKER_SERVICE                  ?= mysql
 REMOTE                          ?= ssh://git@github.com/1001Pharmacies/$(SUBREPO)
 STACK                           ?= services
 STACK_NODE                      ?= node
-SUBREPO                         ?= $(notdir $(CURDIR))
 
-ifneq (,$(filter true,$(DOCKER) $(DRONE)))
-ENV_SYSTEM                      := $(patsubst %,-e %,$(ENV_SYSTEM))
+ifneq (,$(filter true,$(DRONE)))
+# force ENV_SYSTEM to refresh COMPOSE_PROJECT_NAME value with $(ENV)_$(APP) instead of $(ENV)_$(ENV_SUFFIX)_$(APP)
+ENV_SYSTEM                      := $(shell printenv |awk -F '=' 'NR == FNR { A[$$1]; next } ($$1 in A)' .env.dist - 2>/dev/null |awk '{print} END {print "APP=$(APP)\nBRANCH=$(BRANCH)\nCOMMIT=$(COMMIT)\nCOMPOSE_IGNORE_ORPHANS=$(COMPOSE_IGNORE_ORPHANS)\nCOMPOSE_PROJECT_NAME=$(COMPOSE_PROJECT_NAME)\nENV=$(ENV)\nTAG=$(TAG)"}' |awk -F "=" '!seen[$$1]++')
+SSH_DIR                         := /drone/src/parameters/tests/.ssh
 endif
 
 ifeq ($(DOCKER), true)
