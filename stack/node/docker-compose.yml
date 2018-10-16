@@ -62,5 +62,5 @@ volumes:
 
 networks:
     frontend:
-        external:
-            name: node
+        external: true
+        name: node

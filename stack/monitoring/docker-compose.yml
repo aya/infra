@@ -79,8 +79,8 @@ volumes:
 
 networks:
     backend:
-        external:
-            name: ${DOCKER_NETWORK}
+        external: true
+        name: ${DOCKER_NETWORK}
     frontend:
-        external:
-            name: node
+        external: true
+        name: node
