@@ -7,9 +7,13 @@ REMOTE                          ?= ssh://git@github.com/1001Pharmacies/$(SUBREPO
 STACK                           ?= services
 STACK_NODE                      ?= node
 
-ifneq (,$(filter true,$(DRONE)))
 # force ENV_SYSTEM to refresh COMPOSE_PROJECT_NAME value with $(ENV)_$(APP) instead of $(ENV)_$(ENV_SUFFIX)_$(APP)
 ENV_SYSTEM                      := $(shell printenv |awk -F '=' 'NR == FNR { A[$$1]; next } ($$1 in A)' .env.dist - 2>/dev/null |awk '{print} END {print "APP=$(APP)\nBRANCH=$(BRANCH)\nCOMMIT=$(COMMIT)\nCOMPOSE_IGNORE_ORPHANS=$(COMPOSE_IGNORE_ORPHANS)\nCOMPOSE_PROJECT_NAME=$(COMPOSE_PROJECT_NAME)\nENV=$(ENV)\nTAG=$(TAG)"}' |awk -F "=" '!seen[$$1]++')
+ifneq (,$(filter true,$(DOCKER)))
+ENV_SYSTEM                      := $(patsubst %,-e %,$(ENV_SYSTEM))
+endif
+
+ifneq (,$(filter true,$(DRONE)))
 SSH_DIR                         := /drone/src/parameters/tests/.ssh
 endif
 
