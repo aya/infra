@@ -1,10 +1,26 @@
+ifneq (,$(filter true,$(DRONE)))
+ENV_SUFFIX                      := $(DRONE_BUILD_NUMBER)
+COMPOSE_PROJECT_NAME            := $(ENV)_$(ENV_SUFFIX)_$(APP)
+endif
+
+APP                             ?= $(SUBREPO)
 BRANCH                          ?= $(shell git rev-parse --abbrev-ref HEAD)
 COMMIT                          ?= $(shell git rev-parse HEAD)
+CONTEXT                         ?= $(shell awk 'BEGIN {FS="="}; {print $$1}' .env.dist 2>/dev/null) BRANCH COMMIT TAG
+COMPOSE_PROJECT_NAME            ?= $(ENV)_$(APP)
 DEBUG                           ?= false
 DRONE                           ?= false
 ENV                             ?= local
 ENV_FILE                        ?= .env
+ENV_RESET                       ?= false
+ENV_SYSTEM                      ?= $(shell printenv |awk -F '=' 'NR == FNR { A[$$1]; next } ($$1 in A)' .env.dist - 2>/dev/null |awk '{print} END {print "APP=$(APP)\nBRANCH=$(BRANCH)\nCOMMIT=$(COMMIT)\nCOMPOSE_IGNORE_ORPHANS=$(COMPOSE_IGNORE_ORPHANS)\nCOMPOSE_PROJECT_NAME=$(COMPOSE_PROJECT_NAME)\nENV=$(ENV)\nTAG=$(TAG)"}' |awk -F "=" '!seen[$$1]++')
+SUBREPO                         ?= $(notdir $(CURDIR))
 TAG                             ?= $(shell git tag -l --points-at HEAD)
+
+ifneq (,$(filter true,$(DOCKER)))
+ENV_SYSTEM                      := $(patsubst %,-e %,$(ENV_SYSTEM))
+ENV_FILE                        := $(patsubst %,--env-file %,$(ENV_FILE))
+endif
 
 include def.*.mk
 

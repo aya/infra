@@ -2,16 +2,12 @@ version: '3.6'
 
 services:
     vsftpd-s3:
-        build: ../ftp/docker/vsftpd-s3
+        build: ../node-ftp/docker/vsftpd-s3
         cap_add:
           - sys_admin
         devices:
           - /dev/fuse
         security_opt:
           - apparmor:unconfined
-        labels:
-          - SERVICE_21_NAME=${ENV}-${APP}-vsftpd-s3-ftp
-          - SERVICE_22_IGNORE=true
-          - SERVICE_65000_IGNORE=true
         network_mode: host
         restart: always

@@ -7,36 +7,37 @@ services:
         depends_on:
           - drone-server
         environment:
-          - DRONE_SERVER=drone-server:9000
-          - DRONE_SECRET=${DRONE_SECRET}
           - DRONE_MAX_PROCS=${DRONE_MAX_PROCS}
+          - DRONE_SECRET=${DRONE_SECRET}
+          - DRONE_SERVER=drone-server:9000
         labels:
           - SERVICE_3000_IGNORE=true
         networks:
           - backend
+          - frontend
         restart: always
         volumes:
           - /var/run/docker.sock:/var/run/docker.sock
     drone-server:
         image: drone/drone:latest
         environment:
-          - DRONE_OPEN=true
-          - DRONE_ORGS=${DRONE_ORGS}
-          - DRONE_HOST=${DRONE_HOST}
           - DRONE_ADMIN=${DRONE_ADMIN}
           - DRONE_GITHUB=true
           - DRONE_GITHUB_CLIENT=${DRONE_GITHUB_CLIENT}
           - DRONE_GITHUB_PRIVATE_MODE=${DRONE_GITHUB_PRIVATE_MODE}
           - DRONE_GITHUB_SECRET=${DRONE_GITHUB_SECRET}
+          - DRONE_HOST=${DRONE_HOST}
+          - DRONE_OPEN=true
+          - DRONE_ORGS=${DRONE_ORGS}
           - DRONE_SECRET=${DRONE_SECRET}
         labels:
           - SERVICE_80_IGNORE=true
           - SERVICE_443_IGNORE=true
-          - SERVICE_8000_NAME=${ENV}-${APP}-drone-server-http
+          - SERVICE_8000_NAME=${COMPOSE_PROJECT_NAME}_drone-server-8000
           - SERVICE_8000_CHECK_TCP=true
           - SERVICE_8000_CHECK_INITIAL_STATUS=passing
           - SERVICE_8000_TAGS=${SERVICE_DRONE_HTTP_TAGS}
-          - SERVICE_9000_NAME=${ENV}-${APP}-drone-server-grpc
+          - SERVICE_9000_NAME=${COMPOSE_PROJECT_NAME}_drone-server-9000
           - SERVICE_9000_CHECK_TCP=true
           - SERVICE_9000_CHECK_INITIAL_STATUS=passing
         networks:
@@ -54,9 +55,8 @@ volumes:
 
 networks:
     backend:
-        external:
-            name: ${DOCKER_NETWORK}
+        external: true
+        name: ${DOCKER_NETWORK}
     frontend:
-        external:
-            name: node
-
+        external: true
+        name: node

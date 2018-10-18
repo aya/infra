@@ -7,7 +7,7 @@ services:
           - SERVICE_8300_IGNORE=true
           - SERVICE_8301_IGNORE=true
           - SERVICE_8302_IGNORE=true
-          - SERVICE_8500_NAME=node-infra-consul-admin-http
+          - SERVICE_8500_NAME=${COMPOSE_PROJECT_NAME}_consul-8500
           - SERVICE_8500_CHECK_TCP=true
           - SERVICE_8500_CHECK_INITIAL_STATUS=passing
           - SERVICE_8500_TAGS=${SERVICE_CONSUL_HTTP_TAGS}
@@ -15,7 +15,7 @@ services:
         networks:
           - frontend
         ports:
-          - 8500
+          - 8500:8500
         restart: always
         volumes:
           - consul:/consul/data
@@ -25,13 +25,13 @@ services:
         depends_on:
           - consul
         labels:
-          - SERVICE_80_NAME=node-infra-fabio-lb-http
+          - SERVICE_80_NAME=${COMPOSE_PROJECT_NAME}_fabio-80
           - SERVICE_80_CHECK_TCP=true
           - SERVICE_80_CHECK_INITIAL_STATUS=passing
-          - SERVICE_443_NAME=node-infra-fabio-lb-https
+          - SERVICE_443_NAME=${COMPOSE_PROJECT_NAME}_fabio-443
           - SERVICE_443_CHECK_TCP=true
           - SERVICE_443_CHECK_INITIAL_STATUS=passing
-          - SERVICE_9998_NAME=node-infra-fabio-admin-http
+          - SERVICE_9998_NAME=${COMPOSE_PROJECT_NAME}_fabio-9998
           - SERVICE_9998_CHECK_TCP=true
           - SERVICE_9998_CHECK_INITIAL_STATUS=passing
           - SERVICE_9998_TAGS=${SERVICE_FABIO_ADMIN_HTTP_TAGS}
@@ -47,7 +47,7 @@ services:
           - ssl-certs:/certs
     registrator:
         image: gliderlabs/registrator:latest
-        command: -internal -cleanup=true -resync=30 consul://consul:8500
+        command: -internal -cleanup=true -deregister always -resync=30 consul://consul:8500
         depends_on:
           - consul
         networks:
@@ -62,5 +62,5 @@ volumes:
 
 networks:
     frontend:
-        external:
-            name: node
+        external: true
+        name: node

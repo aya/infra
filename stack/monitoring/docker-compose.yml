@@ -7,7 +7,7 @@ services:
             args:
               - SLACK_WEBHOOK_ID=${SLACK_WEBHOOK_ID}
         labels:
-          - SERVICE_9093_NAME=${ENV}-${APP}-alertmanager-http
+          - SERVICE_9093_NAME=${COMPOSE_PROJECT_NAME}_alertmanager-9093
           - SERVICE_9093_CHECK_TCP=true
           - SERVICE_9093_CHECK_INITIAL_STATUS=passing
           - SERVICE_9093_TAGS=${SERVICE_ALERTMANAGER_HTTP_TAGS}
@@ -20,7 +20,7 @@ services:
     blackbox:
         image: quay.io/prometheus/blackbox-exporter:latest
         labels:
-          - SERVICE_9115_NAME=${ENV}-${APP}-blackbox-http
+          - SERVICE_9115_NAME=${COMPOSE_PROJECT_NAME}_blackbox-9115
           - SERVICE_9115_CHECK_TCP=true
           - SERVICE_9115_CHECK_INITIAL_STATUS=passing
           - SERVICE_9115_TAGS=${SERVICE_BLACKBOX_HTTP_TAGS}
@@ -42,7 +42,7 @@ services:
         environment:
           - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource
         labels:
-          - SERVICE_3000_NAME=${ENV}-${APP}-grafana-http
+          - SERVICE_3000_NAME=${COMPOSE_PROJECT_NAME}_grafana-3000
           - SERVICE_3000_CHECK_TCP=true
           - SERVICE_3000_CHECK_INITIAL_STATUS=passing
           - SERVICE_3000_TAGS=${SERVICE_GRAFANA_HTTP_TAGS}
@@ -60,7 +60,7 @@ services:
             args:
               - MONITORING_TARGETS_BLACKBOX=${MONITORING_TARGETS_BLACKBOX}
         labels:
-          - SERVICE_9090_NAME=${ENV}-${APP}-prometheus-http
+          - SERVICE_9090_NAME=${COMPOSE_PROJECT_NAME}_prometheus-9090
           - SERVICE_9090_CHECK_TCP=true
           - SERVICE_9090_CHECK_INITIAL_STATUS=passing
           - SERVICE_9090_TAGS=${SERVICE_PROMETHEUS_HTTP_TAGS}
@@ -79,9 +79,8 @@ volumes:
 
 networks:
     backend:
-        external:
-            name: ${DOCKER_NETWORK}
+        external: true
+        name: ${DOCKER_NETWORK}
     frontend:
-        external:
-            name: node
-
+        external: true
+        name: node
