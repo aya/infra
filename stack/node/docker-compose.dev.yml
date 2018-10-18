@@ -4,20 +4,3 @@ services:
     consul:
         environment:
             CONSUL_LOCAL_CONFIG: '{"log_level": "warn"}'
-    squid:
-        build: ../node/docker/squid
-        environment:
-          - DISK_CACHE_SIZE=5000
-          - MAX_CACHE_OBJECT=1000
-        network_mode: host
-        restart: always
-        volumes:
-          - squid:/var/cache/squid3
-    transparent-proxy:
-        build: ../node/docker/iptables
-        network_mode: host
-        restart: always
-        privileged: true
-
-volumes:
-    squid:

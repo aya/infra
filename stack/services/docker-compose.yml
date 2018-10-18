@@ -19,11 +19,11 @@ services:
           - http.cors.allow-origin="*"
           - http.cors.allow-headers=X-Requested-With,X-Auth-Token,Content-Type,Content-Length
         labels:
-          - SERVICE_9200_NAME=${ENV}-${APP}-elasticsearch-http
+          - SERVICE_9200_NAME=${COMPOSE_PROJECT_NAME}_elasticsearch-9200
           - SERVICE_9200_CHECK_TCP=true
           - SERVICE_9200_CHECK_INITIAL_STATUS=passing
           - SERVICE_9200_TAGS=${SERVICE_ELASTICSEARCH_HTTP_TAGS}
-          - SERVICE_9300_NAME=${ENV}-${APP}-elasticsearch-tcp
+          - SERVICE_9300_NAME=${COMPOSE_PROJECT_NAME}_elasticsearch-9300
           - SERVICE_9300_CHECK_TCP=true
           - SERVICE_9300_CHECK_INITIAL_STATUS=passing
         networks:
@@ -42,7 +42,7 @@ services:
         environment:
           - ELASTICSEARCH_URL="http://elasticsearch:9200"
         labels:
-          - SERVICE_5601_NAME=${ENV}-${APP}-kibana-http
+          - SERVICE_5601_NAME=${COMPOSE_PROJECT_NAME}_kibana-5601
           - SERVICE_5601_CHECK_TCP=true
           - SERVICE_5601_CHECK_INITIAL_STATUS=passing
           - SERVICE_5601_TAGS=${SERVICE_KIBANA_HTTP_TAGS}
@@ -55,10 +55,10 @@ services:
     mailcatcher:
         image: 1001pharmadev/mailcatcher
         labels:
-          - SERVICE_1025_NAME=${ENV}-${APP}-mailcatcher-smtp
+          - SERVICE_1025_NAME=${COMPOSE_PROJECT_NAME}_mailcatcher-1025
           - SERVICE_1025_CHECK_TCP=true
           - SERVICE_1025_CHECK_INITIAL_STATUS=passing
-          - SERVICE_1080_NAME=${ENV}-${APP}-mailcatcher-http
+          - SERVICE_1080_NAME=${COMPOSE_PROJECT_NAME}_mailcatcher-1080
           - SERVICE_1080_CHECK_TCP=true
           - SERVICE_1080_CHECK_INITIAL_STATUS=passing
           - SERVICE_1080_TAGS=${SERVICE_MAILCATCHER_HTTP_TAGS}
@@ -72,7 +72,7 @@ services:
     memcached:
         image: memcached:alpine
         labels:
-          - SERVICE_11211_NAME=${ENV}-${APP}-memcached-tcp
+          - SERVICE_11211_NAME=${COMPOSE_PROJECT_NAME}_memcached-11211
           - SERVICE_11211_CHECK_TCP=true
           - SERVICE_11211_CHECK_INITIAL_STATUS=passing
         networks:
@@ -86,7 +86,7 @@ services:
         environment:
           - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
         labels:
-          - SERVICE_3306_NAME=${ENV}-${APP}-mysql-tcp
+          - SERVICE_3306_NAME=${COMPOSE_PROJECT_NAME}_mysql-3306
           - SERVICE_3306_CHECK_TCP=true
           - SERVICE_3306_CHECK_INITIAL_STATUS=passing
         networks:
@@ -102,11 +102,11 @@ services:
         labels:
           - SERVICE_4369_IGNORE=true
           - SERVICE_5671_IGNORE=true
-          - SERVICE_5672_NAME=${ENV}-${APP}-rabbitmq-amqp
+          - SERVICE_5672_NAME=${COMPOSE_PROJECT_NAME}_rabbitmq-5672
           - SERVICE_5672_CHECK_TCP=true
           - SERVICE_5672_CHECK_INITIAL_STATUS=passing
           - SERVICE_15671_IGNORE=true
-          - SERVICE_15672_NAME=${ENV}-${APP}-rabbitmq-http
+          - SERVICE_15672_NAME=${COMPOSE_PROJECT_NAME}_rabbitmq-15672
           - SERVICE_15672_CHECK_TCP=true
           - SERVICE_15672_CHECK_INITIAL_STATUS=passing
           - SERVICE_15672_TAGS=${SERVICE_RABBITMQ_HTTP_TAGS}
@@ -124,7 +124,7 @@ services:
         image: redis:alpine
         command: redis-server --appendonly yes
         labels:
-          - SERVICE_6379_NAME=${ENV}-${APP}-redis-tcp
+          - SERVICE_6379_NAME=${COMPOSE_PROJECT_NAME}_redis-6379
           - SERVICE_6379_CHECK_TCP=true
           - SERVICE_6379_CHECK_INITIAL_STATUS=passing
         networks:
@@ -149,7 +149,7 @@ services:
         environment:
           - TOGGLE__REDIS_DSN=tcp://redis:6379
         labels:
-          - SERVICE_80_NAME=${ENV}-${APP}-toggle-api-http
+          - SERVICE_80_NAME=${COMPOSE_PROJECT_NAME}_toggle-api-80
           - SERVICE_80_CHECK_TCP=true
           - SERVICE_80_CHECK_INITIAL_STATUS=passing
           - SERVICE_80_TAGS=${SERVICE_TOGGLE_API_HTTP_TAGS}
@@ -166,7 +166,7 @@ services:
         environment:
           - TOGGLE__API_BASE_URL=${TOGGLE__API_BASE_URL}
         labels:
-          - SERVICE_80_NAME=${ENV}-${APP}-toggle-ui-http
+          - SERVICE_80_NAME=${COMPOSE_PROJECT_NAME}_toggle-ui-80
           - SERVICE_80_CHECK_TCP=true
           - SERVICE_80_CHECK_INITIAL_STATUS=passing
           - SERVICE_80_TAGS=${SERVICE_TOGGLE_UI_HTTP_TAGS}
@@ -186,8 +186,8 @@ volumes:
 
 networks:
     backend:
-        external:
-            name: ${DOCKER_NETWORK}
+        external: true
+        name: ${DOCKER_NETWORK}
     frontend:
-        external:
-            name: node
+        external: true
+        name: node
