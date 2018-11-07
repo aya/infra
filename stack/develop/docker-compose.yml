@@ -16,7 +16,7 @@ services:
           - SMTP_PASS=${SMTP_PASS}
           - TZ=Europe/Paris
         labels:
-          - SERVICE_80_NAME=${COMPOSE_PROJECT_NAME}_redmine-80
+          - SERVICE_80_NAME=${COMPOSE_SERVICE_NAME}-redmine-80
           - SERVICE_80_CHECK_TCP=true
           - SERVICE_80_CHECK_INITIAL_STATUS=passing
           - SERVICE_80_TAGS=${SERVICE_REDMINE_HTTP_TAGS}
@@ -33,7 +33,7 @@ services:
         image: nginx:alpine
         command: /bin/sh -c "sed -i 's|index  index.html index.htm;|index  index.html index.htm;\n        autoindex on;|' /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"
         labels:
-          - SERVICE_80_NAME=${COMPOSE_PROJECT_NAME}_static-80
+          - SERVICE_80_NAME=${COMPOSE_SERVICE_NAME}-static-80
           - SERVICE_80_CHECK_TCP=true
           - SERVICE_80_CHECK_INITIAL_STATUS=passing
           - SERVICE_80_TAGS=${SERVICE_STATIC_HTTP_TAGS}

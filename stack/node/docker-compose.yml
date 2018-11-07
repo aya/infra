@@ -7,7 +7,7 @@ services:
           - SERVICE_8300_IGNORE=true
           - SERVICE_8301_IGNORE=true
           - SERVICE_8302_IGNORE=true
-          - SERVICE_8500_NAME=${COMPOSE_PROJECT_NAME}_consul-8500
+          - SERVICE_8500_NAME=${COMPOSE_SERVICE_NAME}-consul-8500
           - SERVICE_8500_CHECK_TCP=true
           - SERVICE_8500_CHECK_INITIAL_STATUS=passing
           - SERVICE_8500_TAGS=${SERVICE_CONSUL_HTTP_TAGS}
@@ -25,13 +25,13 @@ services:
         depends_on:
           - consul
         labels:
-          - SERVICE_80_NAME=${COMPOSE_PROJECT_NAME}_fabio-80
+          - SERVICE_80_NAME=${COMPOSE_SERVICE_NAME}-fabio-80
           - SERVICE_80_CHECK_TCP=true
           - SERVICE_80_CHECK_INITIAL_STATUS=passing
-          - SERVICE_443_NAME=${COMPOSE_PROJECT_NAME}_fabio-443
+          - SERVICE_443_NAME=${COMPOSE_SERVICE_NAME}-fabio-443
           - SERVICE_443_CHECK_TCP=true
           - SERVICE_443_CHECK_INITIAL_STATUS=passing
-          - SERVICE_9998_NAME=${COMPOSE_PROJECT_NAME}_fabio-9998
+          - SERVICE_9998_NAME=${COMPOSE_SERVICE_NAME}-fabio-9998
           - SERVICE_9998_CHECK_TCP=true
           - SERVICE_9998_CHECK_INITIAL_STATUS=passing
           - SERVICE_9998_TAGS=${SERVICE_FABIO_ADMIN_HTTP_TAGS}

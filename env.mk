@@ -1,4 +1,4 @@
-.env:
+.env: .env.dist
 	$(call .env)
 
 -include .env

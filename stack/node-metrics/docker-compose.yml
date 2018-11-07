@@ -4,7 +4,7 @@ services:
     cadvisor-exporter:
         image: google/cadvisor
         labels:
-          - SERVICE_8080_NAME=${COMPOSE_PROJECT_NAME}_cadvisor-exporter-8080
+          - SERVICE_8080_NAME=${COMPOSE_SERVICE_NAME}-cadvisor-exporter-8080
           - SERVICE_8080_CHECK_TCP=true
           - SERVICE_8080_CHECK_INITIAL_STATUS=passing
           - SERVICE_8080_TAGS=${SERVICE_CADVISOR_EXPORTER_HTTP_TAGS}
@@ -22,7 +22,7 @@ services:
     node-exporter:
         image: prom/node-exporter
         labels:
-          - SERVICE_9100_NAME=${COMPOSE_PROJECT_NAME}_node-exporter-9100
+          - SERVICE_9100_NAME=${COMPOSE_SERVICE_NAME}-node-exporter-9100
           - SERVICE_9100_CHECK_TCP=true
           - SERVICE_9100_CHECK_INITIAL_STATUS=passing
           - SERVICE_9100_TAGS=${SERVICE_NODE_EXPORTER_HTTP_TAGS}
