@@ -1,6 +1,7 @@
 COMPOSE_VERSION                 ?= 1.22.0
 COMPOSE_PROJECT_NAME            ?= $(ENV)_$(APP)
 COMPOSE_SERVICE_NAME            ?= $(ENV)-$(APP)
+DOCKER_BUILD_ARGS               ?=
 DOCKER_BUILD_TARGET             ?= local
 DOCKER_COMPOSE_DOWN_OPTIONS     ?=
 DOCKER_IMAGE_BASE               ?= $(USER)/base:$(ENV)
@@ -9,6 +10,10 @@ DOCKER_RUN_OPTIONS              ?= --rm -it
 DOCKER_RUN_VOLUME               ?= -v $$PWD:$$PWD
 DOCKER_RUN_WORKDIR              ?= -w $$PWD
 DOCKER_SSH_AGENT                ?=
+
+ifneq ($(DOCKER_BUILD_TARGET), local)
+DOCKER_BUILD_ARGS               += BRANCH=$(BRANCH) COMMIT=$(COMMIT) TAG=$(TAG)
+endif
 
 ifeq ($(DOCKER), true)
 
