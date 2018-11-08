@@ -2,7 +2,7 @@
 # DOCKER
 
 docker-build: stack
-	$(call docker-compose,build --pull $(SERVICE))
+	$(call docker-compose,build $(patsubst %,--build-arg %,$(DOCKER_BUILD_ARGS)) $(SERVICE))
 
 docker-down: stack
 	$(call docker-compose,down $(DOCKER_COMPOSE_DOWN_OPTIONS))
@@ -38,7 +38,7 @@ docker-ps: stack
 	$(call docker-compose,ps)
 
 docker-rebuild: stack
-	$(call docker-compose,build --pull --no-cache $(SERVICE))
+	$(call docker-compose,build $(patsubst %,--build-arg %,$(DOCKER_BUILD_ARGS)) --pull --no-cache $(SERVICE))
 
 docker-recreate: stack docker-rm docker-up
 
