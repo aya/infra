@@ -7,6 +7,10 @@ services:
           - sys_admin
         devices:
           - /dev/fuse
+        environment:
+          - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+          - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+          - FTPD_USERS=${FTPD_USERS}
         security_opt:
           - apparmor:unconfined
         network_mode: host

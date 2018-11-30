@@ -135,13 +135,6 @@ services:
         volumes:
           - redis:/data
         restart: always
-    ssh-agent:
-        image: 1001pharmadev/ssh-agent:latest
-        networks:
-          - backend
-        volumes:
-          - ssh-agent:/tmp/ssh-agent
-        restart: always
     toggle-api:
         image: 1001pharmadev/qandidate-toggle-api
         depends_on:
@@ -182,7 +175,6 @@ volumes:
     mysql:
     rabbitmq:
     redis:
-    ssh-agent:
 
 networks:
     backend:
