@@ -1,0 +1,60 @@
+version: '3.6'
+
+services:
+    exec:
+        build:
+            args:
+              - APP=${APP}
+              - GID=${GID}
+              - TARGET=${DOCKER_BUILD_TARGET}
+              - UID=${UID}
+              - USER=${USER}
+            context: .
+            dockerfile: docker/exec/Dockerfile
+            target: ${DOCKER_BUILD_TARGET}
+        command: tail -f /dev/null
+        depends_on:
+          - ssh-agent
+        environment:
+          - ENV=${ENV}
+          - SSH_AUTH_SOCK=/tmp/ssh-agent/socket
+        image: ${DOCKER_IMAGE_REPO}/${APP}/exec:${DOCKER_IMAGE_TAG}
+        networks:
+          - backend
+        volumes:
+          - ssh-agent:/tmp/ssh-agent:ro
+          - ${MONOREPO_DIR}:${MONOREPO_DIR}:cached
+        restart: always
+        working_dir: ${MONOREPO_DIR}
+    ssh-agent:
+        build:
+            args:
+              - APP=${APP}
+              - GID=${GID}
+              - TARGET=${DOCKER_BUILD_TARGET}
+              - UID=${UID}
+              - USER=${USER}
+            context: .
+            dockerfile: docker/ssh-agent/Dockerfile
+            target: ${DOCKER_BUILD_TARGET}
+        environment:
+          - ENV=${ENV}
+        image: ${DOCKER_IMAGE_REPO}/${APP}/ssh-agent:${DOCKER_IMAGE_TAG}
+        networks:
+          - backend
+        volumes:
+          - ssh-agent:/tmp/ssh-agent
+        restart: always
+
+volumes:
+    ssh-agent:
+        driver: local
+        driver_opts:
+            type: tmpfs
+            device: tmpfs
+            o: uid=${UID}
+
+networks:
+    backend:
+        external: true
+        name: ${DOCKER_NETWORK}

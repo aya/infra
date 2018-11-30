@@ -1,15 +1,11 @@
-CMDS                            ?= ansible ansible-playbook aws docker-exec exec node-exec openstack packer
+CMDS                            ?= ansible ansible-playbook aws base-exec docker-exec exec node-exec openstack packer
 COMPOSE_IGNORE_ORPHANS          ?= true
 CONTEXT                         += COMPOSE_PROJECT_NAME
 DOCKER_SERVICE                  ?= mysql
 REMOTE                          ?= ssh://git@github.com/1001Pharmacies/$(SUBREPO)
 STACK                           ?= services
+STACK_BASE                      ?= base
 STACK_NODE                      ?= node
-
-ifneq (,$(filter true,$(DRONE)))
-# force SSH_DIR
-SSH_DIR                         := /drone/src/parameters/tests/.ssh
-endif
 
 ifeq ($(DOCKER), true)
 define ansible

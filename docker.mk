@@ -1,6 +1,13 @@
 ##
 # DOCKER
 
+docker-base:
+ifneq ($(wildcard ../infra),)
+ifneq (,$(filter $(MAKECMDGOALS),start up))
+	ENV=$(ENV) $(MAKE) -C ../infra $(patsubst %,base-%,$(MAKECMDGOALS)) STACK_BASE=base || true
+endif
+endif
+
 docker-build: stack
 	$(call docker-compose,build $(patsubst %,--build-arg %,$(DOCKER_BUILD_ARGS)) $(SERVICE))
 
@@ -30,8 +37,10 @@ docker-network-rm:
 	  || { echo -n "Removing docker network $(DOCKER_NETWORK) ... " && docker network rm $(DOCKER_NETWORK) >/dev/null 2>&1 && echo "done" || echo "ERROR"; }
 
 docker-node:
+ifneq ($(wildcard ../infra),)
 ifneq (,$(filter $(MAKECMDGOALS),start up))
 	ENV=$(ENV) $(MAKE) -C ../infra $(patsubst %,node-%,$(MAKECMDGOALS)) STACK_NODE=node || true
+endif
 endif
 
 docker-ps: stack
@@ -49,8 +58,10 @@ docker-rm: stack
 	$(call docker-compose,rm -fs $(SERVICE))
 
 docker-services:
+ifneq ($(wildcard ../infra),)
 ifneq (,$(filter $(MAKECMDGOALS),install ps start up))
 	ENV=$(ENV) $(MAKE) -C ../infra $(MAKECMDGOALS) STACK=services || true
+endif
 endif
 
 docker-start: stack

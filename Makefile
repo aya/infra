@@ -2,19 +2,21 @@ include env.mk
 include def.mk
 include help.mk
 include $(filter-out env.mk def.mk $(wildcard def.*.mk) help.mk,$(wildcard *.mk))
--include ../subrepo.mk
+include $(wildcard ../subrepo.mk)
 
 .PHONY: $(CMDS) stack-% $(DOCKERS)
+ifneq ($(DEBUG), true)
 .SILENT:
+endif
 
 DOCKERS        := $(dir $(wildcard */docker/*/))
 
 ##
 # INSTALL
 
-all: bootstrap build node up ## Build and deploy infra
+all: install ## Build and deploy infra
 
-install: bootstrap node up ## Install docker $(STACK) services
+install: base node up ## Install docker $(STACK) services
 
 ##
 # CLEAN
