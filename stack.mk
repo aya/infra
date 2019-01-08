@@ -9,7 +9,7 @@ endif
 
 update-sysctl:
 	$(call docker-run,--privileged alpine:latest,/bin/sh -c 'echo never > /sys/kernel/mm/transparent_hugepage/enabled')
-	$(foreach config,$(SYSCTL),$(call docker-run,--privileged alpine:latest,sysctl -w $(config)) &&) true
+	$(foreach config,$(SYSCTL),$(call docker-run,--privileged alpine:latest,sysctl -w $(config)) >/dev/null &&) true
 
 stack: $(patsubst %,stack-%,$(STACK)) bootstrap
 	$(call .env)
