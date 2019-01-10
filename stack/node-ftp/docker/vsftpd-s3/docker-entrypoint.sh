@@ -81,6 +81,9 @@ FTPD_USERS=${FTPD_USERS:-${FTPD_USER}::${FTPD_PASS}::${S3_BUCKET}::${AWS_ACCESS_
 echo "${FTPD_USERS}" |sed 's/ /\n/g' |while read line; do
   echo ${line//::/ } |while read ftpd_user ftpd_pass s3_bucket aws_access_key_id aws_secret_access_key; do
 
+    # Check if user already exist
+    id ${ftpd_user} >/dev/null 2>&1 && continue
+
     # Create FTP user
     adduser -h /home/${ftpd_user} -s /sbin/nologin -D ${ftpd_user}
     echo "${ftpd_user}:${ftpd_pass:-$FTPD_PASS}" | chpasswd 2> /dev/null
