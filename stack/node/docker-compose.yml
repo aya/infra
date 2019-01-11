@@ -61,7 +61,9 @@ services:
         command: -internal -cleanup=true -deregister always -resync=30 consul://consul:8500
         depends_on:
           - consul
-        network_mode: host
+        hostname: ${HOSTNAME}
+        networks:
+          - frontend
         restart: always
         volumes:
           - /var/run/docker.sock:/tmp/docker.sock

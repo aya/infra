@@ -8,8 +8,9 @@ DRONE                           ?= false
 ENV                             ?= local
 ENV_FILE                        ?= .env
 ENV_RESET                       ?= false
-ENV_SYSTEM                       = $(shell printenv |awk -F '=' 'NR == FNR { if($$1 !~ /^(\#|$$)/) { A[$$1]; next } } ($$1 in A)' .env.dist - 2>/dev/null |awk '{print} END {print "APP=$(APP)\nBRANCH=$(BRANCH)\nCOMMIT=$(COMMIT)\nCOMPOSE_IGNORE_ORPHANS=$(COMPOSE_IGNORE_ORPHANS)\nCOMPOSE_PROJECT_NAME=$(COMPOSE_PROJECT_NAME)\nCOMPOSE_SERVICE_NAME=$(COMPOSE_SERVICE_NAME)\nDOCKER_IMAGE_REPO=$(DOCKER_IMAGE_REPO)\nDOCKER_IMAGE_TAG=$(DOCKER_IMAGE_TAG)\nENV=$(ENV)\nGID=$(GID)\nMONOREPO_DIR=$(MONOREPO_DIR)\nNFS_MOUNT_CONFIG=$(NFS_MOUNT_CONFIG)\nSUBREPO_DIR=$(SUBREPO_DIR)\nTAG=$(TAG)\nUID=$(UID)\nUSER=$(USER)"}' |awk -F "=" '!seen[$$1]++')
+ENV_SYSTEM                       = $(shell printenv |awk -F '=' 'NR == FNR { if($$1 !~ /^(\#|$$)/) { A[$$1]; next } } ($$1 in A)' .env.dist - 2>/dev/null |awk '{print} END {print "APP=$(APP)\nBRANCH=$(BRANCH)\nCOMMIT=$(COMMIT)\nCOMPOSE_IGNORE_ORPHANS=$(COMPOSE_IGNORE_ORPHANS)\nCOMPOSE_PROJECT_NAME=$(COMPOSE_PROJECT_NAME)\nCOMPOSE_SERVICE_NAME=$(COMPOSE_SERVICE_NAME)\nDOCKER_IMAGE_REPO=$(DOCKER_IMAGE_REPO)\nDOCKER_IMAGE_TAG=$(DOCKER_IMAGE_TAG)\nENV=$(ENV)\nHOSTNAME=$(HOSTNAME)\nGID=$(GID)\nMONOREPO_DIR=$(MONOREPO_DIR)\nNFS_MOUNT_CONFIG=$(NFS_MOUNT_CONFIG)\nSUBREPO_DIR=$(SUBREPO_DIR)\nTAG=$(TAG)\nUID=$(UID)\nUSER=$(USER)"}' |awk -F "=" '!seen[$$1]++')
 GID                             ?= $(shell id -g)
+HOSTNAME                        ?= $(shell hostname |sed 's/\..*//')
 MONOREPO                        ?= $(if $(wildcard .git),$(notdir $(CURDIR)),$(notdir $(realpath $(CURDIR)/..)))
 MONOREPO_DIR                    ?= $(if $(wildcard .git),$(CURDIR),$(realpath $(CURDIR)/..))
 SUBREPO                         ?= $(notdir $(CURDIR))
