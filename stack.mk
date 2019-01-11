@@ -3,8 +3,10 @@
 include stack/*.mk
 
 bootstrap-docker: docker-network update-sysctl
+ifeq ($(NFS_MOUNT),true)
 ifeq ($(HOST_SYSTEM),DARWIN)
 	$(call setup-osx-nfs)
+endif
 endif
 
 update-sysctl:
