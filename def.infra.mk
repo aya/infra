@@ -2,6 +2,7 @@ CMDS                            ?= ansible ansible-playbook aws base-exec docker
 COMPOSE_IGNORE_ORPHANS          ?= true
 CONTEXT                         += COMPOSE_PROJECT_NAME
 DOCKER_SERVICE                  ?= mysql
+NFS_MOUNT                       ?= false
 REMOTE                          ?= ssh://git@github.com/1001Pharmacies/$(SUBREPO)
 STACK                           ?= services
 STACK_BASE                      ?= base
