@@ -18,6 +18,19 @@ services:
         restart: always
         volumes:
           - /var/run/docker.sock:/var/run/docker.sock
+    drone-gc:
+        image: drone/gc:latest
+        environment:
+          - GC_DEBUG=true
+          - GC_DEBUG_COLOR=true
+          - GC_DEBUG_PRETTY=true
+          - GC_CACHE=25gb
+          - GC_INTERVAL=5m
+        networks:
+          - backend
+        restart: always
+        volumes:
+          - /var/run/docker.sock:/var/run/docker.sock
     drone-server:
         image: drone/drone:latest
         environment:
