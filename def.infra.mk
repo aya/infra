@@ -2,8 +2,11 @@ CMDS                            ?= ansible ansible-playbook aws base-exec docker
 COMPOSE_IGNORE_ORPHANS          ?= true
 CONTEXT                         += COMPOSE_PROJECT_NAME
 DOCKER_SERVICE                  ?= mysql
-NFS_MOUNT                       ?= false
 REMOTE                          ?= ssh://git@github.com/1001Pharmacies/$(SUBREPO)
+SETUP_NFSD                      ?= false
+SETUP_NFSD_OSX_CONFIG           ?= nfs.server.bonjour=0 nfs.server.mount.regular_files=1 nfs.server.mount.require_resv_port=0 nfs.server.nfsd_threads=16 nfs.server.async=1
+SETUP_SYSCTL                    ?= true
+SETUP_SYSCTL_CONFIG             ?= vm.max_map_count=262144 vm.overcommit_memory=1 fs.file-max=8388608 net.core.somaxconn=1024
 STACK                           ?= services
 STACK_BASE                      ?= base
 STACK_NODE                      ?= node

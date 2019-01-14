@@ -1,7 +1,7 @@
 include env.mk
 include def.mk
 include help.mk
-include $(filter-out env.mk def.mk $(wildcard def.*.mk) help.mk,$(wildcard *.mk))
+include $(filter-out env.mk def.mk $(wildcard def.*.mk) help.mk $(wildcard stack.*.mk),$(wildcard *.mk))
 include $(wildcard ../subrepo.mk)
 
 .PHONY: $(CMDS) stack-% $(DOCKERS)
