@@ -17,7 +17,7 @@ ENV SSH_AUTH_PROXY_SOCK ${SOCKET_DIR}/proxy-socket
 VOLUME ${SOCKET_DIR}
 
 # Copy entrypoint script to container
-COPY docker/ssh-agent/docker-entrypoint.sh /docker-entrypoint.sh
+COPY docker/ssh/docker-entrypoint.sh /docker-entrypoint.sh
 
 ENTRYPOINT ["/docker-entrypoint.sh"]
 
@@ -30,6 +30,8 @@ ARG USER
 ENV UID=${UID}
 ENV GID=${UID}
 ENV USER=${USER}
+LABEL com.1001pharmacies.uid=${UID}
+LABEL com.1001pharmacies.user=${USER}
 
 # If we provide a specific UID
 RUN let $UID >/dev/null 2>&1 \
@@ -53,11 +55,4 @@ RUN let $UID >/dev/null 2>&1 \
 
 USER $USER
 
-FROM dist as tests
-ARG BRANCH
-ARG COMMIT
-ARG TAG
-LABEL com.1001pharmacies.branch=${BRANCH}
-LABEL com.1001pharmacies.commit=${COMMIT}
-LABEL com.1001pharmacies.tag=${TAG}
-LABEL com.1001pharmacies.user=${USER}
+FROM local as tests

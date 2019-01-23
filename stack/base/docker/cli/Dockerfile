@@ -15,6 +15,7 @@ RUN apk upgrade --no-cache \
         bash \
         git \
         make \
+        mysql-client \
         openssh \
         sudo
 
@@ -42,11 +43,12 @@ CMD ["bash"]
 
 FROM dist as local
 ARG UID
-ARG GID
 ARG USER
 ENV UID=${UID}
 ENV GID=${UID}
 ENV USER=${USER}
+LABEL com.1001pharmacies.uid=${UID}
+LABEL com.1001pharmacies.user=${USER}
 
 # If we provide a specific UID
 RUN let $UID >/dev/null 2>&1 \
@@ -72,17 +74,10 @@ USER $USER
 WORKDIR /home/$USER
 
 FROM local as tests
+
 USER root
 
 RUN apk add --no-cache \
         docker
 
 USER $USER
-
-ARG BRANCH
-ARG COMMIT
-ARG TAG
-LABEL com.1001pharmacies.branch=${BRANCH}
-LABEL com.1001pharmacies.commit=${COMMIT}
-LABEL com.1001pharmacies.tag=${TAG}
-LABEL com.1001pharmacies.user=${USER}

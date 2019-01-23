@@ -1,53 +1,91 @@
 version: '3.6'
 
 services:
-    exec:
+    cli:
         build:
             args:
               - APP=${APP}
-              - GID=${GID}
-              - TARGET=${DOCKER_BUILD_TARGET}
+              - GIT_AUTHOR_NAME=${GIT_AUTHOR_NAME}
+              - GIT_AUTHOR_EMAIL=${GIT_AUTHOR_EMAIL}
               - UID=${UID}
               - USER=${USER}
             context: .
-            dockerfile: docker/exec/Dockerfile
+            dockerfile: docker/cli/Dockerfile
             target: ${DOCKER_BUILD_TARGET}
         command: tail -f /dev/null
         depends_on:
-          - ssh-agent
+          - ssh
         environment:
           - ENV=${ENV}
           - SSH_AUTH_SOCK=/tmp/ssh-agent/socket
-        image: ${DOCKER_IMAGE_REPO}/${APP}/exec:${DOCKER_IMAGE_TAG}
+        image: ${DOCKER_IMAGE_REPO}/${DOCKER_IMAGE_CLI}
         networks:
           - backend
-        volumes:
-          - ssh-agent:/tmp/ssh-agent:ro
-          - ${MONOREPO_DIR}:${MONOREPO_DIR}:cached
         restart: always
+        volumes:
+          - ssh:/tmp/ssh-agent:ro
+          - ${MONOREPO_DIR}:${MONOREPO_DIR}:cached
         working_dir: ${MONOREPO_DIR}
-    ssh-agent:
+    php5.6:
         build:
             args:
               - APP=${APP}
-              - GID=${GID}
-              - TARGET=${DOCKER_BUILD_TARGET}
               - UID=${UID}
               - USER=${USER}
             context: .
-            dockerfile: docker/ssh-agent/Dockerfile
+            dockerfile: docker/php5.6/Dockerfile
+            target: local
+        command: tail -f /dev/null
+        depends_on:
+          - ssh
+        environment:
+          - ENV=${ENV}
+          - SSH_AUTH_SOCK=/tmp/ssh-agent/socket
+        image: ${DOCKER_IMAGE_REPO}/php5.6:${DOCKER_BUILD_TARGET}
+        networks:
+          - backend
+        restart: always
+        volumes:
+          - ssh:/tmp/ssh-agent:ro
+          - ${MONOREPO_DIR}:${MONOREPO_DIR}:cached
+    ssh:
+        build:
+            args:
+              - APP=${APP}
+              - UID=${UID}
+              - USER=${USER}
+            context: .
+            dockerfile: docker/ssh/Dockerfile
             target: ${DOCKER_BUILD_TARGET}
         environment:
           - ENV=${ENV}
-        image: ${DOCKER_IMAGE_REPO}/${APP}/ssh-agent:${DOCKER_IMAGE_TAG}
+        image: ${DOCKER_IMAGE_REPO}/${DOCKER_IMAGE_SSH}
         networks:
           - backend
-        volumes:
-          - ssh-agent:/tmp/ssh-agent
         restart: always
+        volumes:
+          - ssh:/tmp/ssh-agent
+    http:
+        build:
+            args:
+              - APP=${APP}
+              - UID=${UID}
+              - USER=${USER}
+            context: .
+            dockerfile: docker/http/Dockerfile
+            target: ${DOCKER_BUILD_TARGET}
+        command: tail -f /dev/null
+        environment:
+          - ENV=${ENV}
+        image: ${DOCKER_IMAGE_REPO}/http:${DOCKER_BUILD_TARGET}
+        networks:
+          - backend
+        restart: always
+        volumes:
+          - ${MONOREPO_DIR}:${MONOREPO_DIR}:ro,cached
 
 volumes:
-    ssh-agent:
+    ssh:
         driver: local
         driver_opts:
             type: tmpfs
