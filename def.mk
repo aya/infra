@@ -19,7 +19,7 @@ SUBREPO_DIR                     ?= $(CURDIR)
 TAG                             ?= $(shell git tag -l --points-at HEAD)
 UID                             ?= $(shell id -u)
 USER                            ?= $(shell id -nu)
-VERSION                         ?= $(shell git describe --tags)
+VERSION                         ?= $(shell git describe --tags 2>/dev/null || git rev-parse HEAD)
 
 include def.*.mk
 

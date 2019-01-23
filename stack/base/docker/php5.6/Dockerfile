@@ -77,7 +77,6 @@ RUN apk --no-cache upgrade \
         bcmath \
         bz2 \
         calendar \
-        curl \
         dba \
         exif \
         gd \
@@ -85,9 +84,7 @@ RUN apk --no-cache upgrade \
         gmp \
         imap \
         intl \
-        json \
         ldap \
-        mbstring \
         mcrypt \
         mysql \
         mysqli \
@@ -98,14 +95,12 @@ RUN apk --no-cache upgrade \
         pgsql \
         pspell \
         shmop \
-        simplexml \
         snmp \
         soap \
         sockets \
         sysvmsg \
         sysvsem \
         sysvshm \
-        tokenizer \
         xmlrpc \
         xsl \
         zip \

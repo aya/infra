@@ -19,10 +19,6 @@ DOCKER_RUN_WORKDIR              ?= -w $$PWD
 DOCKER_SERVICE_INFRA_BASE       ?= cli ssh php5.6
 DOCKER_SERVICE_INFRA_NODE       ?= consul fabio registrator
 
-ifneq ($(DOCKER_BUILD_TARGET), local)
-DOCKER_BUILD_ARGS               += BRANCH=$(BRANCH) VERSION=$(VERSION)
-endif
-
 ifeq ($(DOCKER), true)
 
 ifeq ($(DRONE), true)
