@@ -42,11 +42,17 @@ endef
 define docker-run
 	docker run $(DOCKER_RUN_OPTIONS) $(patsubst %,--env-file %,$(ENV_FILE)) $(patsubst %,-e %,$(ENV_SYSTEM)) $(DOCKER_RUN_VOLUME) $(DOCKER_RUN_WORKDIR) $(1) $(2)
 endef
+ifeq ($(DRONE), true)
+define exec
+	docker run $(DOCKER_RUN_OPTIONS) $(patsubst %,--env-file %,$(ENV_FILE)) $(patsubst %,-e %,$(ENV_SYSTEM)) -e SSH_AUTH_SOCK=/tmp/ssh-agent/socket -v $(DOCKER_INFRA_SSH):/tmp/ssh-agent:ro $(DOCKER_RUN_VOLUME) $(DOCKER_RUN_WORKDIR) ${DOCKER_IMAGE_REPO_BASE}/${DOCKER_IMAGE_CLI} sh -c '$(1)'
+endef
+else
 define exec
 	docker exec $(patsubst %,-e %,$(ENV_SYSTEM)) $(DOCKER_INFRA_CLI)_1 sh -c '$(1)'
 endef
+endif
 define run
-	docker run $(DOCKER_RUN_OPTIONS) $(patsubst %,--env-file %,$(ENV_FILE)) $(patsubst %,-e %,$(ENV_SYSTEM)) -e SSH_AUTH_SOCK=/tmp/ssh-agent/socket -v $(DOCKER_INFRA_SSH):/tmp/ssh-agent:ro $(DOCKER_RUN_VOLUME) $(DOCKER_RUN_WORKDIR) ${DOCKER_IMAGE_REPO}/${DOCKER_IMAGE_CLI} sh -c '$(1)'
+	docker run $(DOCKER_RUN_OPTIONS) $(patsubst %,--env-file %,$(ENV_FILE)) $(patsubst %,-e %,$(ENV_SYSTEM)) -e SSH_AUTH_SOCK=/tmp/ssh-agent/socket -v $(DOCKER_INFRA_SSH):/tmp/ssh-agent:ro $(DOCKER_RUN_VOLUME) $(DOCKER_RUN_WORKDIR) ${DOCKER_IMAGE_REPO_BASE}/${DOCKER_IMAGE_CLI} sh -c '$(1)'
 endef
 
 else
