@@ -87,6 +87,7 @@ RUN apk --no-cache upgrade \
         intl \
         json \
         ldap \
+        mbstring \
         mcrypt \
         mysql \
         mysqli \
@@ -157,8 +158,8 @@ RUN apk add --no-cache \
 		vim
 
 # enable php modules
-# available modules : amqp apcu bcmath blackfire bz2 calendar curl dba exif gettext gd geoip gmp imap imagick intl json ldap mcrypt memcache memcached mongodb mysql mysqli newrelic opcache pcntl pdo_mysql pdo_pgsql pgsql pspell rar redis shmop simplexml snmp soap sockets suhosin sysvmsg sysvsem sysvshm tokenizer twig uuid xcache xdebug xmlrpc xsl zip
-ARG PHP_EXT_ENABLE="amqp apcu bcmath blackfire bz2 calendar gd geoip imagick intl mcrypt memcache memcached mysql mysqli opcache pdo_mysql redis soap sockets twig uuid zip"
+# available modules : amqp apcu bcmath blackfire bz2 calendar curl dba exif gettext gd geoip gmp imap imagick intl json ldap mbstring mcrypt memcache memcached mongodb mysql mysqli newrelic opcache pcntl pdo_mysql pdo_pgsql pgsql pspell rar redis shmop simplexml snmp soap sockets suhosin sysvmsg sysvsem sysvshm tokenizer twig uuid xcache xdebug xmlrpc xsl zip
+ARG PHP_EXT_ENABLE="amqp apcu bcmath blackfire bz2 calendar gd geoip imagick intl mbstring mcrypt memcache memcached mysql mysqli opcache pdo_mysql redis soap sockets twig uuid zip"
 RUN docker-php-ext-enable ${PHP_EXT_ENABLE}
 
 # copy *.ini
