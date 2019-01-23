@@ -1,14 +1,15 @@
 APP                             ?= $(SUBREPO)
 BRANCH                          ?= $(shell git rev-parse --abbrev-ref HEAD)
 COMMIT                          ?= $(shell git rev-parse HEAD)
-CONTEXT                         ?= $(shell awk 'BEGIN {FS="="}; $$1 !~ /^(\#|$$)/ {print $$1}' .env.dist 2>/dev/null) BRANCH COMMIT TAG UID USER
+CONTEXT                         ?= $(shell awk 'BEGIN {FS="="}; $$1 !~ /^(\#|$$)/ {print $$1}' .env.dist 2>/dev/null) BRANCH TAG UID USER VERSION
 DEBUG                           ?= false
 DOCKER                          ?= false
 DRONE                           ?= false
 ENV                             ?= local
 ENV_FILE                        ?= .env
 ENV_RESET                       ?= false
-ENV_SYSTEM                       = $(shell printenv |awk -F '=' 'NR == FNR { if($$1 !~ /^(\#|$$)/) { A[$$1]; next } } ($$1 in A)' .env.dist - 2>/dev/null |awk '{print} END {print "APP=$(APP)\nBRANCH=$(BRANCH)\nCOMMIT=$(COMMIT)\nCOMPOSE_IGNORE_ORPHANS=$(COMPOSE_IGNORE_ORPHANS)\nCOMPOSE_PROJECT_NAME=$(COMPOSE_PROJECT_NAME)\nCOMPOSE_SERVICE_NAME=$(COMPOSE_SERVICE_NAME)\nDOCKER_IMAGE_REPO=$(DOCKER_IMAGE_REPO)\nDOCKER_IMAGE_TAG=$(DOCKER_IMAGE_TAG)\nENV=$(ENV)\nHOSTNAME=$(HOSTNAME)\nGID=$(GID)\nMONOREPO_DIR=$(MONOREPO_DIR)\nNFS_MOUNT_CONFIG=$(NFS_MOUNT_CONFIG)\nSUBREPO_DIR=$(SUBREPO_DIR)\nTAG=$(TAG)\nUID=$(UID)\nUSER=$(USER)"}' |awk -F "=" '!seen[$$1]++')
+ENV_SYSTEM                       = $(shell printenv |awk -F '=' 'NR == FNR { if($$1 !~ /^(\#|$$)/) { A[$$1]; next } } ($$1 in A)' .env.dist - 2>/dev/null |awk '{print} END {print "$(foreach var,$(ENV_SYSTEM_VARS),$(var)=$($(var)))"}' |awk -F "=" '!seen[$$1]++')
+ENV_SYSTEM_VARS                 ?= APP BRANCH COMPOSE_IGNORE_ORPHANS COMPOSE_PROJECT_NAME COMPOSE_SERVICE_NAME DOCKER_IMAGE_CLI DOCKER_IMAGE_REPO DOCKER_IMAGE_REPO_BASE DOCKER_IMAGE_SSH DOCKER_IMAGE_TAG DOCKER_INFRA_SSH ENV HOSTNAME GID MONOREPO_DIR MOUNT_NFS_CONFIG SUBREPO_DIR TAG UID USER VERSION
 GID                             ?= $(shell id -g)
 HOSTNAME                        ?= $(shell hostname |sed 's/\..*//')
 MONOREPO                        ?= $(if $(wildcard .git),$(notdir $(CURDIR)),$(notdir $(realpath $(CURDIR)/..)))
@@ -18,6 +19,7 @@ SUBREPO_DIR                     ?= $(CURDIR)
 TAG                             ?= $(shell git tag -l --points-at HEAD)
 UID                             ?= $(shell id -u)
 USER                            ?= $(shell id -nu)
+VERSION                         ?= $(shell git describe --tags)
 
 include def.*.mk
 
