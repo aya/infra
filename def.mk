@@ -26,7 +26,7 @@ include def.*.mk
 # Accept arguments for CMDS targets
 ifneq ($(filter $(CMDS),$(firstword $(MAKECMDGOALS))),)
 # set $ARGS with following arguments
-ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
+ARGS                            := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
 # ...and turn them into do-nothing targets
 $(eval $(ARGS):;@:)
 endif
@@ -43,5 +43,15 @@ HOST_SYSTEM                     := LINUX
 endif
 ifeq ($(UNAME_S),Darwin)
 HOST_SYSTEM                     := DARWIN
+endif
+endif
+
+ifneq ($(DEBUG), true)
+.SILENT:
+endif
+ifeq ($(DRYRUN), true)
+DRYRUN_ECHO                      = printf "${COLOR_BROWN}$(APP)${COLOR_RESET}[${COLOR_GREEN}$(MAKELEVEL)${COLOR_RESET}] ${COLOR_BLUE}$@${COLOR_RESET}:${COLOR_RESET} "; echo
+ifeq ($(RECURSIVE), true)
+DRYRUN_RECURSIVE                := true
 endif
 endif
