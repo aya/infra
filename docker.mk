@@ -5,7 +5,7 @@
 docker-base:
 ifneq ($(wildcard ../infra),)
 ifneq (,$(filter $(MAKECMDGOALS),start up))
-	ENV=$(ENV) $(MAKE) $(patsubst %,-o %,$^) -C ../infra $(patsubst %,base-%,$(MAKECMDGOALS)) STACK_BASE=base || true
+	$(call make,-C ../infra $(patsubst %,base-%,$(MAKECMDGOALS)) STACK_BASE=base) || true
 endif
 endif
 
@@ -38,18 +38,18 @@ docker-logs: stack docker-up
 .PHONY: docker-network
 docker-network:
 	[ -n "$(shell docker network ls -q --filter name='^$(DOCKER_NETWORK)$$' 2>/dev/null)" ] \
-	  || { echo -n "Creating docker network $(DOCKER_NETWORK) ... " && docker network create $(DOCKER_NETWORK) >/dev/null 2>&1 && echo "done" || echo "ERROR"; }
+	  || { echo -n "Creating docker network $(DOCKER_NETWORK) ... " && $(DRYRUN_ECHO) docker network create $(DOCKER_NETWORK) >/dev/null 2>&1 && echo "done" || echo "ERROR"; }
 
 .PHONY: docker-network-rm
 docker-network-rm:
 	[ -z "$(shell docker network ls -q --filter name='^$(DOCKER_NETWORK)$$' 2>/dev/null)" ] \
-	  || { echo -n "Removing docker network $(DOCKER_NETWORK) ... " && docker network rm $(DOCKER_NETWORK) >/dev/null 2>&1 && echo "done" || echo "ERROR"; }
+	  || { echo -n "Removing docker network $(DOCKER_NETWORK) ... " && $(DRYRUN_ECHO) docker network rm $(DOCKER_NETWORK) >/dev/null 2>&1 && echo "done" || echo "ERROR"; }
 
 .PHONY: docker-node
 docker-node:
 ifneq ($(wildcard ../infra),)
 ifneq (,$(filter $(MAKECMDGOALS),start up))
-	ENV=$(ENV) $(MAKE) $(patsubst %,-o %,$^) -C ../infra $(patsubst %,node-%,$(MAKECMDGOALS)) STACK_NODE=node || true
+	$(call make,-C ../infra $(patsubst %,node-%,$(MAKECMDGOALS)) STACK_NODE=node) || true
 endif
 endif
 
@@ -76,7 +76,7 @@ docker-rm: stack
 docker-services:
 ifneq ($(wildcard ../infra),)
 ifneq (,$(filter $(MAKECMDGOALS),install ps start up))
-	ENV=$(ENV) $(MAKE) $(patsubst %,-o %,$^) -C ../infra $(MAKECMDGOALS) STACK=services || true
+	$(call make,-C ../infra $(MAKECMDGOALS) STACK=services) || true
 endif
 endif
 
