@@ -5,6 +5,9 @@ CONTEXT                         ?= $(shell awk 'BEGIN {FS="="}; $$1 !~ /^(\#|$$)
 DEBUG                           ?= false
 DOCKER                          ?= false
 DRONE                           ?= false
+DRYRUN                          ?= false
+DRYRUN_IGNORE                   ?= false
+DRYRUN_RECURSIVE                ?= false
 ENV                             ?= local
 ENV_FILE                        ?= .env
 ENV_RESET                       ?= false
@@ -12,6 +15,7 @@ ENV_SYSTEM                       = $(shell printenv |awk -F '=' 'NR == FNR { if(
 ENV_SYSTEM_VARS                 ?= APP BRANCH COMPOSE_IGNORE_ORPHANS COMPOSE_PROJECT_NAME COMPOSE_SERVICE_NAME DOCKER_IMAGE_CLI DOCKER_IMAGE_REPO DOCKER_IMAGE_REPO_BASE DOCKER_IMAGE_SSH DOCKER_IMAGE_TAG DOCKER_INFRA_SSH ENV HOSTNAME GID MONOREPO_DIR MOUNT_NFS_CONFIG SUBREPO_DIR TAG UID USER VERSION
 GID                             ?= $(shell id -g)
 HOSTNAME                        ?= $(shell hostname |sed 's/\..*//')
+MAKE_ARGS                       ?= ENV=$(ENV)
 MONOREPO                        ?= $(if $(wildcard .git),$(notdir $(CURDIR)),$(notdir $(realpath $(CURDIR)/..)))
 MONOREPO_DIR                    ?= $(if $(wildcard .git),$(CURDIR),$(realpath $(CURDIR)/..))
 SUBREPO                         ?= $(notdir $(CURDIR))
@@ -50,8 +54,13 @@ ifneq ($(DEBUG), true)
 .SILENT:
 endif
 ifeq ($(DRYRUN), true)
-DRYRUN_ECHO                      = printf "${COLOR_BROWN}$(APP)${COLOR_RESET}[${COLOR_GREEN}$(MAKELEVEL)${COLOR_RESET}] ${COLOR_BLUE}$@${COLOR_RESET}:${COLOR_RESET} "; echo
+DRYRUN_ECHO                      = $(if $(filter $(DRYRUN_IGNORE),true),,printf "${COLOR_BROWN}$(APP)${COLOR_RESET}[${COLOR_GREEN}$(MAKELEVEL)${COLOR_RESET}] ${COLOR_BLUE}$@${COLOR_RESET}:${COLOR_RESET} "; echo)
 ifeq ($(RECURSIVE), true)
 DRYRUN_RECURSIVE                := true
 endif
 endif
+
+define make
+	$(DRYRUN_ECHO) $(MAKE_ARGS) $(MAKE) $(patsubst %,-o %,$^) $(1)
+	$(if $(filter $(DRYRUN_RECURSIVE),true),$(MAKE_ARGS) $(MAKE) $(patsubst %,-o %,$^) $(1) DRYRUN=$(DRYRUN) RECURSIVE=$(RECURSIVE))
+endef
