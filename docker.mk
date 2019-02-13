@@ -1,11 +1,11 @@
 ##
 # DOCKER
 
-.PHONY: docker-base
-docker-base:
+.PHONY: docker-infra-base
+docker-infra-base:
 ifneq ($(wildcard ../infra),)
 ifneq (,$(filter $(MAKECMDGOALS),start up))
-	$(call make,-C ../infra $(patsubst %,base-%,$(MAKECMDGOALS)) STACK_BASE=base) || true
+	$(call make,-C ../infra $(patsubst %,base-%,$(MAKECMDGOALS)) STACK_BASE=base)
 endif
 endif
 
@@ -45,11 +45,11 @@ docker-network-rm:
 	[ -z "$(shell docker network ls -q --filter name='^$(DOCKER_NETWORK)$$' 2>/dev/null)" ] \
 	  || { echo -n "Removing docker network $(DOCKER_NETWORK) ... " && $(DRYRUN_ECHO) docker network rm $(DOCKER_NETWORK) >/dev/null 2>&1 && echo "done" || echo "ERROR"; }
 
-.PHONY: docker-node
-docker-node:
+.PHONY: docker-infra-node
+docker-infra-node:
 ifneq ($(wildcard ../infra),)
 ifneq (,$(filter $(MAKECMDGOALS),start up))
-	$(call make,-C ../infra $(patsubst %,node-%,$(MAKECMDGOALS)) STACK_NODE=node) || true
+	$(call make,-C ../infra $(patsubst %,node-%,$(MAKECMDGOALS)) STACK_NODE=node)
 endif
 endif
 
@@ -72,11 +72,11 @@ docker-restart: stack
 docker-rm: stack
 	$(call docker-compose,rm -fs $(SERVICE))
 
-.PHONY: docker-services
-docker-services:
+.PHONY: docker-infra-services
+docker-infra-services:
 ifneq ($(wildcard ../infra),)
 ifneq (,$(filter $(MAKECMDGOALS),install ps start up))
-	$(call make,-C ../infra $(MAKECMDGOALS) STACK=services) || true
+	$(call make,-C ../infra $(MAKECMDGOALS) STACK=services)
 endif
 endif
 

@@ -37,5 +37,5 @@ build: $(DOCKERS)
 .PHONY: $(DOCKERS)
 $(DOCKERS):
 	if [ $(DOCKER) = "true" ]; then \
-		docker build -t $(lastword $(subst /, ,$@)) $@; \
+		$(DRYRUN_ECHO) docker build -t $(lastword $(subst /, ,$@)) $@; \
 	fi

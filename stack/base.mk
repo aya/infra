@@ -13,7 +13,7 @@ else
 endif
 
 .PHONY: base-%
-base-%: bootstrap
+base-%: bootstrap-infra
 ifeq (,$(filter-out $(DOCKER_SERVICE_INFRA_BASE),$(SERVICE)))
 	$(eval SERVICE_BASE:=$(SERVICE))
 endif

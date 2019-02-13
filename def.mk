@@ -61,6 +61,7 @@ endif
 endif
 
 define make
-	$(DRYRUN_ECHO) $(MAKE_ARGS) $(MAKE) $(patsubst %,-o %,$^) $(1)
-	$(if $(filter $(DRYRUN_RECURSIVE),true),$(MAKE_ARGS) $(MAKE) $(patsubst %,-o %,$^) $(1) DRYRUN=$(DRYRUN) RECURSIVE=$(RECURSIVE))
+	$(eval MAKE_OLDFILE := $^ $(MAKE_OLDFILE))
+	$(DRYRUN_ECHO) $(MAKE_ARGS) $(MAKE) $(patsubst %,-o %,$(MAKE_OLDFILE)) $(1) MAKE_OLDFILE="$(MAKE_OLDFILE)"
+	$(if $(filter $(DRYRUN_RECURSIVE),true),$(MAKE_ARGS) $(MAKE) $(patsubst %,-o %,$(MAKE_OLDFILE)) $(1) MAKE_OLDFILE="$(MAKE_OLDFILE)" DRYRUN=$(DRYRUN) RECURSIVE=$(RECURSIVE))
 endef
