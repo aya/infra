@@ -18,6 +18,7 @@ HOSTNAME                        ?= $(shell hostname |sed 's/\..*//')
 MAKE_ARGS                       ?= ENV=$(ENV)
 MONOREPO                        ?= $(if $(wildcard .git),$(notdir $(CURDIR)),$(notdir $(realpath $(CURDIR)/..)))
 MONOREPO_DIR                    ?= $(if $(wildcard .git),$(CURDIR),$(realpath $(CURDIR)/..))
+RECURSIVE                       ?= true
 SUBREPO                         ?= $(notdir $(CURDIR))
 SUBREPO_DIR                     ?= $(CURDIR)
 TAG                             ?= $(shell git tag -l --points-at HEAD)
@@ -61,7 +62,7 @@ endif
 endif
 
 define make
-	$(eval MAKE_OLDFILE := $^ $(MAKE_OLDFILE))
+	$(eval MAKE_OLDFILE := $(MAKE_OLDFILE) $(filter-out $(MAKE_OLDFILE), $^))
 	$(DRYRUN_ECHO) $(MAKE_ARGS) $(MAKE) $(patsubst %,-o %,$(MAKE_OLDFILE)) $(1) MAKE_OLDFILE="$(MAKE_OLDFILE)"
 	$(if $(filter $(DRYRUN_RECURSIVE),true),$(MAKE_ARGS) $(MAKE) $(patsubst %,-o %,$(MAKE_OLDFILE)) $(1) MAKE_OLDFILE="$(MAKE_OLDFILE)" DRYRUN=$(DRYRUN) RECURSIVE=$(RECURSIVE))
 endef
