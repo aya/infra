@@ -82,7 +82,7 @@ services:
           - 11211
         restart: always
     mysql:
-        command: --innodb-large-prefix --innodb-file-per-table --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+        command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
         image: mariadb:latest
         environment:
           - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
