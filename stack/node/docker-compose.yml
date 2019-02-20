@@ -6,6 +6,7 @@ services:
         command: sh -c 'while true; do cclean; sleep 30; done'
         environment:
           - CONSUL_HTTP_ADDR=consul:8500
+        hostname: ${HOSTNAME}
         networks:
           - frontend
         restart: always
@@ -14,6 +15,7 @@ services:
         environment:
           - CONSUL_BIND_INTERFACE=eth0
           - CONSUL_CLIENT_INTERFACE=eth0
+        hostname: ${HOSTNAME}
         labels:
           - SERVICE_8300_IGNORE=true
           - SERVICE_8301_IGNORE=true
@@ -35,6 +37,7 @@ services:
         command: -registry.backend "consul" -registry.consul.addr "consul:8500" -proxy.addr ":80,:443;cs=local" -proxy.cs "cs=local;type=file;cert=/certs/${SSL_HOSTNAME}.crt;key=/certs/${SSL_HOSTNAME}.key"
         depends_on:
           - consul
+        hostname: ${HOSTNAME}
         labels:
           - SERVICE_80_NAME=${COMPOSE_SERVICE_NAME}-fabio-80
           - SERVICE_80_CHECK_TCP=true
