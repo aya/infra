@@ -23,8 +23,9 @@ ifeq ($(DOCKER), true)
 
 ifeq ($(DRONE), true)
 DOCKER_RUN_OPTIONS              := --rm
-DOCKER_RUN_VOLUME               := -v /var/run/docker.sock:/var/run/docker.sock -v $$(docker inspect $$(hostname) 2>/dev/null |awk 'BEGIN {FS=":"} $$0 ~ /_default:\/drone/ {gsub(/^[ \t\r\n]*"/,"",$$1); print $$1; exit}'):/drone
+DOCKER_RUN_VOLUME               := -v /var/run/docker.sock:/var/run/docker.sock -v $$(docker inspect $$(hostname) 2>/dev/null |awk 'BEGIN {FS=":"} $$0 ~ /[[a-z0-9]]*:\/drone/ {gsub(/^[ \t\r\n]*"/,"",$$1); print $$1; exit}'):/drone
 ENV_SUFFIX                      := $(DRONE_BUILD_NUMBER)
+HOSTNAME                        := $(word 1,$(subst ., ,$(DRONE_RUNNER_HOSTNAME)))
 ifneq ($(APP), infra)
 COMPOSE_PROJECT_NAME            := $(USER)_$(APP)_$(ENV)_$(ENV_SUFFIX)
 COMPOSE_SERVICE_NAME            := $(subst _,-,$(COMPOSE_PROJECT_NAME))
