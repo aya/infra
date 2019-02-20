@@ -21,6 +21,7 @@ MONOREPO_DIR                    ?= $(if $(wildcard .git),$(CURDIR),$(realpath $(
 RECURSIVE                       ?= true
 SUBREPO                         ?= $(notdir $(CURDIR))
 SUBREPO_DIR                     ?= $(CURDIR)
+SUBREPO_COMMIT                  ?= $(shell git rev-parse subrepo/$(SUBREPO)/$(BRANCH) 2>/dev/null)
 TAG                             ?= $(shell git tag -l --points-at HEAD)
 UID                             ?= $(shell id -u)
 USER                            ?= $(shell id -nu)
