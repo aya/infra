@@ -9,7 +9,7 @@ ifneq (,$(filter true,$(DRONE)))
 	  || $(call docker-run,-v $(DOCKER_INFRA_SSH):/tmp/ssh-agent $(DOCKER_IMAGE_REPO)/$(DOCKER_IMAGE_SSH),ssh-add $(SSH_DIR)/*_rsa)
 else
 	$(call docker-run,-v $(DOCKER_INFRA_SSH):/tmp/ssh-agent $(DOCKER_IMAGE_REPO)/$(DOCKER_IMAGE_SSH),ssh-add -l >/dev/null) \
-	  || $(call docker-run,-v $(DOCKER_INFRA_SSH):/tmp/ssh-agent -v $(SSH_DIR):/home/$(USER)/.ssh $(DOCKER_IMAGE_REPO)/$(DOCKER_IMAGE_SSH),ssh-add /home/$(USER)/.ssh/*_rsa)
+	  || $(call docker-run,-v $(DOCKER_INFRA_SSH):/tmp/ssh-agent -v $(SSH_DIR):/home/$(USER)/.ssh $(DOCKER_IMAGE_REPO)/$(DOCKER_IMAGE_SSH),ssh-add /home/$(USER)/.ssh/id_rsa /home/$(USER)/.ssh/*_id_rsa /home/$(USER)/.ssh/id_rsa_* 2>/dev/null) ||:
 endif
 
 .PHONY: base-%
