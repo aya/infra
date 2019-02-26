@@ -1,4 +1,8 @@
+comma                           ?= ,
+dollar                          ?= $
 APP                             ?= $(SUBREPO)
+AWS_DEFAULT_REGION              ?= eu-west-1
+AWS_DEFAULT_OUTPUT              ?= text
 BRANCH                          ?= $(shell git rev-parse --abbrev-ref HEAD)
 COMMIT                          ?= $(shell git rev-parse HEAD)
 CONTEXT                         ?= $(shell awk 'BEGIN {FS="="}; $$1 !~ /^(\#|$$)/ {print $$1}' .env.dist 2>/dev/null) BRANCH TAG UID USER VERSION
@@ -11,8 +15,8 @@ DRYRUN_RECURSIVE                ?= false
 ENV                             ?= local
 ENV_FILE                        ?= .env
 ENV_RESET                       ?= false
-ENV_SYSTEM                       = $(shell printenv |awk -F '=' 'NR == FNR { if($$1 !~ /^(\#|$$)/) { A[$$1]; next } } ($$1 in A)' .env.dist - 2>/dev/null |awk '{print} END {print "$(foreach var,$(ENV_SYSTEM_VARS),$(var)=$($(var)))"}' |awk -F "=" '!seen[$$1]++')
-ENV_SYSTEM_VARS                 ?= APP BRANCH COMPOSE_IGNORE_ORPHANS COMPOSE_PROJECT_NAME COMPOSE_SERVICE_NAME DOCKER_IMAGE_CLI DOCKER_IMAGE_REPO DOCKER_IMAGE_REPO_BASE DOCKER_IMAGE_SSH DOCKER_IMAGE_TAG DOCKER_INFRA_SSH ENV HOSTNAME GID MONOREPO_DIR MOUNT_NFS_CONFIG SUBREPO_DIR TAG UID USER VERSION
+ENV_SYSTEM                       = $(shell printenv |awk -F '=' 'NR == FNR { if($$1 !~ /^(\#|$$)/) { A[$$1]; next } } ($$1 in A)' .env.dist - 2>/dev/null |awk '{print} END {print "$(foreach var,$(ENV_SYSTEM_VARS),$(if $($(var)),$(var)=$($(var))))"}' |awk -F "=" '!seen[$$1]++')
+ENV_SYSTEM_VARS                 ?= APP AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN AWS_DEFAULT_REGION AWS_DEFAULT_OUTPUT AWS_PROFILE BRANCH COMPOSE_IGNORE_ORPHANS COMPOSE_PROJECT_NAME COMPOSE_SERVICE_NAME DOCKER_IMAGE_CLI DOCKER_IMAGE_REPO DOCKER_IMAGE_REPO_BASE DOCKER_IMAGE_SSH DOCKER_IMAGE_TAG DOCKER_INFRA_SSH ENV HOSTNAME GID MONOREPO_DIR MOUNT_NFS_CONFIG SUBREPO_DIR TAG UID USER VERSION
 GID                             ?= $(shell id -g)
 HOSTNAME                        ?= $(shell hostname |sed 's/\..*//')
 MAKE_ARGS                       ?= ENV=$(ENV)

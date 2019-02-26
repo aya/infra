@@ -62,7 +62,7 @@ define ansible-playbook
 	$(DRYRUN_ECHO) docker run $(DOCKER_RUN_OPTIONS) $(patsubst %,--env-file %,$(ENV_FILE)) $(patsubst %,-e %,$(ENV_SYSTEM)) -e SSH_AUTH_SOCK=/tmp/ssh-agent/socket -v $(DOCKER_INFRA_SSH):/tmp/ssh-agent:ro $(DOCKER_RUN_VOLUME) $(DOCKER_RUN_WORKDIR) --entrypoint /usr/bin/ansible-playbook ansible $(1)
 endef
 define aws
-	$(DRYRUN_ECHO) docker run $(DOCKER_RUN_OPTIONS) $(patsubst %,--env-file %,$(ENV_FILE)) $(patsubst %,-e %,$(ENV_SYSTEM)) -e SSH_AUTH_SOCK=/tmp/ssh-agent/socket -v $(DOCKER_INFRA_SSH):/tmp/ssh-agent:ro $(DOCKER_RUN_VOLUME) -v $$HOME/.aws:/root/.aws:ro $(DOCKER_RUN_WORKDIR) aws $(1)
+	$(DRYRUN_ECHO) docker run $(DOCKER_RUN_OPTIONS) $(patsubst %,--env-file %,$(ENV_FILE)) $(patsubst %,-e %,$(ENV_SYSTEM)) -e SSH_AUTH_SOCK=/tmp/ssh-agent/socket -v $(DOCKER_INFRA_SSH):/tmp/ssh-agent:ro $(DOCKER_RUN_VOLUME) -v $$HOME/.aws:/root/.aws:ro $(DOCKER_RUN_WORKDIR) anigeo/awscli:latest $(1)
 endef
 define openstack
 	$(DRYRUN_ECHO) docker run $(DOCKER_RUN_OPTIONS) $(patsubst %,--env-file %,$(ENV_FILE)) $(patsubst %,-e %,$(ENV_SYSTEM)) -e SSH_AUTH_SOCK=/tmp/ssh-agent/socket -v $(DOCKER_INFRA_SSH):/tmp/ssh-agent:ro $(DOCKER_RUN_VOLUME) $(DOCKER_RUN_WORKDIR) openstack $(1)
