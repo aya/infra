@@ -53,7 +53,7 @@ ifneq (,$(filter $(ENV),prod preprod))
 	$(eval DRYRUN_IGNORE := false)
 	$(foreach server,$(SERVER_LIST),$(call exec,ssh -Aqtt sshuser@52.50.10.235 "ssh -q -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no sshuser@$(server) \"sudo -u deploy /bin/bash -c '\''"$(ARGS)"'\''\"" ) &&) true
 else
-	$(call make, exec $(ARGS))
+	$(call make, exec -- $(ARGS))
 endif
 
 .PHONY: start
