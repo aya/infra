@@ -45,6 +45,17 @@ reinstall: clean ## Reinstall application
 .PHONY: restart
 restart: docker-restart start-up ## Restart application
 
+.PHONY: run
+run: ## Run a command on application servers
+ifneq (,$(filter $(ENV),prod preprod))
+	$(eval DRYRUN_IGNORE := true)
+	$(eval SERVER_LIST := $(shell $(call exec,ssh sshuser@52.50.10.235 make list-nodes |awk "\$$1 ~ /$(SERVER_NAME)/ {print \$$2}")))
+	$(eval DRYRUN_IGNORE := false)
+	$(foreach server,$(SERVER_LIST),$(call exec,ssh -Aqtt sshuser@52.50.10.235 "ssh -q -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no sshuser@$(server) \"sudo -u deploy /bin/bash -c '\''"$(ARGS)"'\''\"" ) &&) true
+else
+	$(call make, exec $(ARGS))
+endif
+
 .PHONY: start
 start: docker-start ## Start application dockers
 

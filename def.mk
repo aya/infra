@@ -33,6 +33,8 @@ include def.*.mk
 ifneq ($(filter $(CMDS),$(firstword $(MAKECMDGOALS))),)
 # set $ARGS with following arguments
 ARGS                            := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
+ARGS                            := $(subst :,\:,$(ARGS))
+ARGS                            := $(subst &,\&,$(ARGS))
 # ...and turn them into do-nothing targets
 $(eval $(ARGS):;@:)
 endif
