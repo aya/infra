@@ -30,6 +30,22 @@ services:
         ports:
           - 9115
         restart: always
+    es-exporter:
+        build:
+            context: ../monitoring/docker/es-exporter
+        command: -e 52.48.69.60:9200
+        image: braedon/prometheus-es-exporter:latest
+        labels:
+          - SERVICE_9206_NAME=${COMPOSE_SERVICE_NAME}-es-exporter-9206
+          - SERVICE_9206_CHECK_TCP=true
+          - SERVICE_9206_CHECK_INITIAL_STATUS=passing
+          - SERVICE_9206_TAGS=${ES_EXPORTER_SERVICE_9206_TAGS}
+        networks:
+          - backend
+          - frontend
+        ports:
+          - 9206
+        restart: always
     grafana:
         build:
             context:  ../monitoring/docker/grafana

@@ -1,74 +1,93 @@
 ##
 # DOCKER
 
-docker-base:
+.PHONY: docker-infra-base
+docker-infra-base:
 ifneq ($(wildcard ../infra),)
 ifneq (,$(filter $(MAKECMDGOALS),start up))
-	ENV=$(ENV) $(MAKE) -C ../infra $(patsubst %,base-%,$(MAKECMDGOALS)) STACK_BASE=base || true
+	$(call make,-C ../infra $(patsubst %,base-%,$(MAKECMDGOALS)) STACK_BASE=base)
 endif
 endif
 
+.PHONY: docker-build
 docker-build: stack
 	$(call docker-compose,build $(patsubst %,--build-arg %,$(DOCKER_BUILD_ARGS)) $(SERVICE))
 
+.PHONY: docker-down
 docker-down: stack
 	$(call docker-compose,down $(DOCKER_COMPOSE_DOWN_OPTIONS))
 
+.PHONY: docker-config
 docker-config: stack
 	$(call docker-compose,config)
 
+.PHONY: docker-connect
 docker-connect: SERVICE ?= $(DOCKER_SERVICE)
 docker-connect: stack docker-up
 	$(call docker-compose,exec $(SERVICE) /bin/zsh) || $(call docker-compose,exec $(SERVICE) /bin/bash) || $(call docker-compose,exec $(SERVICE) /bin/sh) || true
 
+.PHONY: docker-exec
 docker-exec: SERVICE ?= $(DOCKER_SERVICE)
 docker-exec: stack docker-up
 	$(call docker-compose-exec,$(SERVICE),$(ARGS)) || true
 
+.PHONY: docker-logs
 docker-logs: stack docker-up
 	$(call docker-compose,logs -f --tail=100 $(SERVICE)) || true
 
+.PHONY: docker-network
 docker-network:
 	[ -n "$(shell docker network ls -q --filter name='^$(DOCKER_NETWORK)$$' 2>/dev/null)" ] \
-	  || { echo -n "Creating docker network $(DOCKER_NETWORK) ... " && docker network create $(DOCKER_NETWORK) >/dev/null 2>&1 && echo "done" || echo "ERROR"; }
+	  || { echo -n "Creating docker network $(DOCKER_NETWORK) ... " && $(DRYRUN_ECHO) docker network create $(DOCKER_NETWORK) >/dev/null 2>&1 && echo "done" || echo "ERROR"; }
 
+.PHONY: docker-network-rm
 docker-network-rm:
 	[ -z "$(shell docker network ls -q --filter name='^$(DOCKER_NETWORK)$$' 2>/dev/null)" ] \
-	  || { echo -n "Removing docker network $(DOCKER_NETWORK) ... " && docker network rm $(DOCKER_NETWORK) >/dev/null 2>&1 && echo "done" || echo "ERROR"; }
+	  || { echo -n "Removing docker network $(DOCKER_NETWORK) ... " && $(DRYRUN_ECHO) docker network rm $(DOCKER_NETWORK) >/dev/null 2>&1 && echo "done" || echo "ERROR"; }
 
-docker-node:
+.PHONY: docker-infra-node
+docker-infra-node:
 ifneq ($(wildcard ../infra),)
 ifneq (,$(filter $(MAKECMDGOALS),start up))
-	ENV=$(ENV) $(MAKE) -C ../infra $(patsubst %,node-%,$(MAKECMDGOALS)) STACK_NODE=node || true
+	$(call make,-C ../infra $(patsubst %,node-%,$(MAKECMDGOALS)) STACK_NODE=node)
 endif
 endif
 
+.PHONY: docker-ps
 docker-ps: stack
 	$(call docker-compose,ps)
 
+.PHONY: docker-rebuild
 docker-rebuild: stack
 	$(call docker-compose,build $(patsubst %,--build-arg %,$(DOCKER_BUILD_ARGS)) --pull --no-cache $(SERVICE))
 
+.PHONY: docker-recreate
 docker-recreate: stack docker-rm docker-up
 
+.PHONY: docker-restart
 docker-restart: stack
 	$(call docker-compose,restart $(SERVICE))
 
+.PHONY: docker-rm
 docker-rm: stack
 	$(call docker-compose,rm -fs $(SERVICE))
 
-docker-services:
+.PHONY: docker-infra-services
+docker-infra-services:
 ifneq ($(wildcard ../infra),)
 ifneq (,$(filter $(MAKECMDGOALS),install ps start up))
-	ENV=$(ENV) $(MAKE) -C ../infra $(MAKECMDGOALS) STACK=services || true
+	$(call make,-C ../infra $(MAKECMDGOALS) STACK=services)
 endif
 endif
 
+.PHONY: docker-start
 docker-start: stack
 	$(call docker-compose,start $(SERVICE))
 
+.PHONY: docker-stop
 docker-stop: stack
 	$(call docker-compose,stop $(SERVICE))
 
+.PHONY: docker-up
 docker-up: stack
 	$(call docker-compose,up -d $(SERVICE))

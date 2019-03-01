@@ -7,7 +7,8 @@ RUN apk --no-cache add --virtual .build-deps \
         libffi-dev \
         openssl-dev \
         python-dev \
- && pip install python-openstackclient\
+ && pip install --upgrade pip \
+ && pip install python-openstackclient \
  && apk del .build-deps
 
 RUN apk --no-cache upgrade

@@ -28,6 +28,11 @@ scrape_configs:
          - blackbox:9115
          - grafana:3000
 
+  - job_name: 'es-exporter'
+    static_configs:
+      - targets:
+        - es-exporter:9206
+
   - job_name: 'node-exporter'
     static_configs:
       - targets:
