@@ -11,8 +11,8 @@
     {
     "type": "qemu",
     "accelerator": "kvm",
-    "iso_url": "http://dl-cdn.alpinelinux.org/alpine/v3.7/releases/x86_64/alpine-virt-3.7.0-x86_64.iso",
-    "iso_checksum": "5a4b2588afd32e7024dd61d9558b77b03a4f3189cb4c9fc05e9e944fb780acdd",
+    "iso_url": "http://dl-cdn.alpinelinux.org/alpine/v3.8/releases/x86_64/alpine-virt-3.8.1-x86_64.iso",
+    "iso_checksum": "83ede521b174d99a0975c3653e7310b58075fa68fb773ed6995b974a44df60ce",
     "iso_checksum_type": "sha256",
     "output_directory": "iso",
     "shutdown_command": "poweroff",
@@ -25,7 +25,7 @@
     "ssh_password": "{{user `password`}}",
     "ssh_port": 22,
     "ssh_wait_timeout": "16s",
-    "vm_name": "alpine-3.7.0-x86_64.iso",
+    "vm_name": "alpine-3.8.1-x86_64.iso",
     "vnc_port_max": "{{user `vnc_port_max`}}",
     "net_device": "virtio-net",
     "disk_interface": "virtio",
@@ -50,7 +50,7 @@
     },
     {
         "type": "shell",
-        "inline": ["mount /dev/vda3 /mnt",
+        "inline": ["mount /dev/vda2 /mnt",
                    "mkdir -p /mnt/root/.ssh",
                    "chmod 0700 /mnt/root/.ssh"]
     },

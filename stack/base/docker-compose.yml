@@ -26,6 +26,24 @@ services:
           - ssh:/tmp/ssh-agent:ro
           - ${MONOREPO_DIR}:${MONOREPO_DIR}:cached
         working_dir: ${MONOREPO_DIR}
+    http:
+        build:
+            args:
+              - APP=${APP}
+              - UID=${UID}
+              - USER=${USER}
+            context: .
+            dockerfile: docker/http/Dockerfile
+            target: ${DOCKER_BUILD_TARGET}
+        command: tail -f /dev/null
+        environment:
+          - ENV=${ENV}
+        image: ${DOCKER_IMAGE_REPO}/http:${DOCKER_BUILD_TARGET}
+        networks:
+          - backend
+        restart: always
+        volumes:
+          - ${MONOREPO_DIR}:${MONOREPO_DIR}:ro,cached
     php5.6:
         build:
             args:
@@ -65,24 +83,6 @@ services:
         restart: always
         volumes:
           - ssh:/tmp/ssh-agent
-    http:
-        build:
-            args:
-              - APP=${APP}
-              - UID=${UID}
-              - USER=${USER}
-            context: .
-            dockerfile: docker/http/Dockerfile
-            target: ${DOCKER_BUILD_TARGET}
-        command: tail -f /dev/null
-        environment:
-          - ENV=${ENV}
-        image: ${DOCKER_IMAGE_REPO}/http:${DOCKER_BUILD_TARGET}
-        networks:
-          - backend
-        restart: always
-        volumes:
-          - ${MONOREPO_DIR}:${MONOREPO_DIR}:ro,cached
 
 volumes:
     ssh:

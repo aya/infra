@@ -1,0 +1,40 @@
+version: '3.6'
+
+services:
+    ide:
+        build:
+            args:
+              - APP=${APP}
+              - GIT_AUTHOR_NAME=${GIT_AUTHOR_NAME}
+              - GIT_AUTHOR_EMAIL=${GIT_AUTHOR_EMAIL}
+              - MONOREPO=${MONOREPO}
+              - UID=${UID}
+              - USER=${USER}
+            context: ../ide/docker/ide
+            target: ${DOCKER_BUILD_TARGET}
+        environment:
+          - APP=${APP}
+          - ENV=${ENV}
+          - SSH_AUTH_SOCK=/tmp/ssh-agent/socket
+        image: ${DOCKER_IMAGE_REPO}/ide:${DOCKER_BUILD_TARGET}
+        labels:
+          - SERVICE_3000_NAME=${COMPOSE_SERVICE_NAME}-ide-3000
+          - SERVICE_3000_CHECK_TCP=true
+          - SERVICE_3000_CHECK_INITIAL_STATUS=passing
+          - SERVICE_3000_TAGS=${SERVICE_IDE_SERVICE_3000_TAGS}
+        networks:
+          - frontend
+        restart: always
+        volumes:
+          - ${MONOREPO_DIR}:/${USER}/${MONOREPO}:cached
+          - ssh-agent:/tmp/ssh-agent:ro
+
+volumes:
+    ssh-agent:
+        external:
+            name: ${DOCKER_INFRA_SSH}
+
+networks:
+    frontend:
+        external: true
+        name: node

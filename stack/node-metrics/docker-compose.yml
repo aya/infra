@@ -3,6 +3,7 @@ version: '3.6'
 services:
     cadvisor-exporter:
         image: google/cadvisor
+        hostname: ${HOSTNAME}
         labels:
           - SERVICE_8080_NAME=${COMPOSE_SERVICE_NAME}-cadvisor-exporter-8080
           - SERVICE_8080_CHECK_TCP=true
@@ -21,6 +22,7 @@ services:
           - /var/lib/docker/:/var/lib/docker:ro
     node-exporter:
         image: prom/node-exporter
+        hostname: ${HOSTNAME}
         labels:
           - SERVICE_9100_NAME=${COMPOSE_SERVICE_NAME}-node-exporter-9100
           - SERVICE_9100_CHECK_TCP=true

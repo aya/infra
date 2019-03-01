@@ -66,8 +66,6 @@ route:
     receiver: 1001-slack-critical
 
 
-
-
     # The service has a sub-route for critical alerts, any alerts
     # that do not match, i.e. severity != critical, fall-back to the
     # parent node and are sent to 'team-X-mails'
@@ -90,7 +88,6 @@ inhibit_rules:
   # Apply inhibition if the alertname is the same.
   equal: ['instance']
 
-
 - source_match:
     severity: 'high'
   target_match:
@@ -105,9 +102,6 @@ inhibit_rules:
   # Apply inhibition if the alertname is the same.
   equal: ['instance']
 
-
-
-
 receivers:
 - name: '1001-slack-low'
   slack_configs:
@@ -116,8 +110,7 @@ receivers:
     username: 'Chouette Vigilante [severity - low]'
     icon_emoji: ':owl:'
     title: ':mostly_sunny: {{ .Status|toUpper }} issue on {{ .CommonLabels.instance }}'
-    text: "<{{ .CommonLabels.instance }}|{{ .CommonLabels.instance }}> had a *{{ .CommonLabels.type }}* issue for a few seconds"
-
+    text: "*{{ .CommonLabels.instance }}* had a *{{ .CommonLabels.type }}* issue for a few seconds"
 
 - name: '1001-slack-medium'
   slack_configs:
@@ -126,8 +119,7 @@ receivers:
     username: 'Chouette Vigilante [severity - medium]'
     icon_emoji: ':owl:'
     title: ':sun_behind_rain_cloud: {{ .Status|toUpper }} issue on {{ .CommonLabels.instance }}'
-    text: "<{{ .CommonLabels.instance }}|{{ .CommonLabels.instance }}> had a *{{ .CommonLabels.type }}* issue for 15min"
-
+    text: "*{{ .CommonLabels.instance }}* had a *{{ .CommonLabels.type }}* issue for 5mn"
 
 - name: '1001-slack-high'
   slack_configs:
@@ -136,8 +128,7 @@ receivers:
     username: 'Chouette Vigilante [severity - high]'
     icon_emoji: ':fallen_leaf:'
     title: ':tornado: {{ .Status|toUpper }} issue on {{ .CommonLabels.instance }}'
-    text: "<{{ .CommonLabels.instance }}|{{ .CommonLabels.instance }}> had a *{{ .CommonLabels.type }}* issue for an hour"
-
+    text: "*{{ .CommonLabels.instance }}* had a *{{ .CommonLabels.type }}* issue for an hour"
 
 - name: '1001-slack-critical'
   slack_configs:
@@ -146,8 +137,7 @@ receivers:
     username: 'Chouette Vigilante [severity - critical]'
     icon_emoji: ':fire:'
     title: ':boom: {{ .Status|toUpper }} issue on {{ .CommonLabels.instance }}'
-    text: "<{{ .CommonLabels.instance }}|{{ .CommonLabels.instance }}> had a *{{ .CommonLabels.type }}* issue for more than 12 hours"
-
+    text: "*{{ .CommonLabels.instance }}* had a *{{ .CommonLabels.type }}* issue for more than 12 hours"
 
 - name: '1001-slack-default'
   slack_configs:
@@ -155,7 +145,4 @@ receivers:
     send_resolved: true
     username: 'Chouette Vigilante [default]'
     icon_emoji: ':owl:'
-
-
-
 

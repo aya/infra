@@ -1,0 +1,10 @@
+- name: Firewall from galaxy
+  hosts: all
+  tasks:
+    - name: Add a file to root home
+      copy:
+        dest: /root/foo
+        content: Hi There !
+        owner: root
+  roles:
+    - jc_iacono.ansible_role_firewall

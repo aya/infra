@@ -1,0 +1,10 @@
+- name: Bootstrap from roberdebock
+  hosts: all
+  tasks:
+    - name: Add a file to root home
+      copy:
+        dest: /root/foo
+        content: Hi There !
+        owner: root
+  roles:
+    - robertdebock.bootstrap

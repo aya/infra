@@ -2,24 +2,24 @@ version: '3.6'
 
 services:
     redmine:
-        image: sameersbn/redmine:latest
+        image: sameersbn/redmine:4.0.0
         # command: /bin/sh -c "crontab -l |sed 's|@hourly|@hourly cd /home/redmine/data/files/1001Pharmacies \&\& git fetch -q --all -p \&\&|' |crontab"
         environment:
           - DB_ADAPTER=mysql2
-          - DB_HOST=mysql
-          - DB_NAME=redmine
-          - DB_USER=redmine
-          - DB_PASS=redmine
-          - REDMINE_FETCH_COMMITS=hourly
-          - SMTP_DOMAIN=${SMTP_DOMAIN}
-          - SMTP_USER=${SMTP_USER}
-          - SMTP_PASS=${SMTP_PASS}
+          - DB_HOST=${REDMINE_DB_HOST}
+          - DB_NAME=${REDMINE_DB_NAME}
+          - DB_USER=${REDMINE_DB_USER}
+          - DB_PASS=${REDMINE_DB_PASS}
+          - REDMINE_SECRET_TOKEN=${REDMINE_REDMINE_SECRET_TOKEN}
+          - SMTP_DOMAIN=${REDMINE_SMTP_DOMAIN}
+          - SMTP_USER=${REDMINE_SMTP_USER}
+          - SMTP_PASS=${REDMINE_SMTP_PASS}
           - TZ=Europe/Paris
         labels:
           - SERVICE_80_NAME=${COMPOSE_SERVICE_NAME}-redmine-80
           - SERVICE_80_CHECK_TCP=true
           - SERVICE_80_CHECK_INITIAL_STATUS=passing
-          - SERVICE_80_TAGS=${SERVICE_REDMINE_HTTP_TAGS}
+          - SERVICE_80_TAGS=${REDMINE_SERVICE_80_TAGS}
           - SERVICE_443_IGNORE=true
         networks:
           - backend
@@ -36,7 +36,7 @@ services:
           - SERVICE_80_NAME=${COMPOSE_SERVICE_NAME}-static-80
           - SERVICE_80_CHECK_TCP=true
           - SERVICE_80_CHECK_INITIAL_STATUS=passing
-          - SERVICE_80_TAGS=${SERVICE_STATIC_HTTP_TAGS}
+          - SERVICE_80_TAGS=${STATIC_SERVICE_80_TAGS}
         networks:
           - backend
           - frontend

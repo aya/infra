@@ -2,16 +2,16 @@ version: '3.6'
 
 services:
     drone-agent:
-        image: drone/agent:latest
-        command: agent
+        image: drone/agent:1.0.0-rc.5
         depends_on:
           - drone-server
         environment:
-          - DRONE_MAX_PROCS=${DRONE_MAX_PROCS}
-          - DRONE_SECRET=${DRONE_SECRET}
-          - DRONE_SERVER=drone-server:9000
+          - DRONE_RPC_SECRET=${DRONE_RPC_SECRET}
+          - DRONE_RPC_SERVER=http://drone-server
+          - DRONE_RUNNER_CAPACITY=${DRONE_RUNNER_CAPACITY}
+          - DRONE_RUNNER_NAME=${HOSTNAME}
         labels:
-          - SERVICE_3000_IGNORE=true
+          - SERVICE_80_IGNORE=true
         networks:
           - backend
           - frontend
@@ -32,36 +32,33 @@ services:
         volumes:
           - /var/run/docker.sock:/var/run/docker.sock
     drone-server:
-        image: drone/drone:latest
+        image: drone/drone:1.0.0-rc.5
         environment:
-          - DRONE_ADMIN=${DRONE_ADMIN}
-          - DRONE_GITHUB=true
-          - DRONE_GITHUB_CLIENT=${DRONE_GITHUB_CLIENT}
-          - DRONE_GITHUB_PRIVATE_MODE=${DRONE_GITHUB_PRIVATE_MODE}
-          - DRONE_GITHUB_SECRET=${DRONE_GITHUB_SECRET}
-          - DRONE_HOST=${DRONE_HOST}
-          - DRONE_OPEN=true
-          - DRONE_ORGS=${DRONE_ORGS}
-          - DRONE_SECRET=${DRONE_SECRET}
+          - DRONE_GIT_ALWAYS_AUTH=false
+          - DRONE_GITHUB_SERVER=https://github.com
+          - DRONE_GITHUB_CLIENT_ID=${DRONE_GITHUB_CLIENT_ID}
+          - DRONE_GITHUB_CLIENT_SECRET=${DRONE_GITHUB_CLIENT_SECRET}
+          - DRONE_RPC_SECRET=${DRONE_RPC_SECRET}
+          - DRONE_SERVER_HOST=${DRONE_SERVER_HOST}
+          - DRONE_SERVER_PROTO=${DRONE_SERVER_PROTO}
+          - DRONE_TLS_AUTOCERT=true
+          - DRONE_USER_CREATE=${DRONE_USER_CREATE}
+          - DRONE_USER_FILTER=${DRONE_USER_FILTER}
         labels:
-          - SERVICE_80_IGNORE=true
+          - SERVICE_80_NAME=${COMPOSE_SERVICE_NAME}-drone-server-80
+          - SERVICE_80_CHECK_TCP=true
+          - SERVICE_80_CHECK_INITIAL_STATUS=passing
+          - SERVICE_80_TAGS=${DRONE_SERVER_SERVICE_80_TAGS}
           - SERVICE_443_IGNORE=true
-          - SERVICE_8000_NAME=${COMPOSE_SERVICE_NAME}-drone-server-8000
-          - SERVICE_8000_CHECK_TCP=true
-          - SERVICE_8000_CHECK_INITIAL_STATUS=passing
-          - SERVICE_8000_TAGS=${SERVICE_DRONE_HTTP_TAGS}
-          - SERVICE_9000_NAME=${COMPOSE_SERVICE_NAME}-drone-server-9000
-          - SERVICE_9000_CHECK_TCP=true
-          - SERVICE_9000_CHECK_INITIAL_STATUS=passing
         networks:
           - backend
           - frontend
         ports:
-          - 8000
-          - 9000
+          - 80
+          - 443
         restart: always
         volumes:
-          - drone:/var/lib/drone/
+          - drone:/data
 
 volumes:
     drone:
