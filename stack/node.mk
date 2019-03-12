@@ -1,5 +1,5 @@
 .PHONY: node
-node: node-openssl node-network node-up
+node: node-openssl node-docker-network-create node-up
 
 .PHONY: node-openssl
 node-openssl:
@@ -11,5 +11,7 @@ node-%: bootstrap-infra
 ifeq (,$(filter-out $(DOCKER_SERVICE_INFRA_NODE),$(SERVICE)))
 	$(eval SERVICE_NODE:=$(SERVICE))
 endif
-	$(eval MAKE_ARGS := ARGS=$(ARGS) COMPOSE_IGNORE_ORPHANS=$(COMPOSE_IGNORE_ORPHANS) COMPOSE_PROJECT_NAME=$(COMPOSE_PROJECT_NAME_INFRA_NODE) DOCKER_NETWORK=node ENV=$(ENV))
-	$(MAKE_ARGS) $(MAKE) $(patsubst %,-o %,$^) docker-$* $(MAKE_ARGS) SERVICE=$(SERVICE_NODE) STACK="$(STACK_NODE)"
+	$(call make,$(patsubst %,-o %,$^) docker-compose-$* COMPOSE_PROJECT_NAME=$(COMPOSE_PROJECT_NAME_INFRA_NODE) DOCKER_NETWORK=node SERVICE=$(SERVICE_NODE) STACK="$(STACK_NODE)",,ARGS COMPOSE_IGNORE_ORPHANS ENV)
+
+node-docker-network-create:
+	$(call make,$(patsubst %,-o %,$^) docker-network-create DOCKER_NETWORK=node)

@@ -4,8 +4,6 @@ include help.mk
 include $(filter-out env.mk def.mk $(wildcard def.*.mk) help.mk $(wildcard stack.*.mk),$(wildcard *.mk))
 include $(wildcard ../subrepo.mk)
 
-DOCKERS        := $(dir $(wildcard */docker/*/))
-
 ##
 # INSTALL
 
@@ -28,14 +26,3 @@ clean-app:
 clean-env:
 	rm -i .env || true
 	rm -i stack/*/.env || true
-##
-# BUILD
-
-.PHONY: build
-build: $(DOCKERS)
-
-.PHONY: $(DOCKERS)
-$(DOCKERS):
-	if [ $(DOCKER) = "true" ]; then \
-		$(DRYRUN_ECHO) docker build -t $(lastword $(subst /, ,$@)) $@; \
-	fi

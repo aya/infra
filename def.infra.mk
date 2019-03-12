@@ -1,7 +1,9 @@
-CMDS                            ?= ansible ansible-playbook aws base-exec docker-exec exec node-exec openstack packer
+CMDS                            += ansible ansible-playbook aws base-exec node-exec openstack packer terraform
 COMPOSE_IGNORE_ORPHANS          ?= true
-CONTEXT                         += COMPOSE_PROJECT_NAME
+CONTEXT                         += COMPOSE_PROJECT_NAME GIT_AUTHOR_EMAIL GIT_AUTHOR_NAME
 DOCKER_SERVICE                  ?= mysql
+GIT_AUTHOR_EMAIL                ?= $(shell git config user.email 2>/dev/null)
+GIT_AUTHOR_NAME                 ?= $(shell git config user.name 2>/dev/null)
 REMOTE                          ?= ssh://git@github.com/1001Pharmacies/$(SUBREPO)
 SETUP_NFSD                      ?= false
 SETUP_NFSD_OSX_CONFIG           ?= nfs.server.bonjour=0 nfs.server.mount.regular_files=1 nfs.server.mount.require_resv_port=0 nfs.server.nfsd_threads=16 nfs.server.async=1
@@ -20,3 +22,42 @@ define setup-nfsd-osx
 	nfsd status >/dev/null || sudo nfsd enable
 	showmount -e localhost |grep "$(dir)" >/dev/null 2>&1 || sudo nfsd restart
 endef
+
+ifeq ($(DOCKER), true)
+
+define ansible
+	$(DRYRUN_ECHO) docker run $(DOCKER_RUN_OPTIONS) $(patsubst %,--env-file %,$(ENV_FILE)) $(patsubst %,-e %,$(ENV_SYSTEM)) $(DOCKER_SSH_AUTH) $(DOCKER_RUN_VOLUME) $(DOCKER_RUN_WORKDIR) $(DOCKER_REPO)/ansible:$(DOCKER_BUILD_TARGET) $(1)
+endef
+define ansible-playbook
+	$(DRYRUN_ECHO) docker run $(DOCKER_RUN_OPTIONS) $(patsubst %,--env-file %,$(ENV_FILE)) $(patsubst %,-e %,$(ENV_SYSTEM)) $(DOCKER_SSH_AUTH) $(DOCKER_RUN_VOLUME) $(DOCKER_RUN_WORKDIR) --entrypoint /usr/bin/ansible-playbook $(DOCKER_REPO)/ansible:$(DOCKER_BUILD_TARGET) $(1)
+endef
+define aws
+	$(DRYRUN_ECHO) docker run $(DOCKER_RUN_OPTIONS) $(patsubst %,--env-file %,$(ENV_FILE)) $(patsubst %,-e %,$(ENV_SYSTEM)) $(DOCKER_SSH_AUTH) $(DOCKER_RUN_VOLUME) -v $$HOME/.aws:/root/.aws:ro $(DOCKER_RUN_WORKDIR) anigeo/awscli:latest $(1)
+endef
+define openstack
+	$(DRYRUN_ECHO) docker run $(DOCKER_RUN_OPTIONS) $(patsubst %,--env-file %,$(ENV_FILE)) $(patsubst %,-e %,$(ENV_SYSTEM)) $(DOCKER_SSH_AUTH) $(DOCKER_RUN_VOLUME) $(DOCKER_RUN_WORKDIR) $(DOCKER_REPO)/openstack:$(DOCKER_BUILD_TARGET) $(1)
+endef
+define packer
+	$(DRYRUN_ECHO) docker run $(DOCKER_RUN_OPTIONS) $(patsubst %,--env-file %,$(ENV_FILE)) $(patsubst %,-e %,$(ENV_SYSTEM)) -e SSH_AUTH_SOCK=/tmp/ssh-agent/socket -v $(DOCKER_INFRA_SSH):/tmp/ssh-agent:ro $(DOCKER_RUN_VOLUME) $(DOCKER_RUN_WORKDIR) --name infra_packer --privileged -v /lib/modules:/lib/modules $(DOCKER_REPO)/packer:$(DOCKER_BUILD_TARGET) $(1)
+endef
+
+else
+
+SHELL := /bin/bash
+define ansible
+	IFS=$$'\n'; $(DRYRUN_ECHO) env $(ENV_SYSTEM) $$(cat $(ENV_FILE) 2>/dev/null |awk -F "=" '$$1 ~! /^\(#|$$\)/') ansible $(1)
+endef
+define ansible-playbook
+	IFS=$$'\n'; $(DRYRUN_ECHO) env $(ENV_SYSTEM) $$(cat $(ENV_FILE) 2>/dev/null |awk -F "=" '$$1 ~! /^\(#|$$\)/') ansible-playbook $(1)
+endef
+define aws
+	IFS=$$'\n'; $(DRYRUN_ECHO) env $(ENV_SYSTEM) $$(cat $(ENV_FILE) 2>/dev/null |awk -F "=" '$$1 ~! /^\(#|$$\)/') aws $(1)
+endef
+define openstack
+	IFS=$$'\n'; $(DRYRUN_ECHO) env $(ENV_SYSTEM) $$(cat $(ENV_FILE) 2>/dev/null |awk -F "=" '$$1 ~! /^\(#|$$\)/') openstack $(1)
+endef
+define packer
+	IFS=$$'\n'; $(DRYRUN_ECHO) env $(ENV_SYSTEM) $$(cat $(ENV_FILE) 2>/dev/null |awk -F "=" '$$1 ~! /^\(#|$$\)/') packer $(1)
+endef
+
+endif

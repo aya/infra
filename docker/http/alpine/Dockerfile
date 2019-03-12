@@ -9,8 +9,8 @@ RUN sed -E -i \
         -e 's!^#?\s*(Include conf/extra/httpd-('${HTTPD_CONF_EXTRA// /|}').conf)\s*!\1!g' \
         "$HTTPD_PREFIX/conf/httpd.conf"; 
 
-COPY docker/http/docker-entrypoint.sh /
-COPY docker/http/httpd-vhosts.ctmpl /usr/local/apache2/conf/extra/
+COPY docker-entrypoint.sh /
+COPY httpd-vhosts.ctmpl /usr/local/apache2/conf/extra/
 COPY --from=hashicorp/consul-template:alpine /bin/consul-template /usr/local/bin/
 
 ENTRYPOINT ["/docker-entrypoint.sh"]
@@ -27,5 +27,3 @@ ENV GID=${UID}
 ENV USER=${USER}
 LABEL com.1001pharmacies.uid=${UID}
 LABEL com.1001pharmacies.user=${USER}
-
-FROM local as tests

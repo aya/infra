@@ -162,7 +162,7 @@ ARG PHP_EXT_ENABLE="amqp apcu bcmath blackfire bz2 calendar gd geoip imagick int
 RUN docker-php-ext-enable ${PHP_EXT_ENABLE}
 
 # copy *.ini
-COPY docker/php5.6/*.ini /usr/local/etc/php/conf.d/
+COPY *.ini /usr/local/etc/php/conf.d/
 
 # custom php config
 ARG PHP_INI_CONFIG
@@ -211,5 +211,3 @@ RUN let $UID >/dev/null 2>&1 \
 RUN chown -R $USER /usr/local/etc/php/conf.d/
 
 USER $USER
-
-FROM local as tests
