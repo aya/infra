@@ -6,7 +6,7 @@ services:
             CONSUL_LOCAL_CONFIG: '{"log_level": "warn"}'
     fabio:
         networks:
-            frontend:
+            public:
                 aliases:
                   - 1001pharmacies.net
                   - aldrin.1001pharmacies.net

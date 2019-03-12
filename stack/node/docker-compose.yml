@@ -8,7 +8,7 @@ services:
           - CONSUL_HTTP_ADDR=consul:8500
         hostname: ${HOSTNAME}
         networks:
-          - frontend
+          - public
         restart: always
     consul:
         image: consul:latest
@@ -26,7 +26,7 @@ services:
           - SERVICE_8500_TAGS=${SERVICE_CONSUL_HTTP_TAGS}
           - SERVICE_8600_IGNORE=true
         networks:
-          - frontend
+          - public
         ports:
           - 8500:8500
         restart: always
@@ -51,7 +51,7 @@ services:
           - SERVICE_9998_TAGS=${SERVICE_FABIO_ADMIN_HTTP_TAGS}
           - SERVICE_9999_IGNORE=true
         networks:
-          - frontend
+          - public
         ports:
           - 80:80
           - 443:443
@@ -66,7 +66,7 @@ services:
           - consul
         hostname: ${HOSTNAME}
         networks:
-          - frontend
+          - public
         restart: always
         volumes:
           - /var/run/docker.sock:/tmp/docker.sock
@@ -76,6 +76,6 @@ volumes:
     ssl-certs:
 
 networks:
-    frontend:
+    public:
         external: true
         name: node

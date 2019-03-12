@@ -1,18 +1,26 @@
 version: '3.6'
 
 services:
-    vsftpd-s3:
-        build: ../node-ftp/docker/vsftpd-s3
-        cap_add:
-          - sys_admin
-        devices:
-          - /dev/fuse
-        environment:
-          - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
-          - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-          - FTPD_USERS=${FTPD_USERS}
-        hostname: ${HOSTNAME}
-        security_opt:
-          - apparmor:unconfined
-        network_mode: host
-        restart: always
+  vsftpd-s3:
+    build: ../node-ftp/docker/vsftpd-s3
+    cap_add:
+    - sys_admin
+    devices:
+    - /dev/fuse
+    environment:
+    - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+    - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+    - FTPD_USERS=${FTPD_USERS}
+    labels:
+    - SERVICE_21_NAME=${COMPOSE_SERVICE_NAME}-vsftpd-s3-21
+    - SERVICE_21_CHECK_TCP=true
+    - SERVICE_21_CHECK_INITIAL_STATUS=passing
+    - SERVICE_22_NAME=${COMPOSE_SERVICE_NAME}-vsftpd-s3-22
+    - SERVICE_22_CHECK_TCP=true
+    - SERVICE_22_CHECK_INITIAL_STATUS=passing
+    - SERVICE_65000_IGNORE=true
+    hostname: ${HOSTNAME}
+    security_opt:
+    - apparmor:unconfined
+    network_mode: host
+    restart: always

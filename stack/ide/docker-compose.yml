@@ -16,7 +16,7 @@ services:
           - APP=${APP}
           - ENV=${ENV}
           - SSH_AUTH_SOCK=/tmp/ssh-agent/socket
-        image: ${DOCKER_IMAGE_REPO}/ide:${DOCKER_BUILD_TARGET}
+        image: ${DOCKER_REPO}/ide:${DOCKER_BUILD_TARGET}
         labels:
           - SERVICE_3000_NAME=${COMPOSE_SERVICE_NAME}-ide-3000
           - SERVICE_3000_CHECK_TCP=true

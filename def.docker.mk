@@ -1,25 +1,33 @@
+CMDS                            += docker-compose-exec
 COMPOSE_VERSION                 ?= 1.22.0
 COMPOSE_PROJECT_NAME            ?= $(USER)_$(APP)_$(ENV)
-COMPOSE_PROJECT_NAME_INFRA_BASE ?= $(USER)_infra
+COMPOSE_PROJECT_NAME_INFRA_BASE ?= $(USER)_infra_base
 COMPOSE_PROJECT_NAME_INFRA_NODE ?= node_infra
 COMPOSE_SERVICE_NAME            ?= $(subst _,-,$(COMPOSE_PROJECT_NAME))
+DOCKER_BUILD_ARGS               ?= $(foreach var,$(DOCKER_BUILD_VARS),$(if $($(var)),--build-arg $(var)='$($(var))'))
+DOCKER_BUILD_CACHE              ?= true
 DOCKER_BUILD_TARGET             ?= local
+DOCKER_BUILD_VARS               ?= APP BRANCH DOCKER_REPO GID GIT_AUTHOR_EMAIL GIT_AUTHOR_NAME TARGET UID USER VERSION
 DOCKER_COMPOSE_DOWN_OPTIONS     ?=
 DOCKER_IMAGE_CLI                ?= cli:$(DOCKER_BUILD_TARGET)
-DOCKER_IMAGE_REPO               ?= $(USER)/$(APP)
-DOCKER_IMAGE_REPO_BASE          ?= $(USER)/infra
 DOCKER_IMAGE_SSH                ?= ssh:$(DOCKER_BUILD_TARGET)
 DOCKER_IMAGE_TAG                ?= $(or $(TAG), $(DOCKER_BUILD_TARGET)$(addprefix -,$(DRONE_BUILD_NUMBER)))
 DOCKER_INFRA_CLI                ?= $(COMPOSE_PROJECT_NAME_INFRA_BASE)_cli
 DOCKER_INFRA_SSH                ?= $(COMPOSE_PROJECT_NAME_INFRA_BASE)_ssh
 DOCKER_NETWORK                  ?= $(ENV)
+DOCKER_REPO                     ?= $(DOCKER_REPO_INFRA)
+DOCKER_REPO_APP                 ?= $(USER)/$(APP)
+DOCKER_REPO_INFRA               ?= $(USER)/infra
 DOCKER_RUN_OPTIONS              ?= --rm -it
 DOCKER_RUN_VOLUME               ?= -v $$PWD:$$PWD
 DOCKER_RUN_WORKDIR              ?= -w $$PWD
-DOCKER_SERVICE_INFRA_BASE       ?= cli ssh php5.6
+DOCKER_SERVICE_INFRA_BASE       ?= cli ssh
 DOCKER_SERVICE_INFRA_NODE       ?= consul fabio registrator
+DOCKERS                         ?= $(dir $(wildcard docker/*/Dockerfile))
 
 ifeq ($(DOCKER), true)
+
+DOCKER_SSH_AUTH                 := -e SSH_AUTH_SOCK=/tmp/ssh-agent/socket -v $(DOCKER_INFRA_SSH):/tmp/ssh-agent:ro
 
 ifeq ($(DRONE), true)
 DOCKER_RUN_OPTIONS              := --rm
@@ -45,7 +53,7 @@ define docker-run
 endef
 ifeq ($(DRONE), true)
 define exec
-	$(DRYRUN_ECHO) docker run $(DOCKER_RUN_OPTIONS) $(patsubst %,--env-file %,$(ENV_FILE)) $(patsubst %,-e %,$(ENV_SYSTEM)) -e SSH_AUTH_SOCK=/tmp/ssh-agent/socket -v $(DOCKER_INFRA_SSH):/tmp/ssh-agent:ro $(DOCKER_RUN_VOLUME) $(DOCKER_RUN_WORKDIR) ${DOCKER_IMAGE_REPO_BASE}/${DOCKER_IMAGE_CLI} sh -c '$(1)'
+	$(DRYRUN_ECHO) docker run $(DOCKER_RUN_OPTIONS) $(patsubst %,--env-file %,$(ENV_FILE)) $(patsubst %,-e %,$(ENV_SYSTEM)) $(DOCKER_SSH_AUTH) $(DOCKER_RUN_VOLUME) $(DOCKER_RUN_WORKDIR) ${DOCKER_REPO_INFRA}/${DOCKER_IMAGE_CLI} sh -c '$(1)'
 endef
 else
 define exec
@@ -53,22 +61,7 @@ define exec
 endef
 endif
 define run
-	$(DRYRUN_ECHO) docker run $(DOCKER_RUN_OPTIONS) $(patsubst %,--env-file %,$(ENV_FILE)) $(patsubst %,-e %,$(ENV_SYSTEM)) -e SSH_AUTH_SOCK=/tmp/ssh-agent/socket -v $(DOCKER_INFRA_SSH):/tmp/ssh-agent:ro $(DOCKER_RUN_VOLUME) $(DOCKER_RUN_WORKDIR) ${DOCKER_IMAGE_REPO_BASE}/${DOCKER_IMAGE_CLI} sh -c '$(1)'
-endef
-define ansible
-	$(DRYRUN_ECHO) docker run $(DOCKER_RUN_OPTIONS) $(patsubst %,--env-file %,$(ENV_FILE)) $(patsubst %,-e %,$(ENV_SYSTEM)) -e SSH_AUTH_SOCK=/tmp/ssh-agent/socket -v $(DOCKER_INFRA_SSH):/tmp/ssh-agent:ro $(DOCKER_RUN_VOLUME) $(DOCKER_RUN_WORKDIR) ansible $(1)
-endef
-define ansible-playbook
-	$(DRYRUN_ECHO) docker run $(DOCKER_RUN_OPTIONS) $(patsubst %,--env-file %,$(ENV_FILE)) $(patsubst %,-e %,$(ENV_SYSTEM)) -e SSH_AUTH_SOCK=/tmp/ssh-agent/socket -v $(DOCKER_INFRA_SSH):/tmp/ssh-agent:ro $(DOCKER_RUN_VOLUME) $(DOCKER_RUN_WORKDIR) --entrypoint /usr/bin/ansible-playbook ansible $(1)
-endef
-define aws
-	$(DRYRUN_ECHO) docker run $(DOCKER_RUN_OPTIONS) $(patsubst %,--env-file %,$(ENV_FILE)) $(patsubst %,-e %,$(ENV_SYSTEM)) -e SSH_AUTH_SOCK=/tmp/ssh-agent/socket -v $(DOCKER_INFRA_SSH):/tmp/ssh-agent:ro $(DOCKER_RUN_VOLUME) -v $$HOME/.aws:/root/.aws:ro $(DOCKER_RUN_WORKDIR) anigeo/awscli:latest $(1)
-endef
-define openstack
-	$(DRYRUN_ECHO) docker run $(DOCKER_RUN_OPTIONS) $(patsubst %,--env-file %,$(ENV_FILE)) $(patsubst %,-e %,$(ENV_SYSTEM)) -e SSH_AUTH_SOCK=/tmp/ssh-agent/socket -v $(DOCKER_INFRA_SSH):/tmp/ssh-agent:ro $(DOCKER_RUN_VOLUME) $(DOCKER_RUN_WORKDIR) openstack $(1)
-endef
-define packer
-	$(DRYRUN_ECHO) docker run $(DOCKER_RUN_OPTIONS) $(patsubst %,--env-file %,$(ENV_FILE)) $(patsubst %,-e %,$(ENV_SYSTEM)) -e SSH_AUTH_SOCK=/tmp/ssh-agent/socket -v $(DOCKER_INFRA_SSH):/tmp/ssh-agent:ro $(DOCKER_RUN_VOLUME) $(DOCKER_RUN_WORKDIR) --name infra_packer --privileged -v /lib/modules:/lib/modules packer $(1)
+	$(DRYRUN_ECHO) docker run $(DOCKER_RUN_OPTIONS) $(patsubst %,--env-file %,$(ENV_FILE)) $(patsubst %,-e %,$(ENV_SYSTEM)) $(DOCKER_SSH_AUTH) $(DOCKER_RUN_VOLUME) $(DOCKER_RUN_WORKDIR) ${DOCKER_REPO_INFRA}/${DOCKER_IMAGE_CLI} sh -c '$(1)'
 endef
 
 else
@@ -89,20 +82,22 @@ endef
 define run
 	IFS=$$'\n'; $(DRYRUN_ECHO) env $(ENV_SYSTEM) $$(cat $(ENV_FILE) 2>/dev/null |awk -F "=" '$$1 ~! /^\(#|$$\)/') sh -c '$(1)'
 endef
-define ansible
-	IFS=$$'\n'; $(DRYRUN_ECHO) env $(ENV_SYSTEM) $$(cat $(ENV_FILE) 2>/dev/null |awk -F "=" '$$1 ~! /^\(#|$$\)/') ansible $(1)
-endef
-define ansible-playbook
-	IFS=$$'\n'; $(DRYRUN_ECHO) env $(ENV_SYSTEM) $$(cat $(ENV_FILE) 2>/dev/null |awk -F "=" '$$1 ~! /^\(#|$$\)/') ansible-playbook $(1)
-endef
-define aws
-	IFS=$$'\n'; $(DRYRUN_ECHO) env $(ENV_SYSTEM) $$(cat $(ENV_FILE) 2>/dev/null |awk -F "=" '$$1 ~! /^\(#|$$\)/') aws $(1)
-endef
-define openstack
-	IFS=$$'\n'; $(DRYRUN_ECHO) env $(ENV_SYSTEM) $$(cat $(ENV_FILE) 2>/dev/null |awk -F "=" '$$1 ~! /^\(#|$$\)/') openstack $(1)
-endef
-define packer
-	IFS=$$'\n'; $(DRYRUN_ECHO) env $(ENV_SYSTEM) $$(cat $(ENV_FILE) 2>/dev/null |awk -F "=" '$$1 ~! /^\(#|$$\)/') packer $(1)
-endef
 
 endif
+
+define docker-build
+	$(eval path := $(1))
+	$(eval tag := $(or $(2),$(DOCKER_REPO_APP)/$(lastword $(subst /, ,$(1))):$(DOCKER_BUILD_TARGET)))
+	$(eval target := $(subst ",,$(subst ',,$(or $(3),$(DOCKER_BUILD_TARGET)))))
+	$(eval image := $(shell docker images -q $(tag) 2>/dev/null))
+	$(eval build_image := $(or $(filter $(DOCKER_BUILD_CACHE),false),$(if $(image),,true)))
+	$(if $(build_image),$(DRYRUN_ECHO) docker build $(DOCKER_BUILD_ARGS) --tag $(tag) $(if $(target),--target $(target)) $(path),echo "docker image $(tag) has id $(image)")
+endef
+
+define docker-volume-copy
+	$(eval from:=$(1))
+	$(eval to:=$(2))
+	$(DRYRUN_ECHO) docker volume inspect $(from) >/dev/null
+	$(DRYRUN_ECHO) docker volume inspect $(to) >/dev/null 2>&1 || $(DRYRUN_ECHO) docker volume create $(to) >/dev/null
+	$(DRYRUN_ECHO) docker run --rm -v $(from):/from -v $(to):/to alpine ash -c "cd /from; cp -a . /to"
+endef

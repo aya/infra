@@ -11,39 +11,51 @@ bootstrap-git:
 	fi
 
 .PHONY: build
-build: docker-build ## Build application dockers images
+build: docker-compose-build ## Build application docker images
+
+.PHONY: build-images
+build-images: docker-build-images ## Build docker/* images
+
+.PHONY: build-%
+build-%: docker-build-%;
 
 .PHONY: config
-config: docker-config ## View docker compose file
+config: docker-compose-config ## View docker compose file
 
 .PHONY: connect
-connect: docker-connect ## Connect to docker $(SERVICE)
+connect: docker-compose-connect ## Connect to docker $(SERVICE)
 
 .PHONY: down
-down: docker-down ## Remove application dockers
+down: docker-compose-down ## Remove application dockers
 
 .PHONY: exec
-exec: docker-exec ## Exec a command in docker $(SERVICE)
+exec: docker-compose-exec ## Exec a command in docker $(SERVICE)
 
 .PHONY: logs
-logs: docker-logs ## Display application dockers logs
+logs: docker-compose-logs ## Display application dockers logs
 
 .PHONY: ps
-ps: docker-ps ## List application dockers
+ps: docker-compose-ps ## List application dockers
 
 .PHONY: rebuild
-rebuild: docker-rebuild ## Rebuild application dockers images
+rebuild: docker-compose-rebuild ## Rebuild application dockers images
+
+.PHONY: rebuild-images
+rebuild-images: docker-rebuild-images ## Build docker/* images
+
+.PHONY: rebuild-%
+rebuild-%: docker-rebuild-%;
 
 .PHONY: recreate
-recreate: docker-recreate start-up ## Recreate application dockers
+recreate: docker-compose-recreate start-up ## Recreate application dockers
 
 .PHONY: reinstall
 reinstall: clean ## Reinstall application
-	$(MAKE) .env
-	$(MAKE) install
+	$(call make,.env)
+	$(call make,install)
 
 .PHONY: restart
-restart: docker-restart start-up ## Restart application
+restart: docker-compose-restart start-up ## Restart application
 
 .PHONY: run
 run: ## Run a command on application servers
@@ -53,17 +65,17 @@ ifneq (,$(filter $(ENV),prod preprod))
 	$(eval DRYRUN_IGNORE := false)
 	$(foreach server,$(SERVER_LIST),$(call exec,ssh -Aqtt sshuser@52.50.10.235 "ssh -q -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no sshuser@$(server) \"sudo -u deploy /bin/bash -c '\''"$(ARGS)"'\''\"" ) &&) true
 else
-	$(call make, exec -- $(ARGS))
+	$(call make,exec -- $(ARGS))
 endif
 
 .PHONY: start
-start: docker-start ## Start application dockers
+start: docker-compose-start ## Start application dockers
 
 .PHONY: stop
-stop: docker-stop ## Stop application dockers
+stop: docker-compose-stop ## Stop application dockers
 
 .PHONY: up
-up: docker-up start-up ## Create application dockers
+up: docker-compose-up start-up ## Create application dockers
 
 .DEFAULT:
 	printf "${COLOR_BROWN}WARNING${COLOR_RESET}: ${COLOR_GREEN}target${COLOR_RESET} $@ ${COLOR_GREEN}not available in repo${COLOR_RESET} $(SUBREPO).\n" >&2
