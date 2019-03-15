@@ -4,7 +4,6 @@ services:
     cli:
         build:
             args:
-              - APP=${APP}
               - GIT_AUTHOR_NAME=${GIT_AUTHOR_NAME}
               - GIT_AUTHOR_EMAIL=${GIT_AUTHOR_EMAIL}
               - UID=${UID}
@@ -28,7 +27,6 @@ services:
     ssh:
         build:
             args:
-              - APP=${APP}
               - UID=${UID}
               - USER=${USER}
             context: .
