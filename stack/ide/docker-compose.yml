@@ -16,7 +16,7 @@ services:
           - APP=${APP}
           - ENV=${ENV}
           - SSH_AUTH_SOCK=/tmp/ssh-agent/socket
-        image: ${DOCKER_REPO}/ide:${DOCKER_BUILD_TARGET}
+        image: ${DOCKER_REPO_APP}/ide:${DOCKER_BUILD_TARGET}
         labels:
           - SERVICE_3000_NAME=${COMPOSE_SERVICE_NAME}-ide-3000
           - SERVICE_3000_CHECK_TCP=true
@@ -28,6 +28,7 @@ services:
         volumes:
           - ${MONOREPO_DIR}:/${USER}/${MONOREPO}:cached
           - ssh-agent:/tmp/ssh-agent:ro
+          - /var/run/docker.sock:/var/run/docker.sock
 
 volumes:
     ssh-agent:

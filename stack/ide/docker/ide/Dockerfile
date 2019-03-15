@@ -67,17 +67,8 @@ RUN set -ex \
   && ln -s /opt/yarn/bin/yarn /usr/local/bin/yarnpkg \
   && rm yarn-v$YARN_VERSION.tar.gz.asc yarn-v$YARN_VERSION.tar.gz
 
-#Developer tools
-
-## Git and sudo (sudo needed for user override)
-RUN apt-get -y install git sudo
-
-#LSPs
-
-##GO
-
 #Required to use go get with git source
-RUN apt-get update && apt-get install -y git
+RUN apt-get update && apt-get install -y git tig sudo vim-nox screen tmux
 
 ENV GO_VERSION 1.9.4
 ENV GOPATH=/usr/local/go-packages
@@ -107,7 +98,6 @@ RUN go get -u -v github.com/davidrjenni/reftools/cmd/fillstruct
 RUN echo oracle-java8-installer shared/accepted-oracle-license-v1-1 select true | /usr/bin/debconf-set-selections
 RUN apt-get update && apt-get -y install openjdk-8-jdk
 
-
 #C/C++
 RUN wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add -
 # public LLVM PPA, development version of LLVM
@@ -135,6 +125,18 @@ RUN gem install solargraph
 #Theia
 ##Needed for node-gyp, nsfw build
 RUN apt-get update && apt-get install -y python build-essential
+
+#Docker
+RUN apt-get update && apt-get install -y \
+    apt-transport-https \
+    ca-certificates \
+    curl \
+    gnupg-agent \
+    software-properties-common \
+ && curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add - \
+ && add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" \
+ && apt-get update \
+ && apt-get -y install docker-ce docker-ce-cli containerd.io
 
 FROM dist as local
 ARG UID
@@ -167,6 +169,7 @@ RUN set -ex && let $UID >/dev/null 2>&1 \
  || true
 
 ## User account
+RUN adduser $USER docker
 RUN adduser $USER sudo && \
   echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 
@@ -178,9 +181,6 @@ RUN chown $USER /home/$USER/package.json
 RUN echo -e "\n\
 Host *\n\
   LogLevel quiet\n\
-  StrictHostKeyChecking no\n\
-  UserKnownHostsFile /dev/null\n\
-Host github.com\n\
   Compression yes\
 " >> /etc/ssh/ssh_config
 
@@ -188,6 +188,8 @@ USER $USER
 WORKDIR /home/$USER
 
 ARG GITHUB_TOKEN
+RUN mkdir -p ~/.ssh \
+ && ssh-keyscan -t rsa -H github.com >> ~/.ssh/known_hosts
 RUN yarn --cache-folder ./ycache && rm -rf ./ycache
 # using "NODE_OPTIONS=..." to avoid out-of-memory problem in CI
 RUN NODE_OPTIONS="--max_old_space_size=4096" yarn theia build
