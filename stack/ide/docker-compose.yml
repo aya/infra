@@ -8,6 +8,7 @@ services:
               - GIT_AUTHOR_NAME=${GIT_AUTHOR_NAME}
               - GIT_AUTHOR_EMAIL=${GIT_AUTHOR_EMAIL}
               - MONOREPO=${MONOREPO}
+              - MONOREPO_DIR=${MONOREPO_DIR}
               - UID=${UID}
               - USER=${USER}
             context: ../ide/docker/ide
@@ -15,6 +16,8 @@ services:
         environment:
           - APP=${APP}
           - ENV=${ENV}
+          - MONOREPO_DIR=${MONOREPO_DIR}
+          - WORKSPACE_DIR=/${USER}/${MONOREPO}
           - SSH_AUTH_SOCK=/tmp/ssh-agent/socket
         image: ${DOCKER_REPO_APP}/ide:${DOCKER_BUILD_TARGET}
         labels:
