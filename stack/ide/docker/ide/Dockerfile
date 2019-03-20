@@ -202,19 +202,34 @@ Host *\n\
   Compression yes\
 " >> /etc/ssh/ssh_config
 
+# Custom prompt
+COPY rc*.sh /etc/profile.d/
+RUN sed -i '$a[ -r /etc/profile.d/rc.sh ] && . /etc/profile.d/rc.sh' /etc/bash.bashrc
+
 USER $USER
 WORKDIR /home/$USER
 
-ARG GITHUB_TOKEN
-RUN mkdir -p ~/.ssh \
- && ssh-keyscan -t rsa -H github.com >> ~/.ssh/known_hosts
+EXPOSE 3000
+ENV SHELL /bin/bash
 
 # using "NODE_OPTIONS=..." to avoid out-of-memory problem in CI
+ARG GITHUB_TOKEN
 RUN yarn --cache-folder ./ycache && rm -rf ./ycache \
  && NODE_OPTIONS="--max_old_space_size=4096" yarn theia build
 
-EXPOSE 3000
-ENV SHELL /bin/bash
+# github.com fingerprint
+RUN mkdir -p ~/.ssh \
+ && ssh-keyscan -t rsa -H github.com >> ~/.ssh/known_hosts
+
+# Custom prompt
+ARG RC_CUSTOM_PS1=true
+ARG RC_ATTACH_TMUX=false
+ARG RC_ATTACH_SCREEN=true
+RUN mkdir -p ~/.rc.d \
+ && { [ "$RC_CUSTOM_PS1" == "true" ] && touch ~/.rc.d/01_custom_ps1 || true; } \
+ && { [ "$RC_ATTACH_TMUX" == "true" ] && touch ~/.rc.d/02_attach_tmux || true; } \
+ && { [ "$RC_ATTACH_SCREEN" == "true" ] && touch ~/.rc.d/03_attach_screen || true; } \
+ || true
 
 ARG GIT_AUTHOR_NAME
 ARG GIT_AUTHOR_EMAIL
