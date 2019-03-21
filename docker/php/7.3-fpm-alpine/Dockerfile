@@ -1,4 +1,4 @@
-FROM php:7.0-fpm-alpine as dist
+FROM php:7.3-fpm-alpine as dist
 LABEL maintainer 1001Pharmacies <technique+docker@1001pharmacies.com>
 
 ARG AMQP_VERSION=stable
@@ -12,13 +12,12 @@ ARG IGBINARY_VERSION=stable
 ARG IMAGICK_VERSION=stable
 ARG GEOIP_VERSION=beta
 ARG GRPC_VERSION=stable
-ARG MCRYPT_VERSION=stable
+ARG MCRYPT_VERSION=1.0.2
 ARG MEMCACHE_VERSION=4.0.1-php73
 ARG MEMCACHED_VERSION=stable
 ARG MONGODB_VERSION=stable
 ARG NEWRELIC_VERSION=8.6.0.238
 ARG OAUTH_VERSION=stable
-ARG RAR_VERSION=stable
 ARG REDIS_VERSION=stable
 ARG SNUFFLEUPAGUS_VERSION=0.4.1
 ARG UUID_VERSION=stable
@@ -51,17 +50,18 @@ RUN apk --no-cache upgrade \
         libressl-dev \
         libxml2-dev \
         libxslt-dev \
+        libzip-dev \
         make \
         net-snmp-dev \
         openldap-dev \
         postgresql-dev \
         pcre-dev \
         rabbitmq-c-dev \
-        tidyhtml-dev \
         yaml-dev \
-        zlib-dev \
+        zlib-dev 
+
  # blackfire \
- && wget https://packages.blackfire.io/binaries/blackfire-php/${BLACKFIRE_VERSION}/blackfire-php-alpine_amd64-php-$(php -r "echo PHP_MAJOR_VERSION.PHP_MINOR_VERSION;").so -O $(php -r "echo ini_get('extension_dir');")/blackfire.so \
+RUN wget https://packages.blackfire.io/binaries/blackfire-php/${BLACKFIRE_VERSION}/blackfire-php-alpine_amd64-php-$(php -r "echo PHP_MAJOR_VERSION.PHP_MINOR_VERSION;").so -O $(php -r "echo ini_get('extension_dir');")/blackfire.so \
  # gd \
  && docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ --with-png-dir=/usr/include/ \
  # memcache \
@@ -76,7 +76,7 @@ RUN apk --no-cache upgrade \
  && wget https://download.newrelic.com/php_agent/release/newrelic-php5-${NEWRELIC_VERSION}-linux-musl.tar.gz -O /tmp/newrelic-${NEWRELIC_VERSION}.tar.gz \
  && mkdir -p /tmp/newrelic-${NEWRELIC_VERSION} \
  && tar xzf /tmp/newrelic-${NEWRELIC_VERSION}.tar.gz -C /tmp/newrelic-${NEWRELIC_VERSION} --strip-components=1 \
- && mv /tmp/newrelic-${NEWRELIC_VERSION}/agent/x64/newrelic-20151012.so $(php -r "echo ini_get('extension_dir');")/newrelic.so \
+ && mv /tmp/newrelic-${NEWRELIC_VERSION}/agent/x64/newrelic-20180731.so $(php -r "echo ini_get('extension_dir');")/newrelic.so \
  # snuffleupagus \
  && wget https://github.com/nbs-system/snuffleupagus/archive/v${SNUFFLEUPAGUS_VERSION}.tar.gz -O /tmp/snuffleupagus-${SNUFFLEUPAGUS_VERSION}.tar.gz \
  && mkdir -p /tmp/snuffleupagus-${SNUFFLEUPAGUS_VERSION} \
@@ -86,12 +86,8 @@ RUN apk --no-cache upgrade \
  && wget https://github.com/longxinH/xhprof/archive/v${XHPROF_VERSION}.tar.gz -O /tmp/xhprof-${XHPROF_VERSION}.tar.gz \
  && mkdir -p /tmp/xhprof-${XHPROF_VERSION} \
  && tar xzf /tmp/xhprof-${XHPROF_VERSION}.tar.gz -C /tmp/xhprof-${XHPROF_VERSION} --strip-components=1 \
- && docker-php-ext-configure /tmp/xhprof-${XHPROF_VERSION}/extension --with-php-config=/usr/local/bin/php-config \
- # tidy \
- && docker-php-source extract \
- && cd /usr/src/php \
- && sed -i 's/buffio.h/tidybuffio.h/' ext/tidy/*.c \
- && docker-php-ext-install -j$(nproc) \
+ && docker-php-ext-configure /tmp/xhprof-${XHPROF_VERSION}/extension --with-php-config=/usr/local/bin/php-config 
+RUN docker-php-ext-install -j$(nproc) \
         bcmath \
         bz2 \
         calendar \
@@ -104,7 +100,6 @@ RUN apk --no-cache upgrade \
         imap \
         intl \
         ldap \
-        mcrypt \
         /tmp/memcache-${MEMCACHE_VERSION} \
         mysqli \
         opcache \
@@ -120,7 +115,6 @@ RUN apk --no-cache upgrade \
         sysvmsg \
         sysvsem \
         sysvshm \
-        tidy \
         /tmp/xhprof-${XHPROF_VERSION}/extension \
         xmlrpc \
         xsl \
@@ -132,8 +126,9 @@ RUN apk --no-cache upgrade \
  && rm -rf /tmp/memcache-* \
  && rm -rf /tmp/newrelic-* \
  && rm -rf /tmp/snuffleupagus-* \
- && rm -rf /tmp/xhprof-* \
- && pecl install amqp-${AMQP_VERSION} \
+ && rm -rf /tmp/xhprof-*
+ 
+ RUN pecl install amqp-${AMQP_VERSION} \
  && pecl install apcu-${APCU_VERSION} \
  && pecl install ast-${AST_VERSION} \
  && pecl install ds-${DS_VERSION} \
@@ -145,9 +140,9 @@ RUN apk --no-cache upgrade \
  && pecl install memcached-${MEMCACHED_VERSION} \
  && pecl install mongodb-${MONGODB_VERSION} \
  && pecl install oauth-${OAUTH_VERSION} \
- && pecl install rar-${RAR_VERSION} \
  && pecl install redis-${REDIS_VERSION} \
  && echo |pecl install uuid-${UUID_VERSION} \
+ && echo |pecl install mcrypt-${MCRYPT_VERSION} \
  && pecl install xdebug-${XDEBUG_VERSION} \
  && pecl install yaml-${YAML_VERSION} \
  && pecl clear-cache \
@@ -186,7 +181,7 @@ RUN apk add --no-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/co
 ENV LD_PRELOAD=/usr/lib/preloadable_libiconv.so
 
 # builtin modules : Core ctype curl date dom fileinfo filter ftp hash iconv json libxml mbstring mysqlnd openssl pcre PDO pdo_sqlite Phar posix readline Reflection session SimpleXML SPL sqlite3 standard tokenizer xml xmlreader xmlwriter zlib
-# available modules : amqp apcu ast bcmath blackfire bz2 calendar dba ds enchant event exif gd geoip gmp grpc igbinary imap imagick intl ldap mcrypt memcache memcached mongodb mysqli newrelic oauth opcache pcntl pdo_mysql pdo_pgsql pgsql pspell rar redis shmop snmp snuffleupagus soap sockets sysvmsg sysvsem sysvshm xhprof tidy uuid wddx xdebug xhprof xmlrpc xsl yaml zip
+# available modules : amqp apcu ast bcmath blackfire bz2 calendar dba ds enchant event exif gd geoip gmp grpc igbinary imap imagick intl ldap mcrypt memcache memcached mongodb mysqli newrelic oauth opcache pcntl pdo_mysql pdo_pgsql pgsql pspell redis shmop snmp snuffleupagus soap sockets sysvmsg sysvsem sysvshm xhprof uuid wddx xdebug xhprof xmlrpc xsl yaml zip
 ARG PHP_EXT_ENABLE="amqp apcu bcmath bz2 calendar gd geoip imagick intl mcrypt memcached mysqli oauth opcache pdo_mysql redis soap sockets uuid yaml zip"
 RUN docker-php-ext-enable ${PHP_EXT_ENABLE}
 

@@ -3,7 +3,7 @@ LABEL maintainer 1001Pharmacies <technique+docker@1001pharmacies.com>
 
 ARG AMQP_VERSION=stable
 ARG APCU_VERSION=4.0.11
-ARG BLACKFIRE_VERSION=1.22.0
+ARG BLACKFIRE_VERSION=1.24.4
 ARG CACHETOOL_VERSION=3.2.1
 ARG IMAGICK_VERSION=stable
 ARG GEOIP_VERSION=stable
@@ -138,8 +138,6 @@ fastcgi: 127.0.0.1:9000 \n\
 
 RUN mkdir -p /etc/ssh && echo -e "\
 Host * \n\
-  UserKnownHostsFile /dev/null \n\
-  StrictHostKeyChecking no \n\
   Compression yes \n\
 " >> /etc/ssh/ssh_config
 
@@ -149,11 +147,11 @@ RUN apk add --no-cache \
 		gettext \
 		git \
 		nano \
-		openssh \
+		openssh-client \
 		vim
 
 # Iconv fix: https://github.com/docker-library/php/issues/240#issuecomment-305038173
-RUN apk add --no-cache --repository http://dl-3.alpinelinux.org/alpine/edge/testing gnu-libiconv
+RUN apk add --no-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/community/ gnu-libiconv
 ENV LD_PRELOAD=/usr/lib/preloadable_libiconv.so
 
 # enable php modules
@@ -211,3 +209,8 @@ RUN let $UID >/dev/null 2>&1 \
 RUN chown -R $USER /usr/local/etc/php/conf.d/
 
 USER $USER
+
+RUN mkdir -p ~/.ssh \
+ && ssh-keyscan -t rsa -H github.com >> ~/.ssh/known_hosts
+
+FROM local as tests
