@@ -1,4 +1,4 @@
-FROM php:7.0-fpm-alpine as dist
+FROM php:7.2-fpm-alpine as dist
 LABEL maintainer 1001Pharmacies <technique+docker@1001pharmacies.com>
 
 ARG AMQP_VERSION=stable
@@ -12,7 +12,7 @@ ARG IGBINARY_VERSION=stable
 ARG IMAGICK_VERSION=stable
 ARG GEOIP_VERSION=beta
 ARG GRPC_VERSION=stable
-ARG MCRYPT_VERSION=stable
+ARG MCRYPT_VERSION=1.0.2
 ARG MEMCACHE_VERSION=4.0.1-php73
 ARG MEMCACHED_VERSION=stable
 ARG MONGODB_VERSION=stable
@@ -57,7 +57,6 @@ RUN apk --no-cache upgrade \
         postgresql-dev \
         pcre-dev \
         rabbitmq-c-dev \
-        tidyhtml-dev \
         yaml-dev \
         zlib-dev \
  # blackfire \
@@ -76,7 +75,7 @@ RUN apk --no-cache upgrade \
  && wget https://download.newrelic.com/php_agent/release/newrelic-php5-${NEWRELIC_VERSION}-linux-musl.tar.gz -O /tmp/newrelic-${NEWRELIC_VERSION}.tar.gz \
  && mkdir -p /tmp/newrelic-${NEWRELIC_VERSION} \
  && tar xzf /tmp/newrelic-${NEWRELIC_VERSION}.tar.gz -C /tmp/newrelic-${NEWRELIC_VERSION} --strip-components=1 \
- && mv /tmp/newrelic-${NEWRELIC_VERSION}/agent/x64/newrelic-20151012.so $(php -r "echo ini_get('extension_dir');")/newrelic.so \
+ && mv /tmp/newrelic-${NEWRELIC_VERSION}/agent/x64/newrelic-20170718.so $(php -r "echo ini_get('extension_dir');")/newrelic.so \
  # snuffleupagus \
  && wget https://github.com/nbs-system/snuffleupagus/archive/v${SNUFFLEUPAGUS_VERSION}.tar.gz -O /tmp/snuffleupagus-${SNUFFLEUPAGUS_VERSION}.tar.gz \
  && mkdir -p /tmp/snuffleupagus-${SNUFFLEUPAGUS_VERSION} \
@@ -87,10 +86,6 @@ RUN apk --no-cache upgrade \
  && mkdir -p /tmp/xhprof-${XHPROF_VERSION} \
  && tar xzf /tmp/xhprof-${XHPROF_VERSION}.tar.gz -C /tmp/xhprof-${XHPROF_VERSION} --strip-components=1 \
  && docker-php-ext-configure /tmp/xhprof-${XHPROF_VERSION}/extension --with-php-config=/usr/local/bin/php-config \
- # tidy \
- && docker-php-source extract \
- && cd /usr/src/php \
- && sed -i 's/buffio.h/tidybuffio.h/' ext/tidy/*.c \
  && docker-php-ext-install -j$(nproc) \
         bcmath \
         bz2 \
@@ -104,7 +99,6 @@ RUN apk --no-cache upgrade \
         imap \
         intl \
         ldap \
-        mcrypt \
         /tmp/memcache-${MEMCACHE_VERSION} \
         mysqli \
         opcache \
@@ -120,7 +114,6 @@ RUN apk --no-cache upgrade \
         sysvmsg \
         sysvsem \
         sysvshm \
-        tidy \
         /tmp/xhprof-${XHPROF_VERSION}/extension \
         xmlrpc \
         xsl \
@@ -148,6 +141,7 @@ RUN apk --no-cache upgrade \
  && pecl install rar-${RAR_VERSION} \
  && pecl install redis-${REDIS_VERSION} \
  && echo |pecl install uuid-${UUID_VERSION} \
+ && echo |pecl install mcrypt-${MCRYPT_VERSION} \
  && pecl install xdebug-${XDEBUG_VERSION} \
  && pecl install yaml-${YAML_VERSION} \
  && pecl clear-cache \
@@ -186,7 +180,7 @@ RUN apk add --no-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/co
 ENV LD_PRELOAD=/usr/lib/preloadable_libiconv.so
 
 # builtin modules : Core ctype curl date dom fileinfo filter ftp hash iconv json libxml mbstring mysqlnd openssl pcre PDO pdo_sqlite Phar posix readline Reflection session SimpleXML SPL sqlite3 standard tokenizer xml xmlreader xmlwriter zlib
-# available modules : amqp apcu ast bcmath blackfire bz2 calendar dba ds enchant event exif gd geoip gmp grpc igbinary imap imagick intl ldap mcrypt memcache memcached mongodb mysqli newrelic oauth opcache pcntl pdo_mysql pdo_pgsql pgsql pspell rar redis shmop snmp snuffleupagus soap sockets sysvmsg sysvsem sysvshm xhprof tidy uuid wddx xdebug xhprof xmlrpc xsl yaml zip
+# available modules : amqp apcu ast bcmath blackfire bz2 calendar dba ds enchant event exif gd geoip gmp grpc igbinary imap imagick intl ldap mcrypt memcache memcached mongodb mysqli newrelic oauth opcache pcntl pdo_mysql pdo_pgsql pgsql pspell rar redis shmop snmp snuffleupagus soap sockets sysvmsg sysvsem sysvshm xhprof uuid wddx xdebug xhprof xmlrpc xsl yaml zip
 ARG PHP_EXT_ENABLE="amqp apcu bcmath bz2 calendar gd geoip imagick intl mcrypt memcached mysqli oauth opcache pdo_mysql redis soap sockets uuid yaml zip"
 RUN docker-php-ext-enable ${PHP_EXT_ENABLE}
 

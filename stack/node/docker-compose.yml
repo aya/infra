@@ -1,15 +1,6 @@
 version: '3.6'
 
 services:
-    cclean:
-        build: docker/cclean
-        command: sh -c 'while true; do cclean; sleep 30; done'
-        environment:
-          - CONSUL_HTTP_ADDR=consul:8500
-        hostname: ${HOSTNAME}
-        networks:
-          - public
-        restart: always
     consul:
         image: consul:latest
         environment:
