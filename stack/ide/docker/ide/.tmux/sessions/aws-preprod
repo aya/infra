@@ -1,0 +1,10 @@
+new-session -A -s aws-preprod
+neww -t aws-preprod:1 -n tools '/bin/bash -cli "force ssh sshuser@aws-preprod-tools"'
+neww -t aws-preprod:2 -n front01 '/bin/bash -cli "force ssh sshuser@aws-preprod-front01"'
+neww -t aws-preprod:3 -n cache01 '/bin/bash -cli "force ssh sshuser@aws-preprod-cache01"'
+neww -t aws-preprod:4 -n cache02 '/bin/bash -cli "force ssh sshuser@aws-preprod-cache02"'
+neww -t aws-preprod:5 -n mq01a '/bin/bash -cli "force ssh sshuser@aws-preprod-mq01a"'
+neww -t aws-preprod:6 -n mq01b '/bin/bash -cli "force ssh sshuser@aws-preprod-mq01b"'
+neww -t aws-preprod:7 -n es02a '/bin/bash -cli "force ssh sshuser@aws-preprod-es02a"'
+neww -t aws-preprod:8 -n es02b '/bin/bash -cli "force ssh sshuser@aws-preprod-es02b"'
+run-shell "ssh sshuser@aws-prod-deploy make list-nodes |sed '1d' |awk '$1 ~ /enovasante.aws-eu-west-1.web.([a-z]+pp-0)/' |while read host ip; do type=\${host#*web.}; type=\${type%%-*}; num=\$(printf '%0d' \${ip}); num=\$(echo \${ip} | tr . '\n' | awk '{n = n*256 + $1} END{print n}'); tmux neww -t aws-preprod:\$num -n \$type '/bin/bash -cli \"force ssh -Aqt sshuser@aws-prod-deploy ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no 'sshuser@\$ip'\"'; done"

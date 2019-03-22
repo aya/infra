@@ -15,8 +15,14 @@ services:
         environment:
           - ENV=${ENV}
           - MONOREPO_DIR=${MONOREPO_DIR}
-          - WORKSPACE_DIR=/${USER}/${MONOREPO}
+          - RC_01_CUSTOM_PS1=${RC_CUSTOM_PS1}
+          - RC_02_CUSTOM_PROMPT=${RC_CUSTOM_PROMPT}
+          - RC_03_SSH_AGENT=${RC_SSH_AGENT}
+          - RC_04_ATTACH_TMUX=${RC_ATTACH_TMUX}
+          - RC_05_ATTACH_SCREEN=${RC_ATTACH_SCREEN}
+          - SHELL=${SHELL}
           - SSH_AUTH_SOCK=/tmp/ssh-agent/socket
+          - WORKSPACE_DIR=/Sources/${MONOREPO}
         image: ${DOCKER_REPO_INFRA}/ide:${DOCKER_BUILD_TARGET}
         labels:
           - SERVICE_3000_NAME=${COMPOSE_SERVICE_NAME}-ide-3000
@@ -27,11 +33,17 @@ services:
           - frontend
         restart: always
         volumes:
-          - ${MONOREPO_DIR}:/${USER}/${MONOREPO}:cached
+          - monorepo:/Sources/${MONOREPO}:cached
           - ssh-agent:/tmp/ssh-agent:ro
           - /var/run/docker.sock:/var/run/docker.sock
 
 volumes:
+    monorepo:
+        driver: local
+        driver_opts:
+            type: none
+            device: ${MONOREPO_DIR}
+            o: bind
     ssh-agent:
         external:
             name: ${DOCKER_INFRA_SSH}
