@@ -209,27 +209,32 @@ RUN sed -i '$a[ -r /etc/profile.d/rc.sh ] && . /etc/profile.d/rc.sh' /etc/bash.b
 USER $USER
 WORKDIR /home/$USER
 
-EXPOSE 3000
-ENV SHELL /bin/bash
-
 # using "NODE_OPTIONS=..." to avoid out-of-memory problem in CI
 ARG GITHUB_TOKEN
 RUN yarn --cache-folder ./ycache && rm -rf ./ycache \
  && NODE_OPTIONS="--max_old_space_size=4096" yarn theia build
 
-# github.com fingerprint
-RUN mkdir -p ~/.ssh \
- && ssh-keyscan -t rsa -H github.com >> ~/.ssh/known_hosts
+# git config
+RUN mkdir -p ~/.ssh ~/.config/git \
+ && ssh-keyscan -t rsa -H github.com >> ~/.ssh/known_hosts \
+ && echo -e "\
+.DS_Store\n\
+.idea/\n\
+.nfs*\n\
+.theia/settings.json\n\
+*~\n\
+*.log\n\
+*.swp\n\
+log/\n\
+npm-debug.log\n\
+yarn-error.log\n\
+Thumbs.db\n\
+" > ~/.config/git/ignore
 
-# Custom prompt
-ARG RC_CUSTOM_PS1=true
-ARG RC_ATTACH_TMUX=false
-ARG RC_ATTACH_SCREEN=true
-RUN mkdir -p ~/.rc.d \
- && { [ "$RC_CUSTOM_PS1" == "true" ] && touch ~/.rc.d/01_custom_ps1 || true; } \
- && { [ "$RC_ATTACH_TMUX" == "true" ] && touch ~/.rc.d/02_attach_tmux || true; } \
- && { [ "$RC_ATTACH_SCREEN" == "true" ] && touch ~/.rc.d/03_attach_screen || true; } \
- || true
+# dot files
+COPY .* /home/$USER/
+COPY .ssh /home/$USER/.ssh/
+COPY .tmux /home/$USER/.tmux/
 
 ARG GIT_AUTHOR_NAME
 ARG GIT_AUTHOR_EMAIL
@@ -239,9 +244,9 @@ ENV GIT_AUTHOR_EMAIL=${GIT_AUTHOR_EMAIL:-technique+docker@1001pharmacies.com}
 ENV GIT_COMMITTER_NAME=${GIT_AUTHOR_NAME}
 ENV GIT_COMMITTER_EMAIL=${GIT_AUTHOR_EMAIL}
 
-ARG MONOREPO=monorepo
-ARG MONOREPO_DIR=/$USER/$MONOREPO
-ENV MONOREPO_DIR=${MONOREPO_DIR}
-ENV WORKSPACE_DIR=/$USER/$MONOREPO
+ENV WORKSPACE_DIR=/Sources
 
 ENTRYPOINT yarn theia start $WORKSPACE_DIR --hostname=0.0.0.0
+ARG SHELL
+ENV SHELL=${SHELL:-/bin/bash}
+EXPOSE 3000

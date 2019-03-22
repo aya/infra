@@ -1,0 +1,1 @@
+hardstatus alwayslastline "%{= kw}[%{G}%H%{-}] \# %?%-Lw%?[%{G}%n%f %t%{-}]%?%+Lw%?%?%=%-17< [%{B}%l%{-}]"
