@@ -72,11 +72,6 @@ RUN apk --no-cache upgrade \
  && sed -i '399s/);/, char *);/' /tmp/memcache-${MEMCACHE_VERSION}/php7/memcache_pool.h \
  # https://github.com/websupport-sk/pecl-memcache/pull/40 \
  && sed -i '47i#if PHP_VERSION_ID < 70200\n    register size_t newlen;\n#endif' /tmp/memcache-${MEMCACHE_VERSION}/php7/memcache_pool.c \
- # newrelic \
- && wget https://download.newrelic.com/php_agent/release/newrelic-php5-${NEWRELIC_VERSION}-linux-musl.tar.gz -O /tmp/newrelic-${NEWRELIC_VERSION}.tar.gz \
- && mkdir -p /tmp/newrelic-${NEWRELIC_VERSION} \
- && tar xzf /tmp/newrelic-${NEWRELIC_VERSION}.tar.gz -C /tmp/newrelic-${NEWRELIC_VERSION} --strip-components=1 \
- && mv /tmp/newrelic-${NEWRELIC_VERSION}/agent/x64/newrelic-20151012.so $(php -r "echo ini_get('extension_dir');")/newrelic.so \
  # snuffleupagus \
  && wget https://github.com/nbs-system/snuffleupagus/archive/v${SNUFFLEUPAGUS_VERSION}.tar.gz -O /tmp/snuffleupagus-${SNUFFLEUPAGUS_VERSION}.tar.gz \
  && mkdir -p /tmp/snuffleupagus-${SNUFFLEUPAGUS_VERSION} \
