@@ -27,7 +27,7 @@ docker-compose-config: stack
 .PHONY: docker-compose-connect
 docker-compose-connect: SERVICE ?= $(DOCKER_SERVICE)
 docker-compose-connect: stack docker-compose-up
-	$(call docker-compose,exec $(SERVICE) /bin/zsh) || $(call docker-compose,exec $(SERVICE) /bin/bash) || $(call docker-compose,exec $(SERVICE) /bin/sh) || true
+	$(call docker-compose,exec $(SERVICE) $(DOCKER_SHELL)) || $(call docker-compose,exec $(SERVICE) /bin/sh) || true
 
 .PHONY: docker-compose-down
 docker-compose-down: stack

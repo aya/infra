@@ -4,10 +4,9 @@ services:
     ide:
         build:
             args:
+              - DOCKER_GID=${DOCKER_GID}
               - GIT_AUTHOR_NAME=${GIT_AUTHOR_NAME}
               - GIT_AUTHOR_EMAIL=${GIT_AUTHOR_EMAIL}
-              - MONOREPO=${MONOREPO}
-              - MONOREPO_DIR=${MONOREPO_DIR}
               - UID=${UID}
               - USER=${USER}
             context: ../ide/docker/ide
@@ -20,7 +19,7 @@ services:
           - RC_03_SSH_AGENT=${RC_SSH_AGENT}
           - RC_04_ATTACH_TMUX=${RC_ATTACH_TMUX}
           - RC_05_ATTACH_SCREEN=${RC_ATTACH_SCREEN}
-          - SHELL=${SHELL}
+          - SHELL=${DOCKER_SHELL}
           - SSH_AUTH_SOCK=/tmp/ssh-agent/socket
           - WORKSPACE_DIR=/Sources/${MONOREPO}
         image: ${DOCKER_REPO_INFRA}/ide:${DOCKER_BUILD_TARGET}
@@ -30,7 +29,7 @@ services:
           - SERVICE_3000_CHECK_INITIAL_STATUS=passing
           - SERVICE_3000_TAGS=${SERVICE_IDE_SERVICE_3000_TAGS}
         networks:
-          - frontend
+          - public
         restart: always
         volumes:
           - monorepo:/Sources/${MONOREPO}:cached
@@ -49,6 +48,6 @@ volumes:
             name: ${DOCKER_INFRA_SSH}
 
 networks:
-    frontend:
+    public:
         external: true
         name: node
