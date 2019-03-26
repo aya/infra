@@ -111,7 +111,7 @@ RUN curl -sS https://storage.googleapis.com/golang/go$GO_VERSION.linux-amd64.tar
 
 #Java
 RUN echo oracle-java8-installer shared/accepted-oracle-license-v1-1 select true | /usr/bin/debconf-set-selections && \
-    apt-get update && apt-get -y install openjdk-8-jdk
+    apt-get -y install openjdk-8-jdk
 
 #C/C++
 # public LLVM PPA, development version of LLVM
@@ -121,7 +121,7 @@ RUN wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add - && \
     ln -s /usr/bin/clangd-9 /usr/bin/clangd
 
 #Python 2
-RUN apt-get update && apt-get install -y python python-pip && \
+RUN apt-get install -y python python-pip && \
     pip install python-language-server
 
 #PHP
@@ -154,31 +154,34 @@ RUN apt-get install -y \
  && apt-get -y install docker-ce docker-ce-cli containerd.io
 
 ## Common tools
-RUN apt-get -y install nano screen tig tmux vim-nox
+RUN apt-get -y install nano screen tig tmux vim-nox zsh
 
 FROM dist as local
+ARG DOCKER_GID
+ARG SHELL=/bin/bash
 ARG UID
+ARG GID
 ARG USER
 ENV UID=${UID}
-ENV GID=${UID}
-ENV USER=${USER}
+ENV GID=${GID:-${UID}}
+ENV USER=${USER:-root}
 LABEL com.1001pharmacies.uid=${UID}
+LABEL com.1001pharmacies.gid=${GID}
 LABEL com.1001pharmacies.user=${USER}
 
-SHELL ["/bin/bash", "-c"]
-# If we provide a specific UID
-RUN set -ex && let $UID >/dev/null 2>&1 \
+# If we provide a numeric UID
+RUN [ "$UID" -eq "$UID" ] 2>/dev/null \
 # Remove user with $UID if it is not our $USER
- && if [ "$(getent passwd $UID |awk 'BEGIN {FS=":"} {print $1}')" != "$USER" ]; then \
-      sed -i '/^'$(getent passwd $UID |awk 'BEGIN {FS=":"} {print $1}')':x:'$UID':/d' /etc/passwd; \
-      sed -i '/^'$(getent group $GID |awk 'BEGIN {FS=":"} {print $1}')':x:'$GID':/d' /etc/group; \
+ && if [ "$(getent passwd $UID |awk -F: '{print $1}')" != "$USER" ]; then \
+      sed -i '/^'$(getent passwd $UID |awk -F: '{print $1}')':x:'$UID':/d' /etc/passwd; \
+      sed -i '/^'$(getent group $GID |awk -F: '{print $1}')':x:'$GID':/d' /etc/group; \
     fi \
 # Force $UID if our $USER already exists
  && sed -i 's/^'$USER':x:[0-9]\+:[0-9]\+:/'$USER':x:'$UID':'$GID':/' /etc/passwd \
  && sed -i 's/^'$USER':x:[0-9]\+:/'$USER':x:'$GID':/' /etc/group \
 # Create $USER if it does not exist
  && if [ "$(getent passwd $UID)" = "" ]; then \
-      echo "$USER:x:$UID:$GID::/home/$USER:/bin/false" >> /etc/passwd; \
+      echo "$USER:x:$UID:$GID::/home/$USER:$SHELL" >> /etc/passwd; \
       echo "$USER:\!:$(($(date +%s) / 60 / 60 / 24)):0:99999:7:::" >> /etc/shadow; \
       echo "$USER:x:$GID:" >> /etc/group; \
     fi \
@@ -186,10 +189,17 @@ RUN set -ex && let $UID >/dev/null 2>&1 \
  && chown $UID:$GID /home/$USER \
  || true
 
-## User account
-RUN adduser $USER docker
-RUN adduser $USER sudo && \
-  echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+# If we provide a numeric DOCKER_GID
+RUN [ "$DOCKER_GID" -eq "$DOCKER_GID" ] 2>/dev/null \
+ && if [ "$(getent group docker |awk -F: '{print $3}')" != "$DOCKER_GID" ]; then \
+      sed -i 's/^docker:x:[0-9]\+:/docker:x:'$DOCKER_GID':/' /etc/group; \
+    fi \
+|| true
+
+## User groups
+RUN adduser $USER docker \
+ && adduser $USER sudo \
+ && echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 
 #ARG version=latest
 #ADD https://raw.githubusercontent.com/theia-ide/theia-apps/master/theia-full-docker/$version.package.json /home/$USER/package.json
@@ -244,9 +254,8 @@ ENV GIT_AUTHOR_EMAIL=${GIT_AUTHOR_EMAIL:-technique+docker@1001pharmacies.com}
 ENV GIT_COMMITTER_NAME=${GIT_AUTHOR_NAME}
 ENV GIT_COMMITTER_EMAIL=${GIT_AUTHOR_EMAIL}
 
+ENV SHELL=${SHELL}
 ENV WORKSPACE_DIR=/Sources
 
 ENTRYPOINT yarn theia start $WORKSPACE_DIR --hostname=0.0.0.0
-ARG SHELL
-ENV SHELL=${SHELL:-/bin/bash}
 EXPOSE 3000

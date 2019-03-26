@@ -7,8 +7,9 @@ COMPOSE_SERVICE_NAME            ?= $(subst _,-,$(COMPOSE_PROJECT_NAME))
 DOCKER_BUILD_ARGS               ?= $(foreach var,$(DOCKER_BUILD_VARS),$(if $($(var)),--build-arg $(var)='$($(var))'))
 DOCKER_BUILD_CACHE              ?= true
 DOCKER_BUILD_TARGET             ?= local
-DOCKER_BUILD_VARS               ?= APP BRANCH DOCKER_REPO GID GIT_AUTHOR_EMAIL GIT_AUTHOR_NAME TARGET UID USER VERSION
+DOCKER_BUILD_VARS               ?= APP BRANCH DOCKER_GID DOCKER_REPO GID GIT_AUTHOR_EMAIL GIT_AUTHOR_NAME TARGET UID USER VERSION
 DOCKER_COMPOSE_DOWN_OPTIONS     ?=
+DOCKER_GID                      ?= $(shell getent group docker |awk -F: '{print $$3}')
 DOCKER_IMAGE_CLI                ?= cli:$(DOCKER_BUILD_TARGET)
 DOCKER_IMAGE_SSH                ?= ssh:$(DOCKER_BUILD_TARGET)
 DOCKER_IMAGE_TAG                ?= $(or $(TAG), $(DOCKER_BUILD_TARGET)$(addprefix -,$(DRONE_BUILD_NUMBER)))
@@ -23,6 +24,7 @@ DOCKER_RUN_VOLUME               ?= -v $$PWD:$$PWD
 DOCKER_RUN_WORKDIR              ?= -w $$PWD
 DOCKER_SERVICE_INFRA_BASE       ?= cli ssh
 DOCKER_SERVICE_INFRA_NODE       ?= consul fabio registrator
+DOCKER_SHELL                    ?= $(SHELL)
 DOCKERS                         ?= $(dir $(wildcard docker/*/Dockerfile))
 
 ifeq ($(DOCKER), true)
