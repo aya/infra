@@ -17,7 +17,6 @@ ENTRYPOINT ["/docker-entrypoint.sh"]
 CMD /usr/local/bin/consul-template -log-level info -consul-addr consul:8500 -template "/usr/local/apache2/conf/extra/httpd-vhosts.ctmpl:/usr/local/apache2/conf/extra/httpd-vhosts.conf" -exec "/usr/local/bin/httpd-foreground"
 
 EXPOSE 80/tcp
-VOLUME /var/www
 
 FROM dist as local
 ARG UID

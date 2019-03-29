@@ -18,7 +18,8 @@ services:
           - 9093
         restart: always
     blackbox:
-        image: quay.io/prometheus/blackbox-exporter:latest
+        build:
+            context: ../monitoring/docker/blackbox
         labels:
           - SERVICE_9115_NAME=${COMPOSE_SERVICE_NAME}-blackbox-9115
           - SERVICE_9115_CHECK_TCP=true
