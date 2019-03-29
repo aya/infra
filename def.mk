@@ -77,7 +77,7 @@ define make
 	$(eval ENV_MAKE := $(if $(env),$(foreach var,$(env),$(if $($(var)),$(var)='$($(var))'))))
 	$(eval MAKE_DIR := $(if $(dir),-C $(dir)))
 	$(eval MAKE_OLDFILE := $(MAKE_OLDFILE) $(filter-out $(MAKE_OLDFILE), $^))
-	printf "${COLOR_GREEN}Running${COLOR_RESET} make $(cmd) ${COLOR_GREEN}$(if $(dir),in folder${COLOR_RESET} $(dir) ${COLOR_GREEN})with${COLOR_RESET} $(ENV_MAKE)\n"
+	printf "${COLOR_GREEN}Running${COLOR_RESET} make $(cmd) $(if $(dir),${COLOR_BLUE}in folder${COLOR_RESET} $(dir) )${COLOR_GREEN}with${COLOR_RESET} $(ENV_MAKE)\n"
 	$(DRYRUN_ECHO) $(ENV_MAKE) $(MAKE) $(MAKE_DIR) $(patsubst %,-o %,$(MAKE_OLDFILE)) $(cmd) MAKE_OLDFILE="$(MAKE_OLDFILE)"
 	$(if $(filter $(DRYRUN_RECURSIVE),true),$(ENV_MAKE) $(MAKE) $(MAKE_DIR) $(patsubst %,-o %,$(MAKE_OLDFILE)) $(cmd) MAKE_OLDFILE="$(MAKE_OLDFILE)" DRYRUN=$(DRYRUN) RECURSIVE=$(RECURSIVE))
 endef

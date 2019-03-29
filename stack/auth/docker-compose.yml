@@ -1,44 +1,57 @@
 version: '3.6'
 
 services:
-    opendj:
-        build: ../auth/docker/opendj
-        environment:
-          - OPENDJ_JAVA_ARGS=-server -Xmx512m -XX:+UseG1GC
-        labels:
-          - SERVICE_389_NAME=${COMPOSE_SERVICE_NAME}-opendj-389
-          - SERVICE_389_CHECK_INITITAL_STATUS=passing
-          - SERVICE_389_CHECK_TCP=true
-          - SERVICE_636_NAME=${COMPOSE_SERVICE_NAME}-opendj-636
-          - SERVICE_636_CHECK_INITITAL_STATUS=passing
-          - SERVICE_636_CHECK_TCP=true
-          - SERVICE_4444_NAME=${COMPOSE_SERVICE_NAME}-opendj-4444
-          - SERVICE_4444_CHECK_INITITAL_STATUS=passing
-          - SERVICE_4444_CHECK_TCP=true
-          - SERVICE_8989_NAME=${COMPOSE_SERVICE_NAME}-opendj-8989
-          - SERVICE_8989_CHECK_INITITAL_STATUS=passing
-          - SERVICE_8989_CHECK_TCP=true
-        networks:
-          - backend
-          - frontend
-        ports:
-          - 389
-          - 636
-          - 4444
-          - 8989
-        restart: always
-        volumes:
-          - opendj:/opt/opendj/data
-          - opendj-secrets:/var/secrets/opendj
+  lam:
+    image: ldapaccountmanager/lam
+    labels:
+    - SERVICE_80_NAME=${COMPOSE_SERVICE_NAME}-lam-80
+    - SERVICE_80_CHECK_INITITAL_STATUS=passing
+    - SERVICE_80_CHECK_TCP=true
+    - SERVICE_80_TAGS=${LAM_SERVICE_80_TAGS}
+    networks:
+    - private
+    - public
+    ports:
+    - 80
+    restart: always
+  opendj:
+    build: ../auth/docker/opendj
+    environment:
+    - OPENDJ_JAVA_ARGS=-server -Xmx512m -XX:+UseG1GC
+    labels:
+    - SERVICE_389_NAME=${COMPOSE_SERVICE_NAME}-opendj-389
+    - SERVICE_389_CHECK_INITITAL_STATUS=passing
+    - SERVICE_389_CHECK_TCP=true
+    - SERVICE_636_NAME=${COMPOSE_SERVICE_NAME}-opendj-636
+    - SERVICE_636_CHECK_INITITAL_STATUS=passing
+    - SERVICE_636_CHECK_TCP=true
+    - SERVICE_4444_NAME=${COMPOSE_SERVICE_NAME}-opendj-4444
+    - SERVICE_4444_CHECK_INITITAL_STATUS=passing
+    - SERVICE_4444_CHECK_TCP=true
+    - SERVICE_8989_NAME=${COMPOSE_SERVICE_NAME}-opendj-8989
+    - SERVICE_8989_CHECK_INITITAL_STATUS=passing
+    - SERVICE_8989_CHECK_TCP=true
+    networks:
+    - private
+    - public
+    ports:
+    - 389
+    - 636
+    - 4444
+    - 8989
+    restart: always
+    volumes:
+    - opendj:/opt/opendj/data
+    - opendj-secrets:/var/secrets/opendj
 
 volumes:
-    opendj:
-    opendj-secrets:
+  opendj:
+  opendj-secrets:
 
 networks:
-    backend:
-        external: true
-        name: ${DOCKER_NETWORK}
-    frontend:
-        external: true
-        name: node
+  private:
+    external: true
+    name: ${DOCKER_NETWORK}
+  public:
+    external: true
+    name: node
