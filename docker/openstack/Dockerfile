@@ -1,12 +1,20 @@
 FROM alpine:latest as dist
 
-RUN apk --no-cache add \
-        ansible
+RUN apk --no-cache add libffi openssl python py-pip py-netifaces
+
+RUN apk --no-cache add --virtual .build-deps \
+        build-base \
+        libffi-dev \
+        openssl-dev \
+        python-dev \
+ && pip install --upgrade pip \
+ && pip install python-openstackclient \
+ && apk del .build-deps
 
 RUN apk --no-cache upgrade
 
-ENTRYPOINT ["/usr/bin/ansible"]
-CMD ["--help"]
+ENTRYPOINT ["/usr/bin/openstack"]
+CMD ["help"]
 
 FROM dist as local
 ARG UID
