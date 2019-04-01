@@ -1,12 +1,16 @@
 FROM alpine:latest as dist
 
 RUN apk --no-cache add \
-        ansible
+        groff \
+        less \
+        python \
+        py-pip \
+ && pip install awscli
 
 RUN apk --no-cache upgrade
 
-ENTRYPOINT ["/usr/bin/ansible"]
-CMD ["--help"]
+ENTRYPOINT ["/usr/bin/aws"]
+CMD ["help"]
 
 FROM dist as local
 ARG UID

@@ -1,12 +1,6 @@
-FROM alpine:latest as dist
-
-RUN apk --no-cache add \
-        ansible
+FROM hashicorp/terraform:light as dist
 
 RUN apk --no-cache upgrade
-
-ENTRYPOINT ["/usr/bin/ansible"]
-CMD ["--help"]
 
 FROM dist as local
 ARG UID
