@@ -37,4 +37,5 @@ RUN let $UID >/dev/null 2>&1 \
  && chown $UID:$GID /home/$USER \
  || true
 
+RUN adduser $USER qemu
 USER $USER

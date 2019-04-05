@@ -1,0 +1,73 @@
+{
+    "variables": {
+        "disk_size": "512",
+        "id_rsa.pub": "{{env `HOME`}}/.ssh/id_rsa.pub",
+        "hostname": "alpine",
+        "password": "alpine",
+        "template": "alpine",
+        "version": "3.9",
+        "release": "3.9.2",
+        "arch": "x86_64",
+        "vnc_bind_address": "127.0.0.1",
+        "vnc_port_max": "5900"
+    },
+    "builders": [
+    {
+    "type": "qemu",
+    "accelerator": "kvm",
+    "iso_url": "http://dl-cdn.alpinelinux.org/alpine/v{{user `version`}}/releases/{{user `arch`}}/alpine-virt-{{user `release`}}-{{user `arch`}}.iso",
+    "iso_checksum_url": "http://dl-cdn.alpinelinux.org/alpine/v{{user `version`}}/releases/{{user `arch`}}/alpine-virt-{{user `release`}}-{{user `arch`}}.iso.sha256",
+    "iso_checksum_type": "sha256",
+    "output_directory": "iso/{{user `template`}}",
+    "shutdown_command": "/sbin/poweroff",
+    "disk_size": "{{user `disk_size`}}",
+    "format": "raw",
+    "headless": true,
+    "ssh_host_port_min": 2222,
+    "ssh_host_port_max": 2234,
+    "ssh_username": "root",
+    "ssh_password": "{{user `password`}}",
+    "ssh_port": 22,
+    "ssh_wait_timeout": "8s",
+    "vm_name": "alpine-{{user `release`}}-{{user `arch`}}.iso",
+    "vnc_bind_address": "{{user `vnc_bind_address`}}",
+    "vnc_port_max": "{{user `vnc_port_max`}}",
+    "net_device": "virtio-net",
+    "disk_interface": "virtio",
+    "boot_wait": "8s",
+    "boot_command": [
+        "root<enter>",
+        "passwd<enter>{{user `password`}}<enter>{{user `password`}}<enter>",
+        "ifconfig eth0 up && udhcpc -i eth0<enter>",
+        "apk add --repository http://dl-cdn.alpinelinux.org/alpine/v{{user `version`}}/main --repository http://dl-cdn.alpinelinux.org/alpine/v{{user `version`}}/community dropbear dropbear-openrc dropbear-scp<enter>",
+        "rc-update add dropbear<enter>",
+        "echo -e 'auto eth0\\niface eth0 inet dhcp' > /etc/network/interfaces<enter>",
+        "rc-service dropbear start<enter>"
+    ]
+    }
+    ],
+    "provisioners": [
+    {
+        "type": "shell",
+        "script": "packer/alpine/setup.sh",
+        "environment_vars": ["HOSTNAME={{user `hostname`}}",
+                             "PASSWORD={{user `password`}}",
+                             "VERSION={{user `version`}}"]
+    },
+    {
+        "type": "shell",
+        "inline": ["mount /dev/vda2 /mnt",
+                   "mkdir -p /mnt/root/.ssh",
+                   "chmod 0700 /mnt/root/.ssh"]
+    },
+    {
+        "type": "file",
+        "source": "{{user `id_rsa.pub`}}",
+        "destination": "/mnt/root/.ssh/authorized_keys"
+    },
+    {
+        "type": "shell",
+        "inline": ["umount /mnt"]
+    }
+    ]
+}

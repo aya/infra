@@ -1,14 +1,14 @@
 ##
 # DOCKER
 
-.PHONY: $(DOCKERS)
-$(DOCKERS):
+.PHONY: docker-build-images
+docker-build-images: $(DOCKER_IMAGES)
+
+.PHONY: $(DOCKER_IMAGES)
+$(DOCKER_IMAGES):
 ifeq ($(DOCKER), true)
 	$(call docker-build,$@)
 endif
-
-.PHONY: docker-build-images
-docker-build-images: $(DOCKERS)
 
 .PHONY: docker-build-%
 docker-build-%:
@@ -109,12 +109,12 @@ endif
 .PHONY: docker-network-create
 docker-network-create:
 	[ -n "$(shell docker network ls -q --filter name='^$(DOCKER_NETWORK)$$' 2>/dev/null)" ] \
-	  || { echo -n "Creating docker network $(DOCKER_NETWORK) ... " && $(DRYRUN_ECHO) docker network create $(DOCKER_NETWORK) >/dev/null 2>&1 && echo "done" || echo "ERROR"; }
+	  || { echo -n "Creating docker network $(DOCKER_NETWORK) ... " && $(ECHO) docker network create $(DOCKER_NETWORK) >/dev/null 2>&1 && echo "done" || echo "ERROR"; }
 
 .PHONY: docker-network-rm
 docker-network-rm:
 	[ -z "$(shell docker network ls -q --filter name='^$(DOCKER_NETWORK)$$' 2>/dev/null)" ] \
-	  || { echo -n "Removing docker network $(DOCKER_NETWORK) ... " && $(DRYRUN_ECHO) docker network rm $(DOCKER_NETWORK) >/dev/null 2>&1 && echo "done" || echo "ERROR"; }
+	  || { echo -n "Removing docker network $(DOCKER_NETWORK) ... " && $(ECHO) docker network rm $(DOCKER_NETWORK) >/dev/null 2>&1 && echo "done" || echo "ERROR"; }
 
 .PHONY: docker-rebuild-images
 docker-rebuild-images:
