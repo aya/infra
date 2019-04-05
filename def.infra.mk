@@ -39,9 +39,6 @@ endef
 define openstack
 	$(ECHO) docker run $(DOCKER_RUN_OPTIONS) $(patsubst %,--env-file %,$(ENV_FILE)) $(patsubst %,-e %,$(ENV_SYSTEM)) $(DOCKER_SSH_AUTH) $(DOCKER_RUN_VOLUME) $(DOCKER_RUN_WORKDIR) $(DOCKER_REPO)/openstack:$(DOCKER_BUILD_TARGET) $(1)
 endef
-define packer
-	$(ECHO) docker run $(DOCKER_RUN_OPTIONS) $(patsubst %,--env-file %,$(ENV_FILE)) $(patsubst %,-e %,$(ENV_SYSTEM)) $(DOCKER_SSH_AUTH) $(DOCKER_RUN_VOLUME) $(DOCKER_RUN_WORKDIR) --device /dev/kvm -v $(HOME):/home/$(USER) --name $(COMPOSE_PROJECT_NAME)_packer_1 -p 5900:5900 $(DOCKER_REPO)/packer:$(DOCKER_BUILD_TARGET) $(1)
-endef
 
 else
 
@@ -57,9 +54,6 @@ define aws
 endef
 define openstack
 	IFS=$$'\n'; $(ECHO) env $(ENV_SYSTEM) $$(cat $(ENV_FILE) 2>/dev/null |awk -F "=" '$$1 ~! /^\(#|$$\)/') openstack $(1)
-endef
-define packer
-	IFS=$$'\n'; $(ECHO) env $(ENV_SYSTEM) $$(cat $(ENV_FILE) 2>/dev/null |awk -F "=" '$$1 ~! /^\(#|$$\)/') packer $(1)
 endef
 
 endif
