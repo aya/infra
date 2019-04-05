@@ -13,6 +13,7 @@ DOCKER_GID                      ?= $(shell getent group docker |awk -F: '{print 
 DOCKER_IMAGE_CLI                ?= cli:$(DOCKER_BUILD_TARGET)
 DOCKER_IMAGE_SSH                ?= ssh:$(DOCKER_BUILD_TARGET)
 DOCKER_IMAGE_TAG                ?= $(or $(TAG), $(DOCKER_BUILD_TARGET)$(addprefix -,$(DRONE_BUILD_NUMBER)))
+DOCKER_IMAGES                   ?= $(dir $(wildcard docker/*/Dockerfile))
 DOCKER_INFRA_CLI                ?= $(COMPOSE_PROJECT_NAME_INFRA_BASE)_cli
 DOCKER_INFRA_SSH                ?= $(COMPOSE_PROJECT_NAME_INFRA_BASE)_ssh
 DOCKER_NETWORK                  ?= $(ENV)
@@ -25,7 +26,6 @@ DOCKER_RUN_WORKDIR              ?= -w $$PWD
 DOCKER_SERVICE_INFRA_BASE       ?= cli ssh
 DOCKER_SERVICE_INFRA_NODE       ?= consul fabio registrator
 DOCKER_SHELL                    ?= $(SHELL)
-DOCKERS                         ?= $(dir $(wildcard docker/*/Dockerfile))
 
 ifeq ($(DOCKER), true)
 
@@ -45,44 +45,44 @@ DOCKER_RUN_VOLUME               := -v /var/run/docker.sock:/var/run/docker.sock 
 endif
 
 define docker-compose
-	$(DRYRUN_ECHO) docker run $(DOCKER_RUN_OPTIONS) $(patsubst %,--env-file %,$(ENV_FILE)) $(patsubst %,-e %,$(ENV_SYSTEM)) $(DOCKER_RUN_VOLUME) $(DOCKER_RUN_WORKDIR) docker/compose:$(COMPOSE_VERSION) $(patsubst %,-f %,$(COMPOSE_FILE)) -p $(COMPOSE_PROJECT_NAME) $(1)
+	$(call run,docker/compose:$(COMPOSE_VERSION) $(patsubst %,-f %,$(COMPOSE_FILE)) -p $(COMPOSE_PROJECT_NAME) $(1))
 endef
 define docker-compose-exec
-	$(DRYRUN_ECHO) docker run $(DOCKER_RUN_OPTIONS) $(patsubst %,--env-file %,$(ENV_FILE)) $(patsubst %,-e %,$(ENV_SYSTEM)) $(DOCKER_RUN_VOLUME) $(DOCKER_RUN_WORKDIR) docker/compose:$(COMPOSE_VERSION) $(patsubst %,-f %,$(COMPOSE_FILE)) -p $(COMPOSE_PROJECT_NAME) exec -T $(1) sh -c '$(2)'
+	$(call run,docker/compose:$(COMPOSE_VERSION) $(patsubst %,-f %,$(COMPOSE_FILE)) -p $(COMPOSE_PROJECT_NAME) exec -T $(1) sh -c '$(2)')
 endef
 define docker-run
-	$(DRYRUN_ECHO) docker run $(DOCKER_RUN_OPTIONS) $(patsubst %,--env-file %,$(ENV_FILE)) $(patsubst %,-e %,$(ENV_SYSTEM)) $(DOCKER_RUN_VOLUME) $(DOCKER_RUN_WORKDIR) $(1) $(2)
+	$(call run,$(1) $(2))
 endef
 ifeq ($(DRONE), true)
 define exec
-	$(DRYRUN_ECHO) docker run $(DOCKER_RUN_OPTIONS) $(patsubst %,--env-file %,$(ENV_FILE)) $(patsubst %,-e %,$(ENV_SYSTEM)) $(DOCKER_SSH_AUTH) $(DOCKER_RUN_VOLUME) $(DOCKER_RUN_WORKDIR) ${DOCKER_REPO_INFRA}/${DOCKER_IMAGE_CLI} sh -c '$(1)'
+	$(call run,$(DOCKER_SSH_AUTH) ${DOCKER_REPO_INFRA}/${DOCKER_IMAGE_CLI} sh -c '$(1)')
 endef
 else
 define exec
-	$(DRYRUN_ECHO) docker exec $(patsubst %,-e %,$(ENV_SYSTEM)) $(DOCKER_INFRA_CLI)_1 sh -c '$(1)'
+	$(ECHO) docker exec $(patsubst %,-e %,$(ENV_SYSTEM)) $(DOCKER_INFRA_CLI)_1 sh -c '$(1)'
 endef
 endif
 define run
-	$(DRYRUN_ECHO) docker run $(DOCKER_RUN_OPTIONS) $(patsubst %,--env-file %,$(ENV_FILE)) $(patsubst %,-e %,$(ENV_SYSTEM)) $(DOCKER_SSH_AUTH) $(DOCKER_RUN_VOLUME) $(DOCKER_RUN_WORKDIR) ${DOCKER_REPO_INFRA}/${DOCKER_IMAGE_CLI} sh -c '$(1)'
+	$(ECHO) docker run $(DOCKER_RUN_OPTIONS) $(patsubst %,--env-file %,$(ENV_FILE)) $(patsubst %,-e %,$(ENV_SYSTEM)) $(DOCKER_RUN_VOLUME) $(DOCKER_RUN_WORKDIR) $(1)
 endef
 
 else
 
-SHELL := /bin/bash
+SHELL                           := /bin/bash
 define docker-compose
-	IFS=$$'\n'; $(DRYRUN_ECHO) env $(ENV_SYSTEM) $$(cat $(ENV_FILE) 2>/dev/null |awk -F "=" '$1 ~! /^\(#|$\)/') docker-compose $(patsubst %,-f %,$(COMPOSE_FILE)) -p $(COMPOSE_PROJECT_NAME) $(1)
+	$(call run,docker-compose $(patsubst %,-f %,$(COMPOSE_FILE)) -p $(COMPOSE_PROJECT_NAME) $(1))
 endef
 define docker-compose-exec
-	IFS=$$'\n'; $(DRYRUN_ECHO) env $(ENV_SYSTEM) $$(cat $(ENV_FILE) 2>/dev/null |awk -F "=" '$1 ~! /^\(#|$\)/') docker-compose $(patsubst %,-f %,$(COMPOSE_FILE)) -p $(COMPOSE_PROJECT_NAME) exec $(1) sh -c '$(2)'
+	$(call run,docker-compose $(patsubst %,-f %,$(COMPOSE_FILE)) -p $(COMPOSE_PROJECT_NAME) exec -T $(1) sh -c '$(2)')
 endef
 define docker-run
-	$(DRYRUN_ECHO) docker run $(DOCKER_RUN_OPTIONS) $(patsubst %,--env-file %,$(ENV_FILE)) $(patsubst %,-e %,$(ENV_SYSTEM)) $(DOCKER_RUN_VOLUME) $(DOCKER_RUN_WORKDIR) $(1) $(2)
+	$(ECHO) docker run $(DOCKER_RUN_OPTIONS) $(patsubst %,--env-file %,$(ENV_FILE)) $(patsubst %,-e %,$(ENV_SYSTEM)) $(DOCKER_RUN_VOLUME) $(DOCKER_RUN_WORKDIR) $(1) $(2)
 endef
 define exec
-	IFS=$$'\n'; $(DRYRUN_ECHO) env $(ENV_SYSTEM) $$(cat $(ENV_FILE) 2>/dev/null |awk -F "=" '$$1 ~! /^\(#|$$\)/') sh -c '$(1)'
+	$(call run,sh -c '$(1)')
 endef
 define run
-	IFS=$$'\n'; $(DRYRUN_ECHO) env $(ENV_SYSTEM) $$(cat $(ENV_FILE) 2>/dev/null |awk -F "=" '$$1 ~! /^\(#|$$\)/') sh -c '$(1)'
+	IFS=$$'\n'; $(ECHO) env $(ENV_SYSTEM) $$(cat $(ENV_FILE) 2>/dev/null |awk -F "=" '$$1 ~! /^\(#|$$\)/') $(1)
 endef
 
 endif
@@ -93,13 +93,12 @@ define docker-build
 	$(eval target := $(subst ",,$(subst ',,$(or $(3),$(DOCKER_BUILD_TARGET)))))
 	$(eval image := $(shell docker images -q $(tag) 2>/dev/null))
 	$(eval build_image := $(or $(filter $(DOCKER_BUILD_CACHE),false),$(if $(image),,true)))
-	$(if $(build_image),$(DRYRUN_ECHO) docker build $(DOCKER_BUILD_ARGS) --tag $(tag) $(if $(target),--target $(target)) $(path),echo "docker image $(tag) has id $(image)")
+	$(if $(build_image),$(ECHO) docker build $(DOCKER_BUILD_ARGS) --tag $(tag) $(if $(target),--target $(target)) $(path),echo "docker image $(tag) has id $(image)")
 endef
-
 define docker-volume-copy
 	$(eval from:=$(1))
 	$(eval to:=$(2))
-	$(DRYRUN_ECHO) docker volume inspect $(from) >/dev/null
-	$(DRYRUN_ECHO) docker volume inspect $(to) >/dev/null 2>&1 || $(DRYRUN_ECHO) docker volume create $(to) >/dev/null
-	$(DRYRUN_ECHO) docker run --rm -v $(from):/from -v $(to):/to alpine ash -c "cd /from; cp -a . /to"
+	$(ECHO) docker volume inspect $(from) >/dev/null
+	$(ECHO) docker volume inspect $(to) >/dev/null 2>&1 || $(ECHO) docker volume create $(to) >/dev/null
+	$(ECHO) docker run --rm -v $(from):/from -v $(to):/to alpine ash -c "cd /from; cp -a . /to"
 endef
