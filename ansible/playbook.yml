@@ -1,0 +1,5 @@
+- hosts: all
+  gather_facts: false
+  pre_tasks:
+    - name: raw - install ansible requirements for alpine linux
+      raw: "[ -f /etc/alpine-release ] && { which python >/dev/null 2>&1 || /sbin/apk --no-cache add python; } && { which sudo >/dev/null 2>&1 || /sbin/apk --no-cache add sudo; } && { /bin/tar --version 2>/dev/null |grep busybox >/dev/null &&/sbin/apk --no-cache add tar; } || true"

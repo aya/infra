@@ -20,10 +20,16 @@ iface eth1 inet dhcp
 DNSOPTS="-n 8.8.8.8"
 TIMEZONEOPTS="-z Europe/Paris"
 PROXYOPTS="none"
-APKREPOSOPTS="http://dl-cdn.alpinelinux.org/alpine/v${VERSION}/main"
+APKREPOSOPTS="http://dl-cdn.alpinelinux.org/alpine/v${VERSION}/main http://dl-cdn.alpinelinux.org/alpine/v${VERSION}/community"
 SSHDOPTS="-c none"
 NTPOPTS="-c openntpd"
 DISKOPTS="-s 0 -m sys /dev/vda"
+export MIRRORS="http://dl-cdn.alpinelinux.org/alpine/
+http://dl-2.alpinelinux.org/alpine/
+http://dl-3.alpinelinux.org/alpine/
+http://dl-4.alpinelinux.org/alpine/
+http://dl-5.alpinelinux.org/alpine/
+http://dl-8.alpinelinux.org/alpine/"
 
 /sbin/setup-keymap ${KEYMAPOPTS}
 /sbin/setup-hostname ${HOSTNAMEOPTS}
