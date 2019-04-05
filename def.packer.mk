@@ -1,4 +1,5 @@
 ENV_SYSTEM                      += PACKER_CACHE_DIR=cache PACKER_KEY_INTERVAL=10ms PACKER_LOG=1
+KVM_GID                         ?= $(shell getent group kvm |awk -F: '{print $$3}')
 PACKER_BUILD_ARGS               ?= -on-error=cleanup -var template=$(PACKER_TEMPLATE)
 PACKER_VNC_PORT                 ?= 5900
 PACKER_VNC_ADDRESS              ?= 0.0.0.0
@@ -17,7 +18,7 @@ PACKER_TEMPLATES                ?= $(wildcard packer/*/*.json)
 ifeq ($(DOCKER), true)
 
 define packer
-	$(call run,$(DOCKER_SSH_AUTH) --device /dev/kvm -v $(HOME):/home/$(USER) -p $(PACKER_VNC_PORT):$(PACKER_VNC_PORT) $(DOCKER_REPO)/packer:$(DOCKER_BUILD_TARGET) $(1))
+	$(call run,$(DOCKER_SSH_AUTH) $(if $(KVM_GID),--group-add $(KVM_GID)) --device /dev/kvm -v $(HOME):/home/$(USER) -p $(PACKER_VNC_PORT):$(PACKER_VNC_PORT) $(DOCKER_REPO)/packer:$(DOCKER_BUILD_TARGET) $(1))
 endef
 
 else

@@ -42,7 +42,8 @@
         "apk add --repository http://dl-cdn.alpinelinux.org/alpine/v{{user `version`}}/main --repository http://dl-cdn.alpinelinux.org/alpine/v{{user `version`}}/community dropbear dropbear-openrc dropbear-scp<enter>",
         "rc-update add dropbear<enter>",
         "echo -e 'auto eth0\\niface eth0 inet dhcp' > /etc/network/interfaces<enter>",
-        "rc-service dropbear start<enter>"
+        "rc-service dropbear start<enter>",
+        "<wait>"
     ]
     }
     ],
