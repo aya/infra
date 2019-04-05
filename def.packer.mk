@@ -20,11 +20,17 @@ ifeq ($(DOCKER), true)
 define packer
 	$(call run,$(DOCKER_SSH_AUTH) $(if $(KVM_GID),--group-add $(KVM_GID)) --device /dev/kvm -v $(HOME):/home/$(USER) -p $(PACKER_VNC_PORT):$(PACKER_VNC_PORT) $(DOCKER_REPO)/packer:$(DOCKER_BUILD_TARGET) $(1))
 endef
+define packer-qemu
+	$(call run,$(if $(KVM_GID),--group-add $(KVM_GID)) --device /dev/kvm -p $(PACKER_VNC_PORT):$(PACKER_VNC_PORT) --entrypoint=qemu-system-x86_64 $(DOCKER_REPO)/packer:$(DOCKER_BUILD_TARGET) -enable-kvm -drive file=$(1)$(comma)format=raw -vnc $(PACKER_VNC_ADDRESS):$(subst 590,,$(PACKER_VNC_PORT)))
+endef
 
 else
 
 define packer
 	$(call run,packer $(1))
+endef
+define packer-qemu
+	$(call run,qemu-system-x86_64 -enable-kvm -drive file=$(1)$(comma)format=raw)
 endef
 
 endif

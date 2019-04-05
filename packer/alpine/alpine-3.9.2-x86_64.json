@@ -51,24 +51,28 @@
     {
         "type": "shell",
         "script": "packer/alpine/setup.sh",
-        "environment_vars": ["HOSTNAME={{user `hostname`}}",
-                             "PASSWORD={{user `password`}}",
-                             "VERSION={{user `version`}}"]
+        "environment_vars": [
+            "HOSTNAME={{user `hostname`}}",
+            "PASSWORD={{user `password`}}",
+            "VERSION={{user `version`}}"
+        ]
     },
     {
         "type": "shell",
-        "inline": ["mount /dev/vda2 /mnt",
-                   "mkdir -p /mnt/root/.ssh",
-                   "chmod 0700 /mnt/root/.ssh"]
+        "inline": [
+            "/usr/bin/eject -s",
+            "/sbin/reboot"
+        ],
+        "expect_disconnect": true
     },
     {
-        "type": "file",
-        "source": "{{user `id_rsa.pub`}}",
-        "destination": "/mnt/root/.ssh/authorized_keys"
-    },
-    {
-        "type": "shell",
-        "inline": ["umount /mnt"]
+        "type": "ansible",
+        "playbook_file": "ansible/playbook.yml",
+        "extra_arguments": [
+            "-vvvv"
+        ],
+        "user": "root",
+        "pause_before": "16s"
     }
     ]
 }
