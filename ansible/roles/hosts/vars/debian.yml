@@ -1,0 +1,7 @@
+---
+# file vars/debian.yml
+
+hosts_etc_bashrc: /etc/bash.bashrc
+hosts_packages:
+  - { "name": "vim-nox", "state": "present" }
+

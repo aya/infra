@@ -1,0 +1,43 @@
+---
+# file: defaults/main.yml
+
+# a list of github usernames to get public keys
+hosts_ssh_users: []
+
+# Activate zram swap devices on host
+hosts_enable_zram: false
+
+# run user specific rc functions on ssh connection
+hosts_enable_rc: false
+
+# list of rc functions to call at user connection
+hosts_rc_functions:
+    # customize PS1 variable
+    - 01_custom_ps1
+    # customize PROMPT variable
+    # - 02_custom_prompt
+    # launch a ssh agent and load all private keys located in ~/.ssh
+    # - 03_ssh_agent
+    # create and/or attach a tmux session
+    # - 04_attach_tmux
+    # create and/or attach a screen session
+    - 05_attach_screen
+
+# list of rc functions to cleanup (remove files)
+# hosts_rc_cleanup:
+#     - 03_ssh_agent
+#     - 04_attach_tmux
+
+# location of /etc/bashrc
+hosts_etc_bashrc: /etc/bashrc
+
+# packages specific to a distribution
+hosts_packages: []
+
+# packages common to all distributions
+hosts_packages_common:
+  - { "name": "bash", "state": "present" }
+  - { "name": "ca-certificates", "state": "present" }
+  - { "name": "rsync", "state": "present" }
+  - { "name": "screen", "state": "present" }
+  - { "name": "tzdata", "state": "present" }

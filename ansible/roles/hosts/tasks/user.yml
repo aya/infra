@@ -1,0 +1,18 @@
+---
+# file: tasks/user.yml
+
+- name: user - create directory ~/.rc.d
+  file: path=~/.rc.d/ state={{hosts_enable_rc|default(false)|ternary('directory', 'absent')}} mode="0700"
+
+- name: user - activate rc functions
+  with_items: "{{hosts_rc_functions|default([])}}"
+  file: path="~/.rc.d/{{item}}" state="touch" mode="0600"
+  when: hosts_enable_rc|default(false)
+
+- name: user - disable rc functions
+  with_items: "{{hosts_rc_cleanup|default([])}}"
+  file: path="~/.rc.d/{{item}}" state="absent" mode="0600"
+  when: hosts_enable_rc|default(false)
+
+- name: user - update file .screenrc
+  lineinfile: dest=~/.screenrc create=yes line='hardstatus alwayslastline "%{= kw}[%{G}%H%{-}] \# %?%-Lw%?[%{G}%n%f %t%{-}]%?%+Lw%?%?%=%-17< [%{B}%l%{-}]"'

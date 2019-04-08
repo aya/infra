@@ -1,0 +1,19 @@
+---
+# file: tasks/service.yml
+
+- name: service - activate zram
+  service:
+    name: zram
+    state: started
+    enabled: yes
+  when: hosts_enable_zram and ansible_service_mgr|lower != "openrc" and ansible_os_family|lower != "alpine"
+  become: yes
+
+- name: service - activate zram (openrc)
+  service:
+    name: zram
+    state: started
+    enabled: yes
+    runlevel: boot
+  when: hosts_enable_zram and (ansible_service_mgr|lower == "openrc" or ansible_os_family|lower == "alpine")
+  become: yes
