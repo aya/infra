@@ -19,7 +19,9 @@ case $- in
         [ -n "${func_name}" ] && ${func_name} $(cat ${user_func}) 2>/dev/null
     done
     # load user defined stuffs from RC_* env vars
-    while read func_name func_args; do
+    IFS=$'\n'; for func_line in $(env 2>/dev/null |awk '$0 ~ /^RC_/ {print tolower(substr($0,4))}'); do
+        func_name="${func_line%%=*}"
+        func_args="${func_line#*=}"
         [ "${func_args}" = "false" ] && continue
         [ "${func_args}" = "true" ] && unset func_args
         # at this stage, func_name can start with numbers to allow ordering function calls with file names starting with numbers
@@ -30,6 +32,6 @@ case $- in
         done
         # call user function with args passed from the value of the env var
         [ -n "${func_name}" ] && ${func_name} ${func_args} 2>/dev/null
-    done < <(declare 2>/dev/null |awk -F'=' '$1 ~ /^RC_/ {print tolower(substr($1,4)),$2}')
+    done
   ;;
 esac
