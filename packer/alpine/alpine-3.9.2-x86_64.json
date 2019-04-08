@@ -1,6 +1,6 @@
 {
     "variables": {
-        "disk_size": "512",
+        "disk_size": "1024",
         "id_rsa.pub": "{{env `HOME`}}/.ssh/id_rsa.pub",
         "hostname": "alpine",
         "password": "alpine",
@@ -68,9 +68,11 @@
     {
         "type": "ansible",
         "playbook_file": "ansible/playbook.yml",
+        "inventory_directory": "ansible/inventories",
         "extra_arguments": [
             "-vvvv"
         ],
+        "sftp_command": "/usr/lib/ssh/sftp-server -e",
         "user": "root",
         "pause_before": "16s"
     }

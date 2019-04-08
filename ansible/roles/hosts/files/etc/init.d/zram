@@ -25,12 +25,12 @@ start() {
     [ $? -eq 0 ] && [ "${num_cpus:-0}" != 0 ] || num_cpus=1
  
     # load kernel module
-    if modinfo zram 2>/dev/null | grep -q ' zram_num_devices:' 2>/dev/null; then
-        modprobe zram zram_num_devices=$num_cpus
-    elif modinfo zram 2>/dev/null | grep -q ' num_devices:' 2>/dev/null; then
-        modprobe zram num_devices=$num_cpus
+    if /sbin/modinfo zram 2>/dev/null | grep -q ' zram_num_devices:' 2>/dev/null; then
+        /sbin/modprobe zram zram_num_devices=$num_cpus
+    elif /sbin/modinfo zram 2>/dev/null | grep -q ' num_devices:' 2>/dev/null; then
+        /sbin/modprobe zram num_devices=$num_cpus
     else
-        echo "Unable to load zram kernel module." && exit 1
+        /bin/echo "Unable to load zram kernel module." && exit 1
     fi
  
     # get amount of memory
@@ -42,15 +42,15 @@ start() {
     # create one zram swap device per cpu
     for i in $(seq 0 $((num_cpus - 1))); do
         # enable lz4 if supported
-        grep -q lz4 /sys/block/zram$i/comp_algorithm 2>/dev/null && echo lz4 > /sys/block/zram$i/comp_algorithm 2>/dev/null
+        /bin/grep -q lz4 /sys/block/zram$i/comp_algorithm 2>/dev/null && /bin/echo lz4 > /sys/block/zram$i/comp_algorithm 2>/dev/null
         # initialize the device
-        echo $((mem_total_zram / num_cpus)) > /sys/block/zram$i/disksize 2>/dev/null
+        /bin/echo $((mem_total_zram / num_cpus)) > /sys/block/zram$i/disksize 2>/dev/null
         # create a swap filesystem
-        mkswap /dev/zram$i >/dev/null 2>&1
+        /sbin/mkswap /dev/zram$i >/dev/null 2>&1
         # activate zram swap device
-        echo -n "Adding swap device /dev/zram$i... "
-        swapon -p ${PRIORITY:-1024} /dev/zram$i >/dev/null 2>&1
-        result=$? && [ ${result} -eq 0 ] && echo "OK" || echo "ERROR"
+        /bin/echo -n "Adding swap device /dev/zram$i... "
+        /sbin/swapon -p ${PRIORITY:-1024} /dev/zram$i >/dev/null 2>&1
+        result=$? && [ ${result} -eq 0 ] && /bin/echo "OK" || /bin/echo "ERROR"
     done
     [ ${result:-0} -ge ${return:-0} ] && return=${result}
 }
@@ -58,29 +58,29 @@ start() {
 stop() {
     # remove swap devices
     for dev in $(awk '$1 ~ /^\/dev\/zram/ {print $1}' /proc/swaps); do
-        echo -n "Removing swap device $dev... "
-        swapoff $dev >/dev/null 2>&1
-        result=$? && [ ${result} -eq 0 ] && echo "OK" || echo "ERROR"
+        /bin/echo -n "Removing swap device $dev... "
+        /sbin/swapoff $dev >/dev/null 2>&1
+        result=$? && [ ${result} -eq 0 ] && /bin/echo "OK" || /bin/echo "ERROR"
     done
     [ ${result:-0} -ge ${return:-0} ] && return=${result}
     # remove zram kernel module
     if grep -q "^zram " /proc/modules; then
         sleep 1
-        rmmod zram
+        /sbin/rmmod zram
     fi
 }
  
 status() {
     for block in /sys/block/zram*; do
-        [ -d "$block" ] && echo -n "/dev/${block/*\/}: " || continue
+        [ -d "$block" ] && /bin/echo -n "/dev/${block/*\/}: " || continue
         [ $(<$block/compr_data_size) -gt 0 ] \
           && compr_ratio=$(awk "BEGIN { printf \"%.2f\", "$(<$block/orig_data_size)/$(<$block/compr_data_size)" }") \
           || compr_ratio=0
         [ -r $block/stat ] && [ -r $block/mm_stat ] \
-          && awk 'NF==11 {printf("read: %8d, write: %8d, wait: %8d", $1, $5, $11)}' $block/stat && echo -n ", " \
-          && awk 'NF==7 {printf("orig_data_size: %12d, compr_data_size: %12d", $1, $2)}' $block/mm_stat && echo -n ", " \
-          && echo "compr_ratio: $compr_ratio" \
-          || echo "read: $(<$block/num_reads), write: $(<$block/num_writes), orig_data_size: $(<$block/orig_data_size), compr_data_size: $(<$block/compr_data_size), compr_ratio: $compr_ratio"
+          && /usr/bin/awk 'NF==11 {printf("read: %8d, write: %8d, wait: %8d", $1, $5, $11)}' $block/stat && /bin/echo -n ", " \
+          && /usr/bin/awk 'NF==7 {printf("orig_data_size: %12d, compr_data_size: %12d", $1, $2)}' $block/mm_stat && /bin/echo -n ", " \
+          && /bin/echo "compr_ratio: $compr_ratio" \
+          || /bin/echo "read: $(<$block/num_reads), write: $(<$block/num_writes), orig_data_size: $(<$block/orig_data_size), compr_data_size: $(<$block/compr_data_size), compr_ratio: $compr_ratio"
     done
 }
  
@@ -99,7 +99,7 @@ case "$1" in
         status
         ;;
     *)
-        echo "Usage: $0 {start|stop|restart|status}"
+        /bin/echo "Usage: $0 {start|stop|restart|status}"
 esac
 
 exit ${return:-1}
