@@ -1,0 +1,6 @@
+---
+# file: playbooks/docker.yml
+
+- hosts: all
+  roles:
+  - docker
