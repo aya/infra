@@ -1,0 +1,24 @@
+---
+# file: tasks/main.yml
+
+- include: vars.yml
+  tags:
+    - vars
+- include: package.yml
+  tags:
+    - package
+- include: ssh.yml
+  tags:
+    - ssh
+- include: bash.yml
+  tags:
+    - bash
+- include: files.yml
+  tags:
+    - files
+- include: service.yml
+  tags:
+    - service
+- include: user.yml
+  tags:
+    - user

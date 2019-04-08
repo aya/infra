@@ -1,0 +1,8 @@
+---
+# file: tasks/ssh.yml
+
+- name: ssh - add keys to file /root/.ssh/authorized_keys
+  authorized_key: user="root" key=https://github.com/{{item}}.keys
+  with_items: "{{hosts_ssh_users|default([])}}"
+  become: yes
+

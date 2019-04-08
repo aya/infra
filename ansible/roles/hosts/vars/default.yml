@@ -1,0 +1,6 @@
+---
+# file vars/default.yml
+
+hosts_packages:
+  - { "name": "vim", "state": "present" }
+
