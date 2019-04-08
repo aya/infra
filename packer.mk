@@ -2,8 +2,8 @@
 packer:
 	$(call packer,$(ARGS))
 
-.PHONY: packer-build-isos
-packer-build-isos: $(PACKER_TEMPLATES) ## Build iso images
+.PHONY: packer-build
+packer-build: $(PACKER_TEMPLATES) ## Build iso images
 
 .PHONY: $(PACKER_TEMPLATES)
 $(PACKER_TEMPLATES): docker-build-packer
