@@ -1,0 +1,13 @@
+---
+# file: tasks/package.yml
+
+- name: package - packages pre installation
+  with_items: "{{docker_packages|default([])}}"
+  package: name="{{item.name}}" state="{{item.state}}"
+  become: yes
+
+- name: package - add docker package
+  package: name="{{docker_package}}" state=present
+  when: docker_package|length > 0
+  become: yes
+

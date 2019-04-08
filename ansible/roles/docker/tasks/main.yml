@@ -1,0 +1,39 @@
+---
+# file: tasks/main.yml
+
+- include: vars.yml
+  tags:
+    - vars
+
+- include: check.yml
+  tags:
+    - check
+
+- include: files.yml
+  tags:
+    - files
+
+- include: package.yml
+  tags:
+    - package
+
+- include: config.yml
+  tags:
+    - config
+
+- include: service.yml
+  tags:
+    - service
+
+- include: group.yml
+  tags:
+    - group
+
+- include: build.yml
+  tags:
+    - build
+
+- include: run.yml
+  tags:
+    - run
+
