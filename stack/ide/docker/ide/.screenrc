@@ -1,1 +1,2 @@
 hardstatus alwayslastline "%{= kw}[%{G}%H%{-}] \# %?%-Lw%?[%{G}%n%f %t%{-}]%?%+Lw%?%?%=%-17< [%{B}%l%{-}]"
+defscrollback 1048576
