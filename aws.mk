@@ -1,3 +1,8 @@
+IAM_ROLE_NAME ?= vmiport
+AWS_SNAPSHOT_S3_BUCKET     ?= production-ftp
+AWS_SNAPSHOT_S3_KEY        ?= alpine-3.9.2-x86_64.iso
+SNAPSHOT_ISO  ?= iso/alpine-3.9.2-x86_64/alpine-3.9.2-x86_64.iso
+ENV_SYSTEM_VARS += AWS_SNAPSHOT_S3_KEY AWS_SNAPSHOT_S3_BUCKET
 .PHONY: aws
 aws: docker-build-aws
 	$(call aws,$(ARGS))
