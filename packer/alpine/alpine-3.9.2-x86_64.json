@@ -28,7 +28,7 @@
     "ssh_username": "root",
     "ssh_password": "{{user `password`}}",
     "ssh_port": 22,
-    "ssh_wait_timeout": "8s",
+    "ssh_wait_timeout": "16s",
     "vm_name": "alpine-{{user `release`}}-{{user `arch`}}.iso",
     "vnc_bind_address": "{{user `vnc_bind_address`}}",
     "vnc_port_max": "{{user `vnc_port_max`}}",
