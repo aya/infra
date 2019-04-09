@@ -1,3 +1,4 @@
+CMDS                            += packer
 ENV_SYSTEM                      += PACKER_CACHE_DIR=cache PACKER_KEY_INTERVAL=10ms PACKER_LOG=1
 KVM_GID                         ?= $(shell getent group kvm |awk -F: '{print $$3}')
 PACKER_BUILD_ARGS               ?= -on-error=cleanup -var template=$(PACKER_TEMPLATE) $(foreach var,arch disk_size id_rsa.pub hostname password release template version,$(if $($(var)),-var $(var)='$($(var))'))

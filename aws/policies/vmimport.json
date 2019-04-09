@@ -8,7 +8,7 @@
             "s3:GetBucketLocation"
          ],
          "Resource": [
-            "arn:aws:s3:::production-iso"
+            "arn:aws:s3:::${AWS_SNAPSHOT_S3_BUCKET}"
          ]
       },
       {
@@ -17,7 +17,7 @@
             "s3:GetObject"
          ],
          "Resource": [
-            "arn:aws:s3:::production-iso/*"
+            "arn:aws:s3:::${AWS_SNAPSHOT_S3_BUCKET}/*"
          ]
       },
       {

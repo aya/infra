@@ -59,7 +59,7 @@ define exec
 endef
 else
 define exec
-	$(ECHO) docker exec $(patsubst %,-e %,$(ENV_SYSTEM)) $(DOCKER_INFRA_CLI)_1 sh -c '$(1)'
+	$(ECHO) docker exec $(patsubst %,-e %,$(ENV_SYSTEM)) $(DOCKER_RUN_WORKDIR) $(DOCKER_INFRA_CLI)_1 sh -c '$(1)'
 endef
 endif
 define run

@@ -1,4 +1,4 @@
-CMDS                            += ansible ansible-playbook aws base-exec node-exec openstack packer terraform
+CMDS                            += base-exec node-exec openstack terraform
 COMPOSE_IGNORE_ORPHANS          ?= true
 CONTEXT                         += COMPOSE_PROJECT_NAME GIT_AUTHOR_EMAIL GIT_AUTHOR_NAME
 DOCKER_SERVICE                  ?= mysql
@@ -27,12 +27,6 @@ endef
 
 ifeq ($(DOCKER), true)
 
-define ansible
-	$(ECHO) docker run $(DOCKER_RUN_OPTIONS) $(patsubst %,--env-file %,$(ENV_FILE)) $(patsubst %,-e %,$(ENV_SYSTEM)) $(DOCKER_SSH_AUTH) $(DOCKER_RUN_VOLUME) $(DOCKER_RUN_WORKDIR) $(DOCKER_REPO)/ansible:$(DOCKER_BUILD_TARGET) $(1)
-endef
-define ansible-playbook
-	$(ECHO) docker run $(DOCKER_RUN_OPTIONS) $(patsubst %,--env-file %,$(ENV_FILE)) $(patsubst %,-e %,$(ENV_SYSTEM)) $(DOCKER_SSH_AUTH) $(DOCKER_RUN_VOLUME) $(DOCKER_RUN_WORKDIR) --entrypoint /usr/bin/ansible-playbook $(DOCKER_REPO)/ansible:$(DOCKER_BUILD_TARGET) $(1)
-endef
 define aws
 	$(ECHO) docker run $(DOCKER_RUN_OPTIONS) $(patsubst %,--env-file %,$(ENV_FILE)) $(patsubst %,-e %,$(ENV_SYSTEM)) $(DOCKER_SSH_AUTH) $(DOCKER_RUN_VOLUME) -v $$HOME/.aws:/root/.aws:ro $(DOCKER_RUN_WORKDIR) anigeo/awscli:latest $(1)
 endef
@@ -42,13 +36,6 @@ endef
 
 else
 
-SHELL := /bin/bash
-define ansible
-	IFS=$$'\n'; $(ECHO) env $(ENV_SYSTEM) $$(cat $(ENV_FILE) 2>/dev/null |awk -F "=" '$$1 ~! /^\(#|$$\)/') ansible $(1)
-endef
-define ansible-playbook
-	IFS=$$'\n'; $(ECHO) env $(ENV_SYSTEM) $$(cat $(ENV_FILE) 2>/dev/null |awk -F "=" '$$1 ~! /^\(#|$$\)/') ansible-playbook $(1)
-endef
 define aws
 	IFS=$$'\n'; $(ECHO) env $(ENV_SYSTEM) $$(cat $(ENV_FILE) 2>/dev/null |awk -F "=" '$$1 ~! /^\(#|$$\)/') aws $(1)
 endef

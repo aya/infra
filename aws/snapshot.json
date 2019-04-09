@@ -2,7 +2,7 @@
   "Description": "MEUP Alpine Linux sda",
   "Format": "raw",
   "UserBucket": {
-    "S3Bucket": "production-iso",
-    "S3Key": "alpine-meup-3.6.2-x86_64.iso"
+    "S3Bucket": "${AWS_SNAPSHOT_S3_BUCKET}",
+    "S3Key": "${AWS_SNAPSHOT_S3_KEY}"
   }
 }

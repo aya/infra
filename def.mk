@@ -1,8 +1,6 @@
 comma                           ?= ,
 dollar                          ?= $
 APP                             ?= $(SUBREPO)
-AWS_DEFAULT_REGION              ?= eu-west-1
-AWS_DEFAULT_OUTPUT              ?= text
 BRANCH                          ?= $(shell git rev-parse --abbrev-ref HEAD)
 CMDS                            ?= exec run
 COMMIT                          ?= $(shell git rev-parse $(BRANCH) 2>/dev/null)

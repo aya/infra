@@ -1,22 +1,31 @@
 .PHONY: aws
-aws:
+aws: docker-build-aws
 	$(call aws,$(ARGS))
 
-.PHONY: policy
-policy: policy-role policy-trust
+.PHONY: aws-role-create-import-snapshot
+aws-role-create-import-snapshot: aws-iam-create-role-$(AWS_SNAPSHOT_ROLE_NAME)  aws-iam-put-role-policy-$(AWS_SNAPSHOT_ROLE_NAME)
 
-.PHONY: policy-trust
-policy-trust:
-	$(call aws,iam create-role --role-name vmimport --assume-role-policy-document file://policy/trust.json)
+.PHONY: aws-iam-create-role-%
+aws-iam-create-role-%: docker-build-aws
+	$(eval DRYRUN_IGNORE := true)
+	$(eval json := $(shell $(call exec,envsubst < aws/policies/$*-trust.json)))
+	$(eval DRYRUN_IGNORE := false)
+	$(call aws,iam create-role --role-name $* --assume-role-policy-document '$(json)')
 
-.PHONY: policy-role
-policy-role:
-	$(call aws,iam put-role-policy --role-name vmimport --policy-name vmimport --policy-document file://policy/role.json)
+.PHONY: aws-iam-put-role-policy-%
+aws-iam-put-role-policy-%: docker-build-aws
+	$(eval DRYRUN_IGNORE := true)
+	$(eval json := $(shell $(call exec,envsubst < aws/policies/$*.json)))
+	$(eval DRYRUN_IGNORE := false)
+	$(call aws,iam put-role-policy --role-name $* --policy-name $* --policy-document '$(json)')
 
 .PHONY: snapshot-upload
-snapshot-upload:
-	$(call aws,s3 cp ../packer/iso/alpine-3.7.0-x86_64.iso s3://$(AWS_S3_BUCKET))
+snapshot-upload: docker-build-aws
+	$(call aws,s3 cp $(SNAPSHOT) s3://$(AWS_SNAPSHOT_S3_BUCKET))
 
-.PHONY: snapshot-import
-snapshot-import:
-	$(call aws,import-snapshot --disk-container file://snapshot.json)
+.PHONY: aws-ec2-import-snapshot
+aws-ec2-import-snapshot: docker-build-aws
+	$(eval DRYRUN_IGNORE := true)
+	$(eval json := $(shell $(call exec,envsubst < aws/snapshot.json)))
+	$(eval DRYRUN_IGNORE := false)
+	$(call aws,ec2 import-snapshot --disk-container '$(json)')
