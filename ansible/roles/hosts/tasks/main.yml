@@ -1,24 +1,24 @@
 ---
 # file: tasks/main.yml
 
-- include: vars.yml
+- import_tasks: vars.yml
   tags:
     - vars
-- include: package.yml
+- import_tasks: package.yml
   tags:
     - package
-- include: ssh.yml
+- import_tasks: ssh.yml
   tags:
     - ssh
-- include: bash.yml
+- import_tasks: bash.yml
   tags:
     - bash
-- include: files.yml
+- import_tasks: files.yml
   tags:
     - files
-- include: service.yml
+- import_tasks: service.yml
   tags:
     - service
-- include: user.yml
+- import_tasks: user.yml
   tags:
     - user

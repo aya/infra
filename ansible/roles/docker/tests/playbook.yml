@@ -1,6 +1,6 @@
 ---
 # file: tests/playbook.yml
 
-- hosts: docker
+- hosts: '{{ target | default("all") }}'
   tasks:
-    - include: main.yml
+    - import_tasks: main.yml

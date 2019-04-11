@@ -1,39 +1,30 @@
 ---
 # file: tasks/main.yml
 
-- include: vars.yml
+- import_tasks: vars.yml
   tags:
     - vars
-
-- include: check.yml
+- import_tasks: check.yml
   tags:
     - check
-
-- include: files.yml
+- import_tasks: files.yml
   tags:
     - files
-
-- include: package.yml
+- import_tasks: package.yml
   tags:
     - package
-
-- include: config.yml
+- import_tasks: config.yml
   tags:
     - config
-
-- include: service.yml
+- import_tasks: service.yml
   tags:
     - service
-
-- include: group.yml
+- import_tasks: group.yml
   tags:
     - group
-
-- include: build.yml
+- import_tasks: build.yml
   tags:
     - build
-
-- include: run.yml
+- import_tasks: run.yml
   tags:
     - run
-

@@ -19,9 +19,9 @@ aws-iam-put-role-policy-%: docker-build-aws
 	$(eval DRYRUN_IGNORE := false)
 	$(call aws,iam put-role-policy --role-name $* --policy-name $* --policy-document '$(json)')
 
-.PHONY: snapshot-upload
-snapshot-upload: docker-build-aws
-	$(call aws,s3 cp $(SNAPSHOT) s3://$(AWS_SNAPSHOT_S3_BUCKET))
+.PHONY: aws-s3-cp
+aws-s3-cp: docker-build-aws
+	$(call aws,s3 cp $(PACKER_ISOS) s3://$(AWS_SNAPSHOT_S3_BUCKET))
 
 .PHONY: aws-ec2-import-snapshot
 aws-ec2-import-snapshot: docker-build-aws

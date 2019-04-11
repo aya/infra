@@ -15,6 +15,7 @@ PACKER_BUILD_ARGS               += -var vnc_port_max=$(PACKER_VNC_PORT) -var vnc
 endif
 
 PACKER_TEMPLATES                ?= $(wildcard packer/*/*.json)
+PACKER_ISOS                     ?= $(wildcard iso/*/*.iso)
 
 ifeq ($(DOCKER), true)
 
