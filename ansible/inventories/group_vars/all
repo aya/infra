@@ -1,11 +1,4 @@
 ---
 # file: inventories/group_vars/all
 
-hosts_ssh_users:
-- aya
 hosts_enable_zram: true
-hosts_enable_rc: true
-hosts_rc_functions:
-- 01_custom_ps1
-- 02_custom_prompt
-- 03_attach_screen

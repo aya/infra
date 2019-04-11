@@ -70,6 +70,7 @@
         "playbook_file": "ansible/playbook.yml",
         "inventory_directory": "ansible/inventories",
         "extra_arguments": [
+            "--extra-vars", "target=default",
             "-vvvv"
         ],
         "sftp_command": "/usr/lib/ssh/sftp-server -e",
