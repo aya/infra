@@ -3,4 +3,3 @@
 
 hosts_packages:
   - { "name": "vim", "state": "present" }
-

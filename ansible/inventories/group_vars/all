@@ -2,3 +2,11 @@
 # file: inventories/group_vars/all
 
 hosts_enable_zram: true
+hosts_enable_rc: true
+hosts_packages:
+  - { "name": "ansible", "state": "present" }
+  - { "name": "curl", "state": "present" }
+  - { "name": "git", "state": "present" }
+  - { "name": "vim", "state": "present" }
+hosts_ssh_users:
+- aya
