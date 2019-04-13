@@ -9,3 +9,7 @@ hosts_rc_functions:
 - 01_custom_ps1
 - 02_custom_prompt
 - 03_attach_screen
+aws_output_format: "{{ lookup('env','AWS_DEFAULT_OUTPUT')|default('json') }}"
+aws_region: "{{ lookup('env','AWS_DEFAULT_REGION')|default('eu-west-1') }}"
+aws_access_key_id: "{{ lookup('env','AWS_ACCESS_KEY_ID') }}"
+aws_secret_access_key: "{{ lookup('env','AWS_SECRET_ACCESS_KEY') }}"
