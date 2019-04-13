@@ -7,6 +7,14 @@ hosts_packages:
   - { "name": "ansible", "state": "present" }
   - { "name": "curl", "state": "present" }
   - { "name": "git", "state": "present" }
+  - { "name": "make", "state": "present" }
   - { "name": "vim", "state": "present" }
-hosts_ssh_users:
-- aya
+disk_additional_disks:
+ - disk: /dev/xvdb
+   fstype: ext4
+   mount_options: defaults
+   mount: /var/log
+ - disk: /dev/xvdc
+   fstype: xfs
+   mount_options: defaults,noatime
+   mount: /var/lib/docker

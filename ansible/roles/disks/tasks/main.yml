@@ -1,3 +1,13 @@
+- name: 'Install Python PIP'
+  package: >
+    name=py2-pip
+    state=latest
+
+- name: 'Install python-pathlib'
+  pip: >
+    name=pathlib
+    state=latest
+
 - name: "Discover NVMe EBS"
   disk_config:
     config: "{{ disk_additional_disks }}"
