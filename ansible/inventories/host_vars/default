@@ -1,15 +1,23 @@
 ---
 # file: inventories/host_vars/default
 
+aws_output_format: "{{ lookup('env','ANSIBLE_AWS_DEFAULT_OUTPUT')|default('json') }}"
+aws_region: "{{ lookup('env','ANSIBLE_AWS_DEFAULT_REGION')|default('eu-west-1') }}"
+aws_access_key_id: "{{ lookup('env','ANSIBLE_AWS_ACCESS_KEY_ID') }}"
+aws_secret_access_key: "{{ lookup('env','ANSIBLE_AWS_SECRET_ACCESS_KEY') }}"
+hosts_enable_local: true
+hosts_enable_rc: true
+hosts_enable_zram: true
+hosts_packages:
+  - { "name": "ansible", "state": "present" }
+  - { "name": "curl", "state": "present" }
+  - { "name": "dropbear-ssh", "state": "present" }
+  - { "name": "git", "state": "present" }
+  - { "name": "make", "state": "present" }
+  - { "name": "openssh-keygen", "state": "present" }
+  - { "name": "util-linux", "state": "present" }
+  - { "name": "vim", "state": "present" }
+hosts_ssh_private_keys:
+- "{{ lookup('env','ANSIBLE_SSH_PRIVATE_KEY') }}"
 hosts_ssh_users:
 - aya
-hosts_enable_zram: true
-hosts_enable_rc: true
-hosts_rc_functions:
-- 01_custom_ps1
-- 02_custom_prompt
-- 03_attach_screen
-aws_output_format: "{{ lookup('env','AWS_DEFAULT_OUTPUT')|default('json') }}"
-aws_region: "{{ lookup('env','AWS_DEFAULT_REGION')|default('eu-west-1') }}"
-aws_access_key_id: "{{ lookup('env','AWS_ACCESS_KEY_ID') }}"
-aws_secret_access_key: "{{ lookup('env','AWS_SECRET_ACCESS_KEY') }}"

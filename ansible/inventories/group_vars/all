@@ -1,20 +1,9 @@
 ---
 # file: inventories/group_vars/all
 
-hosts_enable_zram: true
-hosts_enable_rc: true
-hosts_packages:
-  - { "name": "ansible", "state": "present" }
-  - { "name": "curl", "state": "present" }
-  - { "name": "git", "state": "present" }
-  - { "name": "make", "state": "present" }
-  - { "name": "vim", "state": "present" }
 disk_additional_disks:
  - disk: /dev/xvdb
+   disable_periodic_fsck: true
    fstype: ext4
    mount_options: defaults
-   mount: /var/log
- - disk: /dev/xvdc
-   fstype: xfs
-   mount_options: defaults,noatime
    mount: /var/lib/docker
