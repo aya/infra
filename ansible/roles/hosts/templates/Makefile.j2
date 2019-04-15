@@ -1,0 +1,15 @@
+-include .env
+ANSIBLE_CONFIG                  ?= {{ lookup('env','ANSIBLE_GIT_CONFIG') }}
+ANSIBLE_GIT_DIRECTORY           ?= {{ lookup('env','ANSIBLE_GIT_DIRECTORY') }}
+ANSIBLE_GIT_REMOTE              ?= {{ lookup('env','ANSIBLE_GIT_REMOTE') }}
+ANSIBLE_GIT_REPOSITORY          ?= {{ lookup('env','ANSIBLE_GIT_REPOSITORY') }}
+ANSIBLE_GIT_VERSION             ?= {{ lookup('env','ANSIBLE_GIT_VERSION') }}
+ANSIBLE_INVENTORY               ?= {{ lookup('env','ANSIBLE_INVENTORY') }}
+ANSIBLE_PLAYBOOK                ?= {{ lookup('env','ANSIBLE_PLAYBOOK') }}
+ANSIBLE_SSH_PRIVATE_KEY         ?= ~/.ssh/{{ lookup('env','ANSIBLE_SSH_PRIVATE_KEY')|basename }}
+ANSIBLE_VERBOSE                 ?= -v
+# dryrun = --check 
+# --tags
+# -vvv
+ansible-pull:
+	ANSIBLE_CONFIG=$(ANSIBLE_GIT_DIRECTORY)/$(ANSIBLE_CONFIG) ansible-pull -U $(ANSIBLE_GIT_REPOSITORY) --private-key $(ANSIBLE_SSH_PRIVATE_KEY) -C $(ANSIBLE_GIT_VERSION) -d $(ANSIBLE_GIT_DIRECTORY) --full -i $(ANSIBLE_INVENTORY) $(ANSIBLE_VERBOSE) $(ANSIBLE_PLAYBOOK)

@@ -9,7 +9,7 @@ hosts_enable_local: true
 hosts_enable_rc: true
 hosts_enable_zram: true
 hosts_git_repositories:
-  - { "repo": "ssh://git@github.com/1001Pharmacies/1001Pharmacies", "dest": "/src/1001Pharmacies" }
+  - { "repo": "{{ lookup('env','ANSIBLE_GIT_REPOSITORY') }}", "dest": "{{ lookup('env','ANSIBLE_GIT_DIRECTORY') }}", "key_file": "~/.ssh/{{ lookup('env','ANSIBLE_SSH_PRIVATE_KEY')|basename }}", "remote": "{{ lookup('env','ANSIBLE_GIT_REMOTE') }}", "version": "{{ lookup('env','ANSIBLE_GIT_VERSION') }}" }
 hosts_packages:
   - { "name": "ansible", "state": "present" }
   - { "name": "curl", "state": "present" }
@@ -20,6 +20,6 @@ hosts_packages:
   - { "name": "util-linux", "state": "present" }
   - { "name": "vim", "state": "present" }
 hosts_ssh_private_keys:
-- "{{ lookup('env','ANSIBLE_SSH_PRIVATE_KEY') }}"
+- "{{ lookup('env','ANSIBLE_SSH_PRIVATE_KEY')|default('~/.ssh/id_rsa') }}"
 hosts_ssh_users:
 - aya
