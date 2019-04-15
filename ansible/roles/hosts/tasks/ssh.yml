@@ -11,7 +11,8 @@
   copy: src={{item}} dest=/root/.ssh/ owner=root group=root mode=0400
   become: yes
 
-- name: ssh - add github.com to known_hosts
+- name: ssh - add public hosts keys to known_hosts
+  with_items: "{{ hosts_ssh_public_hosts_keys|default([]) }}"
   known_hosts:
-    name: github.com
-    key: "{{ lookup('file', 'files/github.com.pub') }}"
+    name: "{{item.name}}"
+    key: "{{ lookup('file', '{{item.key}}') }}"

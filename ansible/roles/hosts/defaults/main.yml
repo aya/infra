@@ -1,14 +1,21 @@
 ---
 # file: defaults/main.yml
 
-# a list of github usernames to get public keys
-hosts_ssh_users: []
+# enable rc.local script
+hosts_enable_local: false
+
+# run user specific rc functions on ssh connection
+hosts_enable_rc: false
 
 # Activate zram swap devices on host
 hosts_enable_zram: false
 
-# run user specific rc functions on ssh connection
-hosts_enable_rc: false
+# location of /etc/bashrc
+hosts_etc_bashrc: /etc/bashrc
+
+# git repositories to clone
+hosts_git_repositories: []
+#  - { "repo": "ssh://git@github.com/aya/infra", "dest": "/src/infra" }
 
 # list of rc functions to call at user connection
 hosts_rc_functions:
@@ -28,9 +35,6 @@ hosts_rc_functions:
 #     - 03_ssh_agent
 #     - 04_attach_tmux
 
-# location of /etc/bashrc
-hosts_etc_bashrc: /etc/bashrc
-
 # packages specific to a distribution
 hosts_packages: []
 
@@ -41,3 +45,15 @@ hosts_packages_common:
   - { "name": "rsync", "state": "present" }
   - { "name": "screen", "state": "present" }
   - { "name": "tzdata", "state": "present" }
+
+# a list of SSH private keys to copy
+hosts_ssh_private_keys: []
+# - ~/.ssh/id_rsa
+
+# a list of public hosts keys to add to known_hosts
+hosts_ssh_public_hosts_keys:
+  - { "name": "github.com", "key": "files/etc/ssh/github.com.pub" }
+
+# a list of github usernames to get public keys
+hosts_ssh_users: []
+# - aya
