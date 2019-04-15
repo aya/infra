@@ -5,6 +5,7 @@
   with_items:
     - /etc/profile.d/rc.sh
     - /etc/profile.d/rc_functions.sh
+    - /root/Makefile
   copy: src=../files/{{item}} dest={{item}} owner=root group=root mode=0644
   become: yes
 
@@ -24,6 +25,7 @@
 - name: files - copy openrc files
   with_items:
     - /etc/init.d/zram-openrc
+    - /etc/local.d/ansible.start
   copy: src=../files/{{item}} dest={{item}} owner=root group=root mode=0755
   when: ansible_service_mgr|lower == "openrc"
   become: yes

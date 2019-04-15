@@ -50,6 +50,14 @@
   register: disk_offset
   tags: ['disk']
 
+- name: "Ensure the disk exists"
+  stat:
+    path: '{{ item.disk }}'
+  with_items: '{{ disk_additional_disks }}'
+  register: disk_stat
+  changed_when: False
+  tags: ['disk']
+
 - name: "Partition additional disks"
   shell: |
     if
@@ -65,17 +73,22 @@
 
 - name: "Create filesystem on the first partition"
   filesystem:
-    dev: '{{ item.part | default(item.disk + "1") }}'
-    force: '{{ item.force|d(omit) }}'
-    fstype: '{{ item.fstype }}'
-    opts: '{{ item.fsopts|d(omit) }}'
-  with_items: '{{ disk_additional_disks }}'
+    dev: '{{ item.0.part | default(item.0.disk + "1") }}'
+    force: '{{ item.0.force|d(omit) }}'
+    fstype: '{{ item.0.fstype }}'
+    opts: '{{ item.0.fsopts|d(omit) }}'
+  with_together:
+    - '{{ disk_additional_disks }}'
+    - '{{ disk_stat.results }}'
+  when: '{{ item.1.stat.exists }}'
   tags: ['disk']
 
 - name: "Disable periodic fsck on ext3 or ext4 formatted disks"
-  shell: tune2fs -c0 -i0 {{ item.part | default(item.disk + "1") }}
-  with_items: '{{ disk_additional_disks }}'
-  when: "disk_additional_disks and ( item.fstype == 'ext4' or item.fstype == 'ext3' ) and item.disable_periodic_fsck|default(false)|bool"
+  shell: tune2fs -c0 -i0 {{ item.0.part | default(item.0.disk + "1") }}
+  with_together:
+    - '{{ disk_additional_disks }}'
+    - '{{ disk_stat.results }}'
+  when: "disk_additional_disks and ( item.0.fstype == 'ext4' or item.0.fstype == 'ext3' ) and item.0.disable_periodic_fsck|default(false)|bool and item.1.stat.exists"
   tags: ['disk']
 
 - name: "Ensure the mount directory exists"
@@ -88,10 +101,13 @@
   tags: ['disk']
 
 - name: "Get UUID for partition"
-  command: blkid -s UUID -o value {{ item.part | default(item.disk + "1") }}
+  command: blkid -s UUID -o value {{ item.0.part | default(item.0.disk + "1") }}
   register: disk_blkid
-  with_items: '{{ disk_additional_disks }}'
+  with_together:
+    - '{{ disk_additional_disks }}'
+    - '{{ disk_stat.results }}'
   changed_when: False
+  when: '{{ item.1.stat.exists }}'
   tags: ['disk']
 
 - name: "Mount additional disk"
@@ -105,6 +121,8 @@
   with_together:
     - '{{ disk_additional_disks }}'
     - '{{ disk_blkid.results }}'
+    - '{{ disk_stat.results }}'
+  when: '{{ item.2.stat.exists }}'
   tags: ['disk']
 
 - name: "Ensure the permissions are set correctly"

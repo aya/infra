@@ -6,3 +6,12 @@
   with_items: "{{hosts_ssh_users|default([])}}"
   become: yes
 
+- name: ssh - copy ssh private keys
+  with_items: "{{hosts_ssh_private_keys|default([])}}"
+  copy: src={{item}} dest=/root/.ssh/ owner=root group=root mode=0400
+  become: yes
+
+- name: ssh - add github.com to known_hosts
+  known_hosts:
+    name: github.com
+    key: "{{ lookup('file', 'files/github.com.pub') }}"

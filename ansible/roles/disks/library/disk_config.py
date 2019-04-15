@@ -164,6 +164,8 @@ def main():
             dev = ebs_nvme_device('/dev/%s' % blockdevice['name'])
         except OSError:
             continue
+        except IOError:
+            continue
         if dev.is_ebs():
             continue
         mapping[dev.get_block_device()] = dev.get_volume_id()
