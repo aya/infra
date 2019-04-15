@@ -8,6 +8,8 @@ aws_secret_access_key: "{{ lookup('env','ANSIBLE_AWS_SECRET_ACCESS_KEY') }}"
 hosts_enable_local: true
 hosts_enable_rc: true
 hosts_enable_zram: true
+hosts_git_repositories:
+  - { "repo": "ssh://git@github.com/1001Pharmacies/1001Pharmacies", "dest": "/src/1001Pharmacies" }
 hosts_packages:
   - { "name": "ansible", "state": "present" }
   - { "name": "curl", "state": "present" }

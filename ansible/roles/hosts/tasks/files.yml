@@ -29,4 +29,3 @@
   copy: src=../files/{{item}} dest={{item}} owner=root group=root mode=0755
   when: ansible_service_mgr|lower == "openrc"
   become: yes
-
