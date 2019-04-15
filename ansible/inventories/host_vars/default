@@ -11,10 +11,10 @@ hosts_enable_zram: true
 hosts_packages:
   - { "name": "ansible", "state": "present" }
   - { "name": "curl", "state": "present" }
-  - { "name": "dropbear-ssh", "state": "present" }
+  - { "name": "dropbear-scp", "state": "absent" }
   - { "name": "git", "state": "present" }
   - { "name": "make", "state": "present" }
-  - { "name": "openssh-keygen", "state": "present" }
+  - { "name": "openssh-client", "state": "present" }
   - { "name": "util-linux", "state": "present" }
   - { "name": "vim", "state": "present" }
 hosts_ssh_private_keys:
