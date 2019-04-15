@@ -6,5 +6,6 @@
   git:
     repo: "{{ item.repo }}"
     dest: "{{ item.dest|default('/src') }}"
+    key_file: "{{ item.key_file|default('~/.ssh/id_rsa') }}"
     remote: "{{ item.remote|default('origin') }}"
     version: "{{ item.version|default('HEAD') }}"
