@@ -8,7 +8,7 @@
             "s3:GetBucketLocation"
          ],
          "Resource": [
-            "arn:aws:s3:::${AWS_SNAPSHOT_S3_BUCKET}"
+            "arn:aws:s3:::${AWS_S3_BUCKET}"
          ]
       },
       {
@@ -17,7 +17,7 @@
             "s3:GetObject"
          ],
          "Resource": [
-            "arn:aws:s3:::${AWS_SNAPSHOT_S3_BUCKET}/*"
+            "arn:aws:s3:::${AWS_S3_BUCKET}/*"
          ]
       },
       {
@@ -25,6 +25,7 @@
          "Action":[
             "ec2:ModifySnapshotAttribute",
             "ec2:CopySnapshot",
+            "ec2:ImportSnapshot",
             "ec2:RegisterImage",
             "ec2:Describe*"
          ],

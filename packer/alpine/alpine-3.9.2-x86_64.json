@@ -1,6 +1,6 @@
 {
     "variables": {
-        "disk_size": "8192",
+        "disk_size": "2048",
         "id_rsa.pub": "{{env `HOME`}}/.ssh/id_rsa.pub",
         "hostname": "alpine",
         "password": "alpine",

@@ -26,7 +26,7 @@ aws-iam-put-role-policy-%: docker-build-aws
 
 .PHONY: aws-s3-cp
 aws-s3-cp: docker-build-aws
-	$(call aws,s3 cp $(PACKER_ISOS) s3://$(AWS_SNAPSHOT_S3_BUCKET))
+	$(call aws,s3 cp $(PACKER_ISO_FILE) s3://$(AWS_S3_BUCKET))
 
 .PHONY: aws-ec2-import-snapshot
 aws-ec2-import-snapshot: docker-build-aws
@@ -42,6 +42,6 @@ aws-ec2-describe-import-snapshot-tasks: docker-build-aws
 .PHONY: aws-ec2-register-image
 aws-ec2-register-image: docker-build-aws
 	$(eval DRYRUN_IGNORE := true)
-	$(eval json := $(shell $(call exec,envsubst < aws/register-image.json)))
+	$(eval json := $(shell $(call exec,envsubst < aws/register-image-device-mappings.json)))
 	$(eval DRYRUN_IGNORE := false)
-	$(call aws,ec2 register-image --image-location s3://$(AWS_SNAPSHOT_S3_BUCKET) '$(json)')
+	$(call aws,ec2 register-image --name $(AWS_AMI_NAME) --description $(AWS_AMI_DESCRIPTION) --architecture x86_64 --root-device-name /dev/sda1 --virtualization-type hvm --block-device-mappings '$(json)')
