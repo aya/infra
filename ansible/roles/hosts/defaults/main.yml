@@ -57,3 +57,7 @@ hosts_ssh_public_hosts_keys:
 # a list of github usernames to get public keys
 hosts_ssh_users: []
 # - aya
+
+# a list of environment variables to write to user ~/.env
+hosts_user_env: []
+# - SHELL
