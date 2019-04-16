@@ -1,0 +1,12 @@
+---
+# file: handlers/main.yml
+
+- name: restart service
+  with_together:
+  - '{{ disk_additional_disks }}'
+  - '{{ disks_handler_notify.results }}'
+  service:
+    name: "{{item.0.service}}"
+    state: restarted
+  when: item.1.changed
+

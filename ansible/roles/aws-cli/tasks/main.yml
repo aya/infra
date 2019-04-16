@@ -42,6 +42,7 @@
     owner={{ aws_cli_user }}
     group={{ aws_cli_group }}
     mode=0600
+    force=no
 
 - name: 'Copy AWS CLI credentials'
   tags: 'aws-cli'
@@ -52,3 +53,4 @@
     owner={{ aws_cli_user }}
     group={{ aws_cli_group }}
     mode=0600
+    force=no

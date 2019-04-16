@@ -124,6 +124,9 @@
     - '{{ disk_stat.results }}'
   when: '{{ item.2.stat.exists }}'
   tags: ['disk']
+  register: disks_handler_notify
+  notify:
+    - restart service
 
 - name: "Ensure the permissions are set correctly"
   file:

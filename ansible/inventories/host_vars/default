@@ -1,6 +1,8 @@
 ---
 # file: inventories/host_vars/default
 
+additional_fs_utils:
+- e2fsprogs-extra
 aws_output_format: "{{ lookup('env','ANSIBLE_AWS_DEFAULT_OUTPUT')|default('json') }}"
 aws_region: "{{ lookup('env','ANSIBLE_AWS_DEFAULT_REGION')|default('eu-west-1') }}"
 aws_access_key_id: "{{ lookup('env','ANSIBLE_AWS_ACCESS_KEY_ID') }}"
