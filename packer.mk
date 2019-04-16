@@ -15,12 +15,8 @@ packer-build-%: docker-build-packer
 	$(if $(wildcard packer/$*/*.json),$(foreach template,$(wildcard packer/$*/*.json),$(call packer-build,$(template)) && true))
 
 .PHONY: packer-qemu
-packer-qemu: $(PACKER_ISOS) ## Launch iso images in qemu
-
-.PHONY: $(PACKER_ISOS)
-$(PACKER_ISOS): docker-build-packer
-	$(call $(MAKECMDGOALS),$@)
+packer-qemu: packer-qemu-$(PACKER_ISO_NAME) ## Launch iso image in qemu
 
 .PHONY: packer-qemu-%
-packer-qemu-%: docker-build-packer
+packer-qemu-%: docker-build-packer ## Run iso image in qemu
 	$(if $(wildcard iso/$*/$*.iso),$(call packer-qemu,iso/$*/$*.iso))

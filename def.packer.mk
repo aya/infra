@@ -1,7 +1,7 @@
 CMDS                            += packer
 ENV_SYSTEM                      += PACKER_CACHE_DIR=cache PACKER_KEY_INTERVAL=10ms PACKER_LOG=1
 KVM_GID                         ?= $(shell getent group kvm |awk -F: '{print $$3}')
-PACKER_BUILD_ARGS               ?= -on-error=cleanup -var template=$(PACKER_TEMPLATE) $(foreach var,arch disk_size id_rsa.pub hostname password release template version,$(if $($(var)),-var $(var)='$($(var))'))
+PACKER_BUILD_ARGS               ?= -on-error=cleanup -var template=$(PACKER_ISO_NAME) $(foreach var,arch disk_size id_rsa.pub hostname password release template version,$(if $($(var)),-var $(var)='$($(var))'))
 PACKER_VNC_PORT                 ?= $(if $(vnc_port_max),$(vnc_port_max),5900)
 PACKER_VNC_ADDRESS              ?= $(if $(vnc_bind_address),$(vnc_bind_address),0.0.0.0)
 ifeq ($(DEBUG), true)
@@ -15,7 +15,9 @@ PACKER_BUILD_ARGS               += -var vnc_port_max=$(PACKER_VNC_PORT) -var vnc
 endif
 
 PACKER_TEMPLATES                ?= $(wildcard packer/*/*.json)
-PACKER_ISOS                     ?= $(wildcard iso/*/*.iso)
+PACKER_ISO_FILES                ?= $(wildcard iso/*/*.iso)
+PACKER_ISO_FILE                 ?= $(word 1,$(PACKER_ISO_FILES))
+PACKER_ISO_NAME                 ?= $(basename $(notdir $(PACKER_ISO_FILE)))
 
 ifeq ($(DOCKER), true)
 
@@ -38,6 +40,10 @@ endef
 endif
 
 define packer-build
-    $(eval PACKER_TEMPLATE := $(notdir $(basename $(1))))
+    $(eval PACKER_ISO_NAME := $(notdir $(basename $(1))))
+    $(eval PACKER_ISO_FILE := iso/$(PACKER_ISO_NAME)/$(PACKER_ISO_NAME).iso)
 	$(call packer,build $(PACKER_BUILD_ARGS) $(1))
+	echo Succesfully built $(PACKER_ISO_FILE)
+	echo Hostname: $(if $(hostname),$(hostname),alpine)
+	echo Password: $(if $(password),$(password),alpine)
 endef

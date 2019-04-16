@@ -1,8 +1,8 @@
 {
-  "Description": "MEUP Alpine Linux sda",
+  "Description": "${AWS_SNAP_DESCRIPTION}",
   "Format": "raw",
   "UserBucket": {
-    "S3Bucket": "${AWS_SNAPSHOT_S3_BUCKET}",
-    "S3Key": "${AWS_SNAPSHOT_S3_KEY}"
+    "S3Bucket": "${AWS_S3_BUCKET}",
+    "S3Key": "${AWS_S3_KEY}"
   }
 }
