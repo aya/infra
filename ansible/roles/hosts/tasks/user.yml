@@ -16,3 +16,9 @@
 
 - name: user - update file .screenrc
   lineinfile: dest=~/.screenrc create=yes line='hardstatus alwayslastline "%{= kw}[%{G}%H%{-}] \# %?%-Lw%?[%{G}%n%f %t%{-}]%?%+Lw%?%?%=%-17< [%{B}%l%{-}]"'
+
+- name: user - create file ~/.env
+  template:
+    src: .env.j2
+    dest: ~/.env
+    force: no

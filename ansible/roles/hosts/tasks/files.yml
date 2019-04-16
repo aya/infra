@@ -41,5 +41,5 @@
   template:
     src: Makefile.j2
     dest: /src/Makefile
-    force: no
+    force: yes
   become: yes

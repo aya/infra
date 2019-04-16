@@ -1,4 +1,4 @@
--include .env
+-include ${HOME}/.env
 ANSIBLE_CONFIG                  ?= {{ lookup('env','ANSIBLE_GIT_CONFIG') }}
 ANSIBLE_GIT_DIRECTORY           ?= {{ lookup('env','ANSIBLE_GIT_DIRECTORY') }}
 ANSIBLE_GIT_REMOTE              ?= {{ lookup('env','ANSIBLE_GIT_REMOTE') }}
@@ -7,7 +7,7 @@ ANSIBLE_GIT_VERSION             ?= {{ lookup('env','ANSIBLE_GIT_VERSION') }}
 ANSIBLE_INVENTORY               ?= {{ lookup('env','ANSIBLE_INVENTORY') }}
 ANSIBLE_PLAYBOOK                ?= {{ lookup('env','ANSIBLE_PLAYBOOK') }}
 ANSIBLE_SSH_PRIVATE_KEY         ?= ~/.ssh/{{ lookup('env','ANSIBLE_SSH_PRIVATE_KEY')|basename }}
-ANSIBLE_VERBOSE                 ?= -v
+ANSIBLE_VERBOSE                 ?= -vvv
 # dryrun = --check 
 # --tags
 # -vvv

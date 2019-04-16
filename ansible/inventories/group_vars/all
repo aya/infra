@@ -2,9 +2,9 @@
 # file: inventories/group_vars/all
 
 disk_additional_disks:
- - disk: /dev/xvdb
-   disable_periodic_fsck: true
-   fstype: ext4
-   mount_options: defaults
-   mount: /var/lib/docker
-   service: docker
+- disk: /dev/xvdb
+  disable_periodic_fsck: true
+  fstype: ext4
+  mount_options: defaults
+  mount: /var/lib/docker
+  service: docker

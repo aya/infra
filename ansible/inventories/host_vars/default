@@ -11,17 +11,31 @@ hosts_enable_local: true
 hosts_enable_rc: true
 hosts_enable_zram: true
 hosts_git_repositories:
-  - { "repo": "{{ lookup('env','ANSIBLE_GIT_REPOSITORY') }}", "dest": "{{ lookup('env','ANSIBLE_GIT_DIRECTORY') }}", "key_file": "~/.ssh/{{ lookup('env','ANSIBLE_SSH_PRIVATE_KEY')|basename }}", "remote": "{{ lookup('env','ANSIBLE_GIT_REMOTE') }}", "version": "{{ lookup('env','ANSIBLE_GIT_VERSION') }}" }
+- { "repo": "{{ lookup('env','ANSIBLE_GIT_REPOSITORY') }}", "dest": "{{ lookup('env','ANSIBLE_GIT_DIRECTORY') }}", "key_file": "~/.ssh/{{ lookup('env','ANSIBLE_SSH_PRIVATE_KEY')|basename }}", "remote": "{{ lookup('env','ANSIBLE_GIT_REMOTE') }}", "version": "{{ lookup('env','ANSIBLE_GIT_VERSION') }}" }
 hosts_packages:
-  - { "name": "ansible", "state": "present" }
-  - { "name": "curl", "state": "present" }
-  - { "name": "dropbear-scp", "state": "absent" }
-  - { "name": "git", "state": "present" }
-  - { "name": "make", "state": "present" }
-  - { "name": "openssh-client", "state": "present" }
-  - { "name": "util-linux", "state": "present" }
-  - { "name": "vim", "state": "present" }
+- { "name": "ansible", "state": "present" }
+- { "name": "curl", "state": "present" }
+- { "name": "dropbear-scp", "state": "absent" }
+- { "name": "git", "state": "present" }
+- { "name": "make", "state": "present" }
+- { "name": "openssh-client", "state": "present" }
+- { "name": "util-linux", "state": "present" }
+- { "name": "vim", "state": "present" }
 hosts_ssh_private_keys:
 - "{{ lookup('env','ANSIBLE_SSH_PRIVATE_KEY')|default('~/.ssh/id_rsa') }}"
 hosts_ssh_users:
 - aya
+hosts_user_env:
+- ANSIBLE_AWS_DEFAULT_OUTPUT
+- ANSIBLE_AWS_DEFAULT_REGION
+- ANSIBLE_AWS_ACCESS_KEY_ID
+- ANSIBLE_AWS_SECRET_ACCESS_KEY
+- ANSIBLE_GIT_CONFIG
+- ANSIBLE_GIT_DIRECTORY
+- ANSIBLE_GIT_REMOTE
+- ANSIBLE_GIT_REPOSITORY
+- ANSIBLE_GIT_VERSION
+- ANSIBLE_INVENTORY
+- ANSIBLE_PLAYBOOK
+- ANSIBLE_SSH_PRIVATE_KEY
+- ENV
