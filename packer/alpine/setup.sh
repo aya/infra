@@ -3,10 +3,11 @@
 
 export PATH="/usr/sbin:/usr/bin:/sbin:/bin"
 
+ALPINE_VERSION="${ALPINE_VERSION:-3.9}"
+APKREPOSOPTS="http://dl-cdn.alpinelinux.org/alpine/v${ALPINE_VERSION}/main http://dl-cdn.alpinelinux.org/alpine/v${ALPINE_VERSION}/community"
+DISKOPTS="-s 0 -m sys /dev/vda"
+DNSOPTS="-n 8.8.8.8"
 HOSTNAME="${HOSTNAME:-alpine}"
-PASSWORD="${PASSWORD:-alpine}"
-VERSION="${VERSION:-3.9}"
-KEYMAPOPTS="fr fr"
 HOSTNAMEOPTS="-n ${HOSTNAME}"
 INTERFACESOPTS="auto lo
 iface lo inet loopback
@@ -17,13 +18,12 @@ iface eth0 inet dhcp
 auto eth1
 iface eth1 inet dhcp
 "
-DNSOPTS="-n 8.8.8.8"
-TIMEZONEOPTS="-z Europe/Paris"
-PROXYOPTS="none"
-APKREPOSOPTS="http://dl-cdn.alpinelinux.org/alpine/v${VERSION}/main http://dl-cdn.alpinelinux.org/alpine/v${VERSION}/community"
-SSHDOPTS="-c none"
+KEYMAPOPTS="fr fr"
 NTPOPTS="-c openntpd"
-DISKOPTS="-s 0 -m sys /dev/vda"
+PASSWORD="${PASSWORD:-alpine}"
+PROXYOPTS="none"
+SSHDOPTS="-c none"
+TIMEZONEOPTS="-z Europe/Paris"
 export MIRRORS="http://dl-cdn.alpinelinux.org/alpine/
 http://dl-2.alpinelinux.org/alpine/
 http://dl-3.alpinelinux.org/alpine/

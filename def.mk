@@ -68,6 +68,16 @@ DRYRUN_RECURSIVE                := true
 endif
 endif
 
+ifeq ($(HOST_SYSTEM),DARWIN)
+define getent-group
+$(shell dscl . -read /Groups/$(1) 2>/dev/null |awk '$$1 == "PrimaryGroupID:" {print $$2}')
+endef
+else
+define getent-group
+$(shell getent group $(1) 2>/dev/null |awk -F: '{print $$3}')
+endef
+endif
+
 define make
 	$(eval cmd := $(1))
 	$(eval dir := $(2))
