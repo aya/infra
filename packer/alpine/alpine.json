@@ -1,13 +1,17 @@
 {
     "variables": {
-        "disk_size": "2048",
-        "id_rsa.pub": "{{env `HOME`}}/.ssh/id_rsa.pub",
+        "ansible_extra_vars": "target=default",
+        "ansible_user": "root",
+        "ansible_verbose": "-v",
+        "alpine_arch": "x86_64",
         "hostname": "alpine",
         "password": "alpine",
+        "alpine_release": "3.9.2",
+        "username": "root",
+        "alpine_version": "3.9",
+        "iso_size": "2048",
+        "iso_name": "alpine-3.9.2-x86_64",
         "template": "alpine",
-        "version": "3.9",
-        "release": "3.9.2",
-        "arch": "x86_64",
         "vnc_bind_address": "127.0.0.1",
         "vnc_port_max": "5900"
     },
@@ -15,31 +19,32 @@
     {
     "type": "qemu",
     "accelerator": "kvm",
-    "iso_url": "http://dl-cdn.alpinelinux.org/alpine/v{{user `version`}}/releases/{{user `arch`}}/alpine-virt-{{user `release`}}-{{user `arch`}}.iso",
-    "iso_checksum_url": "http://dl-cdn.alpinelinux.org/alpine/v{{user `version`}}/releases/{{user `arch`}}/alpine-virt-{{user `release`}}-{{user `arch`}}.iso.sha256",
+    "iso_url": "http://dl-cdn.alpinelinux.org/alpine/v{{user `alpine_version`}}/releases/{{user `alpine_arch`}}/alpine-virt-{{user `alpine_release`}}-{{user `alpine_arch`}}.iso",
+    "iso_checksum_url": "http://dl-cdn.alpinelinux.org/alpine/v{{user `alpine_version`}}/releases/{{user `alpine_arch`}}/alpine-virt-{{user `alpine_release`}}-{{user `alpine_arch`}}.iso.sha256",
     "iso_checksum_type": "sha256",
     "output_directory": "iso/{{user `template`}}",
     "shutdown_command": "/sbin/poweroff",
-    "disk_size": "{{user `disk_size`}}",
+    "disk_size": "{{user `iso_size`}}",
     "format": "raw",
     "headless": true,
     "ssh_host_port_min": 2222,
     "ssh_host_port_max": 2234,
-    "ssh_username": "root",
+    "ssh_file_transfer_method": "sftp",
+    "ssh_username": "{{user `username`}}",
     "ssh_password": "{{user `password`}}",
     "ssh_port": 22,
     "ssh_wait_timeout": "16s",
-    "vm_name": "alpine-{{user `release`}}-{{user `arch`}}.iso",
+    "vm_name": "{{user `iso_name`}}.iso",
     "vnc_bind_address": "{{user `vnc_bind_address`}}",
     "vnc_port_max": "{{user `vnc_port_max`}}",
     "net_device": "virtio-net",
     "disk_interface": "virtio",
     "boot_wait": "8s",
     "boot_command": [
-        "root<enter>",
+        "{{user `username`}}<enter>",
         "passwd<enter>{{user `password`}}<enter>{{user `password`}}<enter>",
         "ifconfig eth0 up && udhcpc -i eth0<enter>",
-        "apk add --repository http://dl-cdn.alpinelinux.org/alpine/v{{user `version`}}/main --repository http://dl-cdn.alpinelinux.org/alpine/v{{user `version`}}/community dropbear dropbear-openrc dropbear-scp<enter>",
+        "apk add --repository http://dl-cdn.alpinelinux.org/alpine/v{{user `alpine_version`}}/main dropbear dropbear-openrc openssh-sftp-server<enter>",
         "rc-update add dropbear<enter>",
         "echo -e 'auto eth0\\niface eth0 inet dhcp' > /etc/network/interfaces<enter>",
         "rc-service dropbear start<enter>",
@@ -52,9 +57,9 @@
         "type": "shell",
         "script": "packer/alpine/setup.sh",
         "environment_vars": [
+            "ALPINE_VERSION={{user `alpine_version`}}",
             "HOSTNAME={{user `hostname`}}",
-            "PASSWORD={{user `password`}}",
-            "VERSION={{user `version`}}"
+            "PASSWORD={{user `password`}}"
         ]
     },
     {
@@ -70,11 +75,11 @@
         "playbook_file": "ansible/playbook.yml",
         "inventory_directory": "ansible/inventories",
         "extra_arguments": [
-            "--extra-vars", "target=default",
-            "-vvvv"
+            "--extra-vars", "{{user `ansible_extra_vars`}}",
+            "{{user `ansible_verbose`}}"
         ],
         "sftp_command": "/usr/lib/ssh/sftp-server -e",
-        "user": "root",
+        "user": "{{user `ansible_user`}}",
         "pause_before": "16s"
     }
     ]

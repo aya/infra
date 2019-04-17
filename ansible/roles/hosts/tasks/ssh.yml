@@ -1,18 +1,19 @@
 ---
 # file: tasks/ssh.yml
 
-- name: ssh - add keys to file /root/.ssh/authorized_keys
+- name: ssh - add keys to file ~/.ssh/authorized_keys
   authorized_key: user="root" key=https://github.com/{{item}}.keys
   with_items: "{{hosts_ssh_users|default([])}}"
   become: yes
 
 - name: ssh - copy ssh private keys
   with_items: "{{hosts_ssh_private_keys|default([])}}"
-  copy: src={{item}} dest=/root/.ssh/ owner=root group=root mode=0400
+  copy: src={{item}} dest=~/.ssh/ mode=0400
   become: yes
 
 - name: ssh - add public hosts keys to known_hosts
-  with_items: "{{ hosts_ssh_public_hosts_keys|default([]) }}"
+  with_items: "{{hosts_ssh_public_hosts_keys|default([])}}"
   known_hosts:
     name: "{{item.name}}"
     key: "{{ lookup('file', '{{item.key}}') }}"
+  become: yes
