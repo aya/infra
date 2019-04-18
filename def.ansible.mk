@@ -21,21 +21,17 @@ CMDS                            += ansible ansible-playbook
 ENV_SYSTEM_VARS                 += ANSIBLE_AWS_DEFAULT_OUTPUT ANSIBLE_AWS_DEFAULT_REGION ANSIBLE_AWS_ACCESS_KEY_ID ANSIBLE_AWS_SECRET_ACCESS_KEY ANSIBLE_EXTRA_VARS ANSIBLE_CONFIG ANSIBLE_GIT_DIRECTORY ANSIBLE_GIT_KEY_FILE ANSIBLE_GIT_REMOTE ANSIBLE_GIT_REPOSITORY ANSIBLE_GIT_VERSION ANSIBLE_INVENTORY ANSIBLE_PLAYBOOK ANSIBLE_SSH_PRIVATE_KEY ANSIBLE_USERNAME ANSIBLE_VERBOSE
 
 ifeq ($(DOCKER), true)
-
 define ansible
 	$(call run,$(DOCKER_SSH_AUTH) $(DOCKER_REPO)/ansible:$(DOCKER_BUILD_TARGET) $(ANSIBLE_VERBOSE) $(1))
 endef
 define ansible-playbook
 	$(call run,$(DOCKER_SSH_AUTH) --entrypoint /usr/bin/ansible-playbook $(DOCKER_REPO)/ansible:$(DOCKER_BUILD_TARGET) $(ANSIBLE_VERBOSE) $(1))
 endef
-
 else
-
 define ansible
 	$(call run,ansible $(ANSIBLE_VERBOSE) $(1))
 endef
 define ansible-playbook
 	$(call run,ansible-playbook $(ANSIBLE_VERBOSE) $(1))
 endef
-
 endif

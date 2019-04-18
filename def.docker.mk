@@ -59,11 +59,11 @@ define exec
 endef
 else
 define exec
-	$(ECHO) docker exec $(patsubst %,-e %,$(ENV_SYSTEM)) $(DOCKER_RUN_WORKDIR) $(DOCKER_INFRA_CLI)_1 sh -c '$(1)'
+	$(ECHO) docker exec $(ENV_SYSTEM_ARGS) $(DOCKER_RUN_WORKDIR) $(DOCKER_INFRA_CLI)_1 sh -c '$(1)'
 endef
 endif
 define run
-	$(ECHO) docker run $(DOCKER_RUN_OPTIONS) $(patsubst %,--env-file %,$(ENV_FILE)) $(patsubst %,-e %,$(ENV_SYSTEM)) $(DOCKER_RUN_VOLUME) $(DOCKER_RUN_WORKDIR) $(1)
+	$(ECHO) docker run $(DOCKER_RUN_OPTIONS) $(patsubst %,--env-file %,$(ENV_FILE)) $(ENV_SYSTEM_ARGS) $(DOCKER_RUN_VOLUME) $(DOCKER_RUN_WORKDIR) $(1)
 endef
 
 else
@@ -76,13 +76,13 @@ define docker-compose-exec
 	$(call run,docker-compose $(patsubst %,-f %,$(COMPOSE_FILE)) -p $(COMPOSE_PROJECT_NAME) exec -T $(1) sh -c '$(2)')
 endef
 define docker-run
-	$(ECHO) docker run $(DOCKER_RUN_OPTIONS) $(patsubst %,--env-file %,$(ENV_FILE)) $(patsubst %,-e %,$(ENV_SYSTEM)) $(DOCKER_RUN_VOLUME) $(DOCKER_RUN_WORKDIR) $(1) $(2)
+	$(ECHO) docker run $(DOCKER_RUN_OPTIONS) $(patsubst %,--env-file %,$(ENV_FILE)) $(ENV_SYSTEM_ARGS) $(DOCKER_RUN_VOLUME) $(DOCKER_RUN_WORKDIR) $(1) $(2)
 endef
 define exec
 	$(call run,sh -c '$(1)')
 endef
 define run
-	IFS=$$'\n'; $(ECHO) env $(ENV_SYSTEM) $$(cat $(ENV_FILE) 2>/dev/null |awk -F "=" '$$1 ~! /^\(#|$$\)/') $(1)
+	IFS=$$'\n'; $(ECHO) env $(ENV_SYSTEM_ARGS) $$(cat $(ENV_FILE) 2>/dev/null |awk -F "=" '$$1 ~! /^\(#|$$\)/') $(1)
 endef
 
 endif
@@ -93,7 +93,7 @@ define docker-build
 	$(eval target := $(subst ",,$(subst ',,$(or $(3),$(DOCKER_BUILD_TARGET)))))
 	$(eval image := $(shell docker images -q $(tag) 2>/dev/null))
 	$(eval build_image := $(or $(filter $(DOCKER_BUILD_CACHE),false),$(if $(image),,true)))
-	$(if $(build_image),$(ECHO) docker build $(DOCKER_BUILD_ARGS) --tag $(tag) $(if $(target),--target $(target)) $(path),echo "docker image $(tag) has id $(image)")
+	$(if $(build_image),$(ECHO) docker build $(DOCKER_BUILD_ARGS) --tag $(tag) $(if $(target),--target $(target)) $(path),$(if $(VERBOSE),echo "docker image $(tag) has id $(image)"))
 endef
 define docker-volume-copy
 	$(eval from:=$(1))

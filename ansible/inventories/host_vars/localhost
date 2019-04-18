@@ -8,3 +8,6 @@ disk_additional_disks:
   mount_options: defaults
   mount: /var/lib/docker
   service: docker
+hosts_enable_local: true
+hosts_enable_rc: true
+hosts_enable_zram: true
