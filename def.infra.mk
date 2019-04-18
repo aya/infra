@@ -24,23 +24,3 @@ define setup-nfsd-osx
 	nfsd status >/dev/null || sudo nfsd enable
 	showmount -e localhost |grep "$(dir)" >/dev/null 2>&1 || sudo nfsd restart
 endef
-
-ifeq ($(DOCKER), true)
-
-define aws
-	$(ECHO) docker run $(DOCKER_RUN_OPTIONS) $(patsubst %,--env-file %,$(ENV_FILE)) $(patsubst %,-e %,$(ENV_SYSTEM)) $(DOCKER_SSH_AUTH) $(DOCKER_RUN_VOLUME) -v $$HOME/.aws:/root/.aws:ro $(DOCKER_RUN_WORKDIR) anigeo/awscli:latest $(1)
-endef
-define openstack
-	$(ECHO) docker run $(DOCKER_RUN_OPTIONS) $(patsubst %,--env-file %,$(ENV_FILE)) $(patsubst %,-e %,$(ENV_SYSTEM)) $(DOCKER_SSH_AUTH) $(DOCKER_RUN_VOLUME) $(DOCKER_RUN_WORKDIR) $(DOCKER_REPO)/openstack:$(DOCKER_BUILD_TARGET) $(1)
-endef
-
-else
-
-define aws
-	IFS=$$'\n'; $(ECHO) env $(ENV_SYSTEM) $$(cat $(ENV_FILE) 2>/dev/null |awk -F "=" '$$1 ~! /^\(#|$$\)/') aws $(1)
-endef
-define openstack
-	IFS=$$'\n'; $(ECHO) env $(ENV_SYSTEM) $$(cat $(ENV_FILE) 2>/dev/null |awk -F "=" '$$1 ~! /^\(#|$$\)/') openstack $(1)
-endef
-
-endif

@@ -1,10 +1,4 @@
 ---
-- name: 'Install Python PIP'
-  tags: 'aws-cli'
-  become: 'yes'
-  package: >
-    name=py2-pip
-    state=latest
 
 - name: 'Install AWS CLI'
   tags: 'aws-cli'

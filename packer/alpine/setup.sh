@@ -1,4 +1,4 @@
-#!/bin/sh -x
+#!/bin/sh
 # https://github.com/alpinelinux/alpine-conf/blob/master/setup-alpine.in
 
 export PATH="/usr/sbin:/usr/bin:/sbin:/bin"

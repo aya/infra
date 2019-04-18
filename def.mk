@@ -13,10 +13,14 @@ DRYRUN_IGNORE                   ?= false
 DRYRUN_RECURSIVE                ?= false
 ENV                             ?= local
 ENV_FILE                        ?= .env
-ENV_MAKE                        ?= $(foreach var,$(ENV_MAKE_VARS),$(if $($(var)),$(var)='$($(var))'))
+ENV_MAKE_ARGS                   ?= $(foreach var,$(ENV_MAKE_VARS),$(if $($(var)),$(var)='$($(var))'))
 ENV_MAKE_VARS                   ?= ENV
 ENV_RESET                       ?= false
-ENV_SYSTEM                       = $(shell printenv |awk -F '=' 'NR == FNR { if($$1 !~ /^(\#|$$)/) { A[$$1]; next } } ($$1 in A)' .env.dist - 2>/dev/null |awk '{print} END {print "$(foreach var,$(ENV_SYSTEM_VARS),$(if $($(var)),$(var)='$($(var))'))"}' |awk -F "=" '!seen[$$1]++')
+ifeq ($(DOCKER), true)
+ENV_SYSTEM_ARGS                  = $(foreach var,$(ENV_SYSTEM_VARS),$(if $($(var)),-e $(var)='$($(var))')) $(shell printenv |awk -F '=' 'NR == FNR { if($$1 !~ /^(\#|$$)/) { A[$$1]; next } } ($$1 in A) {print "-e "$$0}' .env.dist - 2>/dev/null)
+else
+ENV_SYSTEM_ARGS                  = $(foreach var,$(ENV_SYSTEM_VARS),$(if $($(var)),$(var)='$($(var))')) $(shell printenv |awk -F '=' 'NR == FNR { if($$1 !~ /^(\#|$$)/) { A[$$1]; next } } ($$1 in A)' .env.dist - 2>/dev/null)
+endif
 ENV_SYSTEM_VARS                 ?= APP AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN AWS_DEFAULT_REGION AWS_DEFAULT_OUTPUT AWS_PROFILE BRANCH COMPOSE_IGNORE_ORPHANS COMPOSE_PROJECT_NAME COMPOSE_SERVICE_NAME DOCKER_GID DOCKER_IMAGE_CLI DOCKER_REPO_APP DOCKER_REPO_INFRA DOCKER_SHELL DOCKER_IMAGE_SSH DOCKER_IMAGE_TAG DOCKER_INFRA_SSH ENV HOSTNAME GID MONOREPO MONOREPO_DIR MOUNT_NFS_CONFIG SUBREPO_DIR TAG UID USER VERSION
 GID                             ?= $(shell id -g)
 HOSTNAME                        ?= $(shell hostname |sed 's/\..*//')
@@ -82,10 +86,10 @@ define make
 	$(eval cmd := $(1))
 	$(eval dir := $(2))
 	$(eval env := $(or $(3),$(ENV_MAKE_VARS)))
-	$(eval ENV_MAKE := $(if $(env),$(foreach var,$(env),$(if $($(var)),$(var)='$($(var))'))))
+	$(eval ENV_MAKE_ARGS := $(or $(4),$(if $(env),$(foreach var,$(env),$(if $($(var)),$(var)='$($(var))')))))
 	$(eval MAKE_DIR := $(if $(dir),-C $(dir)))
 	$(eval MAKE_OLDFILE := $(MAKE_OLDFILE) $(filter-out $(MAKE_OLDFILE), $^))
-	printf "${COLOR_GREEN}Running${COLOR_RESET} make $(cmd) $(if $(dir),${COLOR_BLUE}in folder${COLOR_RESET} $(dir) )${COLOR_GREEN}with${COLOR_RESET} $(ENV_MAKE)\n"
-	$(ECHO) $(ENV_MAKE) $(MAKE) $(MAKE_DIR) $(patsubst %,-o %,$(MAKE_OLDFILE)) $(cmd) MAKE_OLDFILE="$(MAKE_OLDFILE)"
-	$(if $(filter $(DRYRUN_RECURSIVE),true),$(ENV_MAKE) $(MAKE) $(MAKE_DIR) $(patsubst %,-o %,$(MAKE_OLDFILE)) $(cmd) MAKE_OLDFILE="$(MAKE_OLDFILE)" DRYRUN=$(DRYRUN) RECURSIVE=$(RECURSIVE))
+	printf "${COLOR_GREEN}Running${COLOR_RESET} make $(cmd) $(if $(dir),${COLOR_BLUE}in folder${COLOR_RESET} $(dir) )${COLOR_GREEN}with${COLOR_RESET} $(ENV_MAKE_ARGS)\n"
+	$(ECHO) $(ENV_MAKE_ARGS) $(MAKE) $(MAKE_DIR) $(patsubst %,-o %,$(MAKE_OLDFILE)) $(cmd) MAKE_OLDFILE="$(MAKE_OLDFILE)"
+	$(if $(filter $(DRYRUN_RECURSIVE),true),$(ENV_MAKE_ARGS) $(MAKE) $(MAKE_DIR) $(patsubst %,-o %,$(MAKE_OLDFILE)) $(cmd) MAKE_OLDFILE="$(MAKE_OLDFILE)" DRYRUN=$(DRYRUN) RECURSIVE=$(RECURSIVE))
 endef

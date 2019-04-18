@@ -1,14 +1,17 @@
 CMDS                            += packer
-ENV_SYSTEM                      += PACKER_CACHE_DIR=cache PACKER_KEY_INTERVAL=10ms PACKER_LOG=1
+ENV_SYSTEM_VARS                 += PACKER_CACHE_DIR PACKER_KEY_INTERVAL PACKER_LOG
 KVM_GID                         ?= $(call getent-group,kvm)
+PACKER_ARCH                     ?= $(PACKER_ALPINE_ARCH)
 PACKER_BUILD_ARGS               ?= -on-error=cleanup $(foreach var,$(PACKER_BUILD_VARS),$(if $($(var)),-var $(var)='$($(var))'))
 PACKER_BUILD_VARS               += hostname iso_name iso_size password template username
-PACKER_ARCH                     ?= $(PACKER_ALPINE_ARCH)
+PACKER_CACHE_DIR                ?= cache
 PACKER_HOSTNAME                 ?= $(PACKER_TEMPLATE)
 PACKER_ISO_FILES                ?= $(wildcard iso/*/*.iso)
 PACKER_ISO_FILE                  = iso/$(PACKER_TEMPLATE)/$(PACKER_ISO_NAME).iso
 PACKER_ISO_NAME                  = $(PACKER_TEMPLATE)-$(PACKER_RELEASE)-$(PACKER_ARCH)
 PACKER_ISO_SIZE                 ?= 2048
+PACKER_KEY_INTERVAL             ?= 10ms
+PACKER_LOG                      ?= 1
 PACKER_PASSWORD                 ?= $(PACKER_TEMPLATE)
 PACKER_RELEASE                  ?= $(PACKER_ALPINE_RELEASE)
 PACKER_TEMPLATES                ?= $(wildcard packer/*/*.json)
@@ -26,12 +29,18 @@ ifeq ($(ENV), local)
 PACKER_BUILD_ARGS               += -var vnc_port_max=$(PACKER_VNC_PORT) -var vnc_bind_address=$(PACKER_VNC_ADDRESS)
 endif
 
-iso_size                        ?= $(PACKER_ISO_SIZE)
 hostname                        ?= $(PACKER_HOSTNAME)
 iso_name                        ?= $(PACKER_ISO_NAME)
+iso_size                        ?= $(PACKER_ISO_SIZE)
 password                        ?= $(PACKER_PASSWORD)
 template                        ?= $(PACKER_TEMPLATE)
 username                        ?= $(PACKER_USERNAME)
+
+ifneq ($(filter $(ENV),prod preprod),)
+ifeq ($(password), $(template))
+password                        := $(or $(shell pwgen -csy -r\' 64 1 2>/dev/null),$(shell date +%s | sha256sum | base64 | head -c 64))
+endif
+endif
 
 ifeq ($(DOCKER), true)
 
@@ -60,6 +69,6 @@ define packer-build
 	echo Building $(PACKER_ISO_FILE)
 	$(call packer,build $(PACKER_BUILD_ARGS) $(1))
 	echo Built $(PACKER_ISO_FILE)
-	echo Hostname: $(hostname)
-	echo Password: $(password)
+	echo Hostname: '$(hostname)'
+	echo Password: '$(password)'
 endef

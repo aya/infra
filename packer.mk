@@ -2,6 +2,10 @@
 packer:
 	$(call packer,$(ARGS))
 
+$(PACKER_ISO_FILE):
+	$(eval FORCE := true)
+	$(call make,packer-build,,FORCE)
+
 .PHONY: packer-build
 packer-build: packer-build-$(PACKER_TEMPLATE) ## Build default packer template
 
@@ -9,13 +13,12 @@ packer-build: packer-build-$(PACKER_TEMPLATE) ## Build default packer template
 packer-build-templates: $(PACKER_TEMPLATES) ## Build all packer templates
 
 .PHONY: $(PACKER_TEMPLATES)
-$(PACKER_TEMPLATES): docker-build-packer
-	$(call $(MAKECMDGOALS),$@)
+$(PACKER_TEMPLATES):
+	$(call packer-build,$@)
 
 .PHONY: packer-build-%
 packer-build-%: docker-build-packer
 	$(if $(wildcard packer/*/$*.json),$(call packer-build,$(wildcard packer/*/$*.json)))
-#	$(if $(wildcard packer/$*/*.json),$(foreach template,$(wildcard packer/$*/*.json),$(call packer-build,$(template)) && true))
 
 .PHONY: packer-qemu
 packer-qemu: packer-qemu-$(PACKER_ISO_NAME) ## Launch iso image in qemu
