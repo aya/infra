@@ -1,2 +1,2 @@
 #!/bin/sh
-cd /src && make ansible-pull > /var/log/ansible.log &
+cd /root && make ansible-pull > /var/log/ansible.log &

@@ -28,18 +28,3 @@
   copy: src=../files/{{item}} dest={{item}} owner=root group=root mode=0755
   when: ansible_service_mgr|lower == "openrc"
   become: yes
-
-- name: files - create directories
-  with_items:
-  - /src
-  file:
-    path: "{{item}}"
-    state: directory
-  become: yes
-
-- name: files - create Makefile
-  template:
-    src: Makefile.j2
-    dest: /src/Makefile
-    force: yes
-  become: yes

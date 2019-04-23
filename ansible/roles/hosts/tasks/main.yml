@@ -10,9 +10,6 @@
 - import_tasks: ssh.yml
   tags:
     - ssh
-- import_tasks: bash.yml
-  tags:
-    - bash
 - import_tasks: files.yml
   tags:
     - files
