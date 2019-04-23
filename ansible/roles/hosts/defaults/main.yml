@@ -10,9 +10,6 @@ hosts_enable_rc: false
 # Activate zram swap devices on host
 hosts_enable_zram: false
 
-# location of /etc/bashrc
-hosts_etc_bashrc: /etc/bashrc
-
 # git repositories to clone
 hosts_git_repositories: []
 #  - { "repo": "ssh://git@github.com/aya/infra", "dest": "/src/infra" }

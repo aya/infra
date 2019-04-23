@@ -4,6 +4,7 @@
   tags: 'aws-cli'
   become: 'yes'
   pip: >
+    executable=pip
     name=awscli
     state=latest
 

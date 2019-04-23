@@ -22,16 +22,24 @@ ENV_SYSTEM_VARS                 += ANSIBLE_AWS_DEFAULT_OUTPUT ANSIBLE_AWS_DEFAUL
 
 ifeq ($(DOCKER), true)
 define ansible
-	$(call run,$(DOCKER_SSH_AUTH) $(DOCKER_REPO)/ansible:$(DOCKER_BUILD_TARGET) $(ANSIBLE_VERBOSE) $(1))
+	$(call run,$(DOCKER_SSH_AUTH) $(DOCKER_REPO)/ansible:$(DOCKER_BUILD_TARGET) $(ANSIBLE_ARGS) $(ANSIBLE_VERBOSE) $(1))
 endef
 define ansible-playbook
-	$(call run,$(DOCKER_SSH_AUTH) --entrypoint /usr/bin/ansible-playbook $(DOCKER_REPO)/ansible:$(DOCKER_BUILD_TARGET) $(ANSIBLE_VERBOSE) $(1))
+	# TODO : run ansible in docker and target localhost outside docker
+	IFS=$$'\n'; $(ECHO) env $(patsubst -e,,$(ENV_SYSTEM_ARGS)) $$(cat $(ENV_FILE) 2>/dev/null |awk -F "=" '$$1 ~! /^\(#|$$\)/') ansible-playbook $(ANSIBLE_ARGS) $(ANSIBLE_VERBOSE) $(1)
+endef
+define ansible-pull
+	# TODO : run ansible in docker and target localhost outside docker
+	IFS=$$'\n'; $(ECHO) env $(patsubst -e,,$(ENV_SYSTEM_ARGS)) $$(cat $(ENV_FILE) 2>/dev/null |awk -F "=" '$$1 ~! /^\(#|$$\)/') ansible-pull $(ANSIBLE_ARGS) $(ANSIBLE_VERBOSE) $(1)
 endef
 else
 define ansible
-	$(call run,ansible $(ANSIBLE_VERBOSE) $(1))
+	$(call run,ansible $(ANSIBLE_ARGS) $(ANSIBLE_VERBOSE) $(1))
 endef
 define ansible-playbook
-	$(call run,ansible-playbook $(ANSIBLE_VERBOSE) $(1))
+	$(call run,ansible-playbook $(ANSIBLE_ARGS) $(ANSIBLE_VERBOSE) $(1))
+endef
+define ansible-pull
+	$(call run,ansible-pull $(ANSIBLE_ARGS) $(ANSIBLE_VERBOSE) $(1))
 endef
 endif
