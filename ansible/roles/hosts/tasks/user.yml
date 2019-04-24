@@ -6,6 +6,7 @@
     src: .env.j2
     dest: ~/.env
     force: no
+    mode: 0400
 
 - name: user - create ~/.rc.d
   file: path=~/.rc.d/ state={{hosts_enable_rc|default(false)|ternary('directory', 'absent')}} mode="0700"
@@ -47,6 +48,11 @@
   - hardstatus alwayslastline "%{= kw}[%{G}%H%{-}] \# %?%-Lw%?[%{G}%n%f %t%{-}]%?%+Lw%?%?%=%-17< [%{B}%l%{-}]"
   - shell -$SHELL
   lineinfile: dest=~/.screenrc create=yes line='{{item}}'
+
+- name: user - update ~/.vimrc
+  with_items:
+  - :set et ai bg=dark sw=4 ts=4 mouse=
+  lineinfile: dest=~/.vimrc create=yes line='{{item}}'
 
 - name: user - update ~/Makefile
   template:

@@ -2,6 +2,7 @@ CMDS                            += base-exec node-exec openstack terraform
 COMPOSE_IGNORE_ORPHANS          ?= true
 CONTEXT                         += COMPOSE_PROJECT_NAME GIT_AUTHOR_EMAIL GIT_AUTHOR_NAME
 DOCKER_SERVICE                  ?= mysql
+ENV_SYSTEM_VARS                 += COMPOSE_IGNORE_ORPHANS
 GIT_AUTHOR_EMAIL                ?= $(shell git config user.email 2>/dev/null)
 GIT_AUTHOR_NAME                 ?= $(shell git config user.name 2>/dev/null)
 HOME                            ?= /home/$(USER)

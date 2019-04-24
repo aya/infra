@@ -214,7 +214,6 @@ Host *\n\
 
 # Custom prompt
 COPY rc*.sh /etc/profile.d/
-RUN sed -i '$a[ -r /etc/profile.d/rc.sh ] && . /etc/profile.d/rc.sh' /etc/bash.bashrc
 
 USER $USER
 WORKDIR /home/$USER
@@ -227,6 +226,7 @@ RUN yarn --cache-folder ./ycache && rm -rf ./ycache \
 # git config
 RUN mkdir -p ~/.ssh ~/.config/git \
  && ssh-keyscan -t rsa -H github.com >> ~/.ssh/known_hosts \
+  && ssh-keyscan -t rsa -H 52.31.228.112 >> ~/.ssh/known_hosts \
  && echo -e "\
 .DS_Store\n\
 .idea/\n\
@@ -235,9 +235,6 @@ RUN mkdir -p ~/.ssh ~/.config/git \
 *~\n\
 *.log\n\
 *.swp\n\
-log/\n\
-npm-debug.log\n\
-yarn-error.log\n\
 Thumbs.db\n\
 " > ~/.config/git/ignore
 

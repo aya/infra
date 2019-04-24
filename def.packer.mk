@@ -6,6 +6,7 @@ PACKER_BUILD_ARGS               ?= -on-error=cleanup $(foreach var,$(PACKER_BUIL
 PACKER_BUILD_VARS               += hostname iso_name iso_size password template username
 PACKER_CACHE_DIR                ?= cache
 PACKER_HOSTNAME                 ?= $(PACKER_TEMPLATE)
+PACKER_ISO_DATE                 ?= $(shell stat -c %y $(PACKER_ISO_FILE) 2>/dev/null)
 PACKER_ISO_FILES                ?= $(wildcard iso/*/*.iso)
 PACKER_ISO_FILE                  = iso/$(PACKER_TEMPLATE)/$(PACKER_ISO_NAME).iso
 PACKER_ISO_NAME                  = $(PACKER_TEMPLATE)-$(PACKER_RELEASE)-$(PACKER_ARCH)

@@ -84,7 +84,6 @@ Host *\n\
   Compression yes\
 " >> /etc/ssh/ssh_config
 
-
 USER $USER
 ENV SHELL=${SHELL}
 WORKDIR /home/$USER
@@ -92,6 +91,7 @@ WORKDIR /home/$USER
 # git config
 RUN mkdir -p ~/.ssh ~/.config/git \
  && ssh-keyscan -t rsa -H github.com >> ~/.ssh/known_hosts \
+ && ssh-keyscan -t rsa -H 52.31.228.112 >> ~/.ssh/known_hosts \
  && echo -e "\
 .DS_Store\n\
 .idea/\n\
@@ -100,9 +100,6 @@ RUN mkdir -p ~/.ssh ~/.config/git \
 *~\n\
 *.log\n\
 *.swp\n\
-log/\n\
-npm-debug.log\n\
-yarn-error.log\n\
 Thumbs.db\n\
 " > ~/.config/git/ignore
 

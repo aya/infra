@@ -1,4 +1,4 @@
-FROM hashicorp/packer:light as dist
+FROM hashicorp/packer:1.3.5 as dist
 
 RUN apk --no-cache add \
         ansible \
