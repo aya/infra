@@ -15,5 +15,4 @@ ansible-run: ansible-run-localhost
 
 .PHONY: ansible-run-%
 ansible-run-%:
-	$(eval ANSIBLE_EXTRA_VARS := $(subst target=localhost,target=$*,$(ANSIBLE_EXTRA_VARS)))
-	$(call ansible-playbook,$(if $(ANSIBLE_TAGS),--tags $(ANSIBLE_TAGS)) $(if $(ANSIBLE_EXTRA_VARS),--extra-vars '$(ANSIBLE_EXTRA_VARS)') $(if $(findstring true,$(DRYRUN)),--check) $(if $(ANSIBLE_INVENTORY),--inventory $(patsubst infra/%,%,$(ANSIBLE_INVENTORY))) $(patsubst infra/%,%,$(ANSIBLE_PLAYBOOK)))
+	$(call ansible-playbook,$(if $(ANSIBLE_TAGS),--tags $(ANSIBLE_TAGS)) $(if $(ANSIBLE_EXTRA_VARS),--extra-vars '$(patsubst target=localhost,target=$*,$(ANSIBLE_EXTRA_VARS))') $(if $(findstring true,$(DRYRUN)),--check) $(if $(ANSIBLE_INVENTORY),--inventory $(patsubst infra/%,%,$(ANSIBLE_INVENTORY))) $(patsubst infra/%,%,$(ANSIBLE_PLAYBOOK)))

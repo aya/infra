@@ -33,19 +33,41 @@ aws-iam-put-role-policy-%: docker-build-aws
 	$(eval DRYRUN_IGNORE := false)
 	$(call aws,iam put-role-policy --role-name $* --policy-name $* --policy-document '$(json)')
 
-.PHONY: aws-s3-cp
-aws-s3-cp: docker-build-aws $(PACKER_ISO_FILE)
+.PHONY: aws-s3-check-upload
+aws-s3-check-upload: docker-build-aws aws-s3api-head-object-query-etag
+	$(eval upload := true)
 	$(eval DRYRUN_IGNORE := true)
-	$(if $(call aws,s3 ls s3://$(AWS_S3_BUCKET)/$(AWS_S3_KEY)),$(if $(FORCE),$(eval upload := true),echo 'File s3://$(AWS_S3_BUCKET)/$(AWS_S3_KEY) already exists'),$(eval upload := true))
+	$(if $(AWS_S3_KEY_ETAG),$(if $(filter $(AWS_S3_KEY_ETAG),"$(shell cat $(PACKER_ISO_FILE).etag 2>/dev/null)"),$(eval upload := false)))
 	$(eval DRYRUN_IGNORE := false)
-	$(if $(upload),$(call aws,s3 cp $(PACKER_ISO_FILE) s3://$(AWS_S3_BUCKET)))
+
+.PHONY: aws-s3-cp
+aws-s3-cp: docker-build-aws $(PACKER_ISO_FILE) aws-s3-check-upload
+	$(if $(filter $(upload),true),$(call aws,s3 cp $(PACKER_ISO_FILE) s3://$(AWS_S3_BUCKET)) $(call make,aws-s3-etag-save))
+
+.PHONY: aws-s3-etag-save
+aws-s3-etag-save: docker-build-aws aws-s3api-head-object-query-etag
+	echo $(AWS_S3_KEY_ETAG) > $(PACKER_ISO_FILE).etag
+
+.PHONY: aws-s3api-head-object-query-etag
+aws-s3api-head-object-query-etag: docker-build-aws
+	$(eval DRYRUN_IGNORE := true)
+	$(eval AWS_S3_KEY_ETAG := $(shell $(call aws,s3api head-object --bucket $(AWS_S3_BUCKET) --key $(AWS_S3_KEY) --output text --query ETag) |grep -v 'operation: Not Found' 2>/dev/null))
+	$(eval DRYRUN_IGNORE := false)
+	echo ETag: $(AWS_S3_KEY_ETAG)
+
+.PHONY: aws-s3api-head-object-query-lastmodified
+aws-s3api-head-object-query-lastmodified: docker-build-aws
+	$(eval DRYRUN_IGNORE := true)
+	$(eval AWS_S3_KEY_DATE := $(shell $(call aws,s3api head-object --bucket $(AWS_S3_BUCKET) --key $(AWS_S3_KEY) --output text --query LastModified) |grep -v 'operation: Not Found' 2>/dev/null))
+	$(eval DRYRUN_IGNORE := false)
+	echo LastModified: $(AWS_S3_KEY_DATE)
 
 .PHONY: aws-ec2-import-snapshot
-aws-ec2-import-snapshot: docker-build-aws
+aws-ec2-import-snapshot: docker-build-aws aws-s3api-head-object-query-etag aws-s3api-head-object-query-lastmodified
 	$(eval DRYRUN_IGNORE := true)
 	$(eval json := $(shell $(call exec,envsubst < aws/import-snapshot.json)))
 	$(eval DRYRUN_IGNORE := false)
-	$(eval AWS_TASK_ID := $(shell $(call aws,ec2 import-snapshot --output text --query ImportTaskId --disk-container '$(json)')))
+	$(eval AWS_TASK_ID := $(shell $(call aws,ec2 import-snapshot --description '$(AWS_SNAP_DESCRIPTION)' --output text --query ImportTaskId --disk-container '$(json)')))
 	echo ImportTaskId: $(AWS_TASK_ID)
 
 .PHONY: aws-ec2-describe-import-snapshot-task-%

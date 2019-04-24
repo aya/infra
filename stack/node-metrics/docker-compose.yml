@@ -17,10 +17,15 @@ services:
         restart: always
         volumes:
           - /:/rootfs:ro
-          - /var/run:/var/run:rw
           - /sys:/sys:ro
           - /var/lib/docker/:/var/lib/docker:ro
+          - /var/run:/var/run:rw
     node-exporter:
+        command:
+          - --collector.filesystem.ignored-mount-points
+          - "^/(sys|proc|dev|host|etc|rootfs/var/lib/docker/containers|rootfs/var/lib/docker/overlay2|rootfs/run/docker/netns|rootfs/var/lib/docker/aufs)($$|/)"
+          - '--path.procfs=/host/proc'
+          - '--path.sysfs=/host/sys'
         image: prom/node-exporter
         hostname: ${HOSTNAME}
         labels:
@@ -33,6 +38,10 @@ services:
         ports:
           - 9100
         restart: always
+        volumes:
+          - /:/rootfs:ro
+          - /proc:/host/proc:ro
+          - /sys:/host/sys:ro
 
 networks:
     frontend:

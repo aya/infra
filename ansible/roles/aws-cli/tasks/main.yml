@@ -8,6 +8,20 @@
     name=awscli
     state=latest
 
+- name: 'Install docker python'
+  tags: 'aws'
+  become: 'yes'
+  pip: >
+    name=docker
+    state=latest
+
+- name: 'Install boto python'
+  tags: 'aws'
+  become: 'yes'
+  pip: >
+    name=boto3
+    state=latest
+
 - name: Set home directory of the user
   set_fact:
     home_dir: /home/{{ aws_cli_user }}
@@ -49,3 +63,40 @@
     group={{ aws_cli_group }}
     mode=0600
     force=yes
+
+- name: aws - check AWS meta-data URI
+  uri:
+    url: http://169.254.169.254/latest/meta-data
+    timeout: 1
+  register: aws_uri_check
+  failed_when: False
+
+- name: aws - get instance metadata
+  tags: 'aws'
+  ec2_metadata_facts:
+  when: aws_uri_check.status == 200
+
+- name: aws - get instance tags
+  tags: 'aws'
+  ec2_tag:
+    aws_access_key: "{{ aws_access_key_id }}"
+    aws_secret_key: "{{ aws_secret_access_key }}"
+    region: "{{ ansible_ec2_placement_region }}"
+    resource: "{{ ansible_ec2_instance_id }}"
+    state: list
+  register: ec2_tags
+  when: ansible_ec2_instance_id is defined
+
+- name: aws - ecr login
+  shell: "$(aws ecr get-login --region {{ aws_region }} |sed 's/ -e none//')"
+  tags: 'aws'
+  when: ec2_tags.tags is defined
+
+- name: Launch docker container
+  docker_container:
+    image: '261323802359.dkr.ecr.eu-west-1.amazonaws.com/{{ec2_tags.tags.user}}/{{item}}'
+    name: '{{ec2_tags.tags.user}}_{{ec2_tags.tags.env}}_{{item|replace("/","_")}}'
+    restart_policy: always
+  tags: 'aws'
+  with_items: '{{ec2_tags.tags.app.split(" ")}}'
+  when: ec2_tags.tags is defined
