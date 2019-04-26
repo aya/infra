@@ -26,7 +26,7 @@ DOCKER_RUN_WORKDIR              ?= -w $$PWD
 DOCKER_SERVICE_INFRA_BASE       ?= cli ssh
 DOCKER_SERVICE_INFRA_NODE       ?= consul fabio registrator
 DOCKER_SHELL                    ?= $(SHELL)
-ENV_SYSTEM_VARS                 += COMPOSE_PROJECT_NAME COMPOSE_SERVICE_NAME DOCKER_GID DOCKER_IMAGE_CLI DOCKER_IMAGE_SSH DOCKER_IMAGE_TAG DOCKER_INFRA_SSH DOCKER_REPO_APP DOCKER_REPO_INFRA DOCKER_SHELL
+ENV_SYSTEM_VARS                 += COMPOSE_PROJECT_NAME COMPOSE_SERVICE_NAME DOCKER_BUILD_TARGET DOCKER_GID DOCKER_IMAGE_CLI DOCKER_IMAGE_SSH DOCKER_IMAGE_TAG DOCKER_INFRA_SSH DOCKER_REPO_APP DOCKER_REPO_INFRA DOCKER_SHELL
 
 ifeq ($(DOCKER), true)
 
@@ -94,7 +94,7 @@ define docker-build
 	$(eval target := $(subst ",,$(subst ',,$(or $(3),$(DOCKER_BUILD_TARGET)))))
 	$(eval image := $(shell docker images -q $(tag) 2>/dev/null))
 	$(eval build_image := $(or $(filter $(DOCKER_BUILD_CACHE),false),$(if $(image),,true)))
-	$(if $(build_image),$(ECHO) docker build $(DOCKER_BUILD_ARGS) --tag $(tag) $(if $(target),--target $(target)) $(path),$(if $(VERBOSE),echo "docker image $(tag) has id $(image)"))
+	$(if $(build_image),$(ECHO) docker build $(DOCKER_BUILD_ARGS) --tag $(tag) $(if $(target),--target $(target)) $(path),$(if $(VERBOSE),echo "docker image $(tag) has id $(image)",true))
 endef
 define docker-volume-copy
 	$(eval from:=$(1))

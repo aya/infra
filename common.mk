@@ -16,9 +16,6 @@ build: docker-compose-build ## Build application docker images
 .PHONY: build-images
 build-images: docker-build-images ## Build docker/* images
 
-.PHONY: build-%
-build-%: docker-build-%;
-
 .PHONY: config
 config: docker-compose-config ## View docker compose file
 
@@ -42,9 +39,6 @@ rebuild: docker-compose-rebuild ## Rebuild application dockers images
 
 .PHONY: rebuild-images
 rebuild-images: docker-rebuild-images ## Build docker/* images
-
-.PHONY: rebuild-%
-rebuild-%: docker-rebuild-%;
 
 .PHONY: recreate
 recreate: docker-compose-recreate start-up ## Recreate application dockers

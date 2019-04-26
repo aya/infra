@@ -9,14 +9,14 @@
     state=latest
 
 - name: 'Install docker python'
-  tags: 'aws'
+  tags: 'aws-cli'
   become: 'yes'
   pip: >
     name=docker
     state=latest
 
 - name: 'Install boto python'
-  tags: 'aws'
+  tags: 'aws-cli'
   become: 'yes'
   pip: >
     name=boto3
@@ -69,6 +69,7 @@
     url: http://169.254.169.254/latest/meta-data
     timeout: 1
   register: aws_uri_check
+  tags: 'aws'
   failed_when: False
 
 - name: aws - get instance metadata
@@ -87,15 +88,21 @@
   register: ec2_tags
   when: ansible_ec2_instance_id is defined
 
+- name: aws - set hostname
+  hostname: name={{ ec2_tags.tags.Name }}
+  tags: 'aws'
+  when: ec2_tags.tags is defined
+
 - name: aws - ecr login
-  shell: "$(aws ecr get-login --region {{ aws_region }} |sed 's/ -e none//')"
+  shell: "$(aws ecr get-login --no-include-email --region {{ aws_region }})"
   tags: 'aws'
   when: ec2_tags.tags is defined
 
 - name: Launch docker container
   docker_container:
-    image: '261323802359.dkr.ecr.eu-west-1.amazonaws.com/{{ec2_tags.tags.user}}/{{item}}'
-    name: '{{ec2_tags.tags.user}}_{{ec2_tags.tags.env}}_{{item|replace("/","_")}}'
+    image: "{{aws_docker_registry}}/{{ec2_tags.tags.user}}/{{ec2_tags.tags.env}}/{{item}}"
+    name: "{{ec2_tags.tags.user}}_{{ec2_tags.tags.env}}_{{item|replace('/','_')}}"
+    network_mode: host
     restart_policy: always
   tags: 'aws'
   with_items: '{{ec2_tags.tags.app.split(" ")}}'
