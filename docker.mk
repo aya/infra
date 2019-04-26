@@ -20,9 +20,18 @@ docker-build-%:
 docker-compose-build: stack
 	$(call docker-compose,build $(DOCKER_BUILD_ARGS) $(SERVICE))
 
+.PHONY: docker-compose-build
+docker-compose-build-%: stack
+	$(eval DOCKER_BUILD_TARGET:=$*)
+	$(call docker-compose,build $(DOCKER_BUILD_ARGS) $(SERVICE))
+
 .PHONY: docker-compose-config
 docker-compose-config: stack
 	$(call docker-compose,config)
+
+.PHONY: docker-compose-config-%
+docker-compose-config-%:
+	$(call make,docker-compose-config,,,DOCKER_BUILD_TARGET=$* ENV=$*)
 
 .PHONY: docker-compose-connect
 docker-compose-connect: SERVICE ?= $(DOCKER_SERVICE)
@@ -48,7 +57,12 @@ docker-compose-ps: stack
 
 .PHONY: docker-compose-rebuild
 docker-compose-rebuild: stack
-	$(call docker-compose,build $(patsubst %,--build-arg %,$(DOCKER_BUILD_ARGS)) --pull --no-cache $(SERVICE))
+	$(call docker-compose,build $(DOCKER_BUILD_ARGS) --pull --no-cache $(SERVICE))
+
+.PHONY: docker-compose-rebuild-%
+docker-compose-rebuild-%: stack
+	$(eval DOCKER_BUILD_TARGET:=$*)
+	$(call docker-compose,build $(DOCKER_BUILD_ARGS) --pull --no-cache $(SERVICE))
 
 .PHONY: docker-compose-recreate
 docker-compose-recreate: stack docker-compose-rm docker-compose-up
@@ -87,7 +101,7 @@ ifneq ($(wildcard ../infra),)
 	$(eval DRYRUN_IGNORE := true)
 	$(eval DOCKER_INFRA_IMAGES := $(or $(DOCKER_INFRA_IMAGES),$(shell $(call docker-compose,--log-level critical config --services))))
 	$(eval DRYRUN_IGNORE := false)
-	$(foreach image,$(DOCKER_INFRA_IMAGES),$(call make,build-$(image),../infra))
+	$(foreach image,$(DOCKER_INFRA_IMAGES),$(call make,docker-build-$(image),../infra))
 endif
 
 .PHONY: docker-infra-node

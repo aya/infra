@@ -174,6 +174,8 @@ RUN echo '#!/usr/bin/env sh' > /usr/local/bin/php-cli \
 /usr/local/bin/php -d ${PHP_CLI_CONFIG// / -d } \"\$@\"\
 " >> /usr/local/bin/php-cli
 
+RUN apk add --no-cache make
+
 WORKDIR /var/www
 VOLUME /var/www
 
@@ -214,3 +216,5 @@ RUN mkdir -p ~/.ssh \
  && ssh-keyscan -t rsa -H github.com >> ~/.ssh/known_hosts
 
 FROM local as tests
+FROM tests as preprod
+FROM preprod as prod

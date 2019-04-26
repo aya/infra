@@ -1,9 +1,10 @@
 ---
 # file: inventories/host_vars/localhost
 
+aws_access_key_id: "{{ lookup('env','ANSIBLE_AWS_ACCESS_KEY_ID') }}"
+aws_docker_registry: "{{ lookup('env','ANSIBLE_AWS_DOCKER_REGISTRY') }}"
 aws_output_format: "{{ lookup('env','ANSIBLE_AWS_DEFAULT_OUTPUT')|default('json') }}"
 aws_region: "{{ lookup('env','ANSIBLE_AWS_DEFAULT_REGION')|default('eu-west-1') }}"
-aws_access_key_id: "{{ lookup('env','ANSIBLE_AWS_ACCESS_KEY_ID') }}"
 aws_secret_access_key: "{{ lookup('env','ANSIBLE_AWS_SECRET_ACCESS_KEY') }}"
 disk_additional_disks:
 - disk: /dev/xvdb
