@@ -6,24 +6,19 @@ CMDS                            ?= exec run
 COMMIT                          ?= $(shell git rev-parse $(BRANCH) 2>/dev/null)
 CONTEXT                         ?= $(shell awk 'BEGIN {FS="="}; $$1 !~ /^(\#|$$)/ {print $$1}' .env.dist 2>/dev/null) BRANCH TAG UID USER VERSION
 DEBUG                           ?= false
-DOCKER                          ?= false
+DOCKER                          ?= true
 DRONE                           ?= false
 DRYRUN                          ?= false
 DRYRUN_IGNORE                   ?= false
 DRYRUN_RECURSIVE                ?= false
 ENV                             ?= local
 ENV_FILE                        ?= .env
-ENV_MAKE_ARGS                   ?= $(foreach var,$(ENV_MAKE_VARS),$(if $($(var)),$(var)='$($(var))'))
-ENV_MAKE_VARS                   ?= ENV
 ENV_RESET                       ?= false
-ifeq ($(DOCKER), true)
-ENV_SYSTEM_ARGS                  = $(foreach var,$(ENV_SYSTEM_VARS),$(if $($(var)),-e $(var)='$($(var))')) $(shell printenv |awk -F '=' 'NR == FNR { if($$1 !~ /^(\#|$$)/) { A[$$1]; next } } ($$1 in A) {print "-e "$$0}' .env.dist - 2>/dev/null)
-else
-ENV_SYSTEM_ARGS                  = $(foreach var,$(ENV_SYSTEM_VARS),$(if $($(var)),$(var)='$($(var))')) $(shell printenv |awk -F '=' 'NR == FNR { if($$1 !~ /^(\#|$$)/) { A[$$1]; next } } ($$1 in A)' .env.dist - 2>/dev/null)
-endif
-ENV_SYSTEM_VARS                 ?= APP BRANCH ENV HOSTNAME GID MONOREPO MONOREPO_DIR SUBREPO_DIR TAG UID USER VERSION
+ENV_VARS                        ?= APP BRANCH ENV HOSTNAME GID MONOREPO MONOREPO_DIR SUBREPO_DIR TAG UID USER VERSION
 GID                             ?= $(shell id -g)
 HOSTNAME                        ?= $(shell hostname |sed 's/\..*//')
+MAKE_ARGS                       ?= $(foreach var,$(MAKE_VARS),$(if $($(var)),$(var)='$($(var))'))
+MAKE_VARS                       ?= ENV
 MONOREPO                        ?= $(if $(wildcard .git),$(notdir $(CURDIR)),$(notdir $(realpath $(CURDIR)/..)))
 MONOREPO_DIR                    ?= $(if $(wildcard .git),$(CURDIR),$(realpath $(CURDIR)/..))
 RECURSIVE                       ?= true
@@ -33,7 +28,14 @@ SUBREPO_COMMIT                  ?= $(shell git rev-parse subrepo/$(SUBREPO)/$(BR
 TAG                             ?= $(shell git tag -l --points-at $(BRANCH) 2>/dev/null)
 UID                             ?= $(shell id -u)
 USER                            ?= $(shell id -nu)
+VERBOSE                         ?= true
 VERSION                         ?= $(shell git describe --tags $(BRANCH) 2>/dev/null || git rev-parse $(BRANCH) 2>/dev/null)
+
+ifeq ($(DOCKER), true)
+ENV_ARGS                         = $(foreach var,$(ENV_VARS),$(if $($(var)),-e $(var)='$($(var))')) $(shell printenv |awk -F '=' 'NR == FNR { if($$1 !~ /^(\#|$$)/) { A[$$1]; next } } ($$1 in A) {print "-e "$$0}' .env.dist - 2>/dev/null)
+else
+ENV_ARGS                         = $(foreach var,$(ENV_VARS),$(if $($(var)),$(var)='$($(var))')) $(shell printenv |awk -F '=' 'NR == FNR { if($$1 !~ /^(\#|$$)/) { A[$$1]; next } } ($$1 in A)' .env.dist - 2>/dev/null)
+endif
 
 include def.*.mk
 
@@ -85,11 +87,11 @@ endif
 define make
 	$(eval cmd := $(1))
 	$(eval dir := $(2))
-	$(eval env := $(or $(3),$(ENV_MAKE_VARS)))
-	$(eval ENV_MAKE_ARGS := $(or $(4),$(if $(env),$(foreach var,$(env),$(if $($(var)),$(var)='$($(var))')))))
+	$(eval env := $(or $(3),$(MAKE_VARS)))
+	$(eval MAKE_ARGS := $(or $(4),$(if $(env),$(foreach var,$(env),$(if $($(var)),$(var)='$($(var))')))))
 	$(eval MAKE_DIR := $(if $(dir),-C $(dir)))
 	$(eval MAKE_OLDFILE := $(MAKE_OLDFILE) $(filter-out $(MAKE_OLDFILE), $^))
-	printf "${COLOR_GREEN}Running${COLOR_RESET} make $(cmd) $(if $(dir),${COLOR_BLUE}in folder${COLOR_RESET} $(dir) )${COLOR_GREEN}with${COLOR_RESET} $(ENV_MAKE_ARGS)\n"
-	$(ECHO) $(ENV_MAKE_ARGS) $(MAKE) $(MAKE_DIR) $(patsubst %,-o %,$(MAKE_OLDFILE)) $(cmd) $(ENV_MAKE_ARGS) MAKE_OLDFILE="$(MAKE_OLDFILE)"
-	$(if $(filter $(DRYRUN_RECURSIVE),true),$(ENV_MAKE_ARGS) $(MAKE) $(MAKE_DIR) $(patsubst %,-o %,$(MAKE_OLDFILE)) $(cmd) $(ENV_MAKE_ARGS) MAKE_OLDFILE="$(MAKE_OLDFILE)" DRYRUN=$(DRYRUN) RECURSIVE=$(RECURSIVE))
+	$(if $(filter $(VERBOSE),true),printf "${COLOR_GREEN}Running${COLOR_RESET} make $(cmd) $(if $(dir),${COLOR_BLUE}in folder${COLOR_RESET} $(dir) )${COLOR_GREEN}with${COLOR_RESET} $(MAKE_ARGS)\n")
+	$(ECHO) $(MAKE) $(MAKE_DIR) $(patsubst %,-o %,$(MAKE_OLDFILE)) $(cmd) $(MAKE_ARGS) MAKE_OLDFILE="$(MAKE_OLDFILE)"
+	$(if $(filter $(DRYRUN_RECURSIVE),true),$(MAKE) $(MAKE_DIR) $(patsubst %,-o %,$(MAKE_OLDFILE)) $(cmd) $(MAKE_ARGS) MAKE_OLDFILE="$(MAKE_OLDFILE)" DRYRUN=$(DRYRUN) RECURSIVE=$(RECURSIVE))
 endef

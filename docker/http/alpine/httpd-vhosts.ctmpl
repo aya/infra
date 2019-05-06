@@ -1,5 +1,5 @@
-{{ $serverName := printf "%s.%s" (env "APP") (env "ENV") }}
-{{ $serviceName := printf "%s-%s-%s-php-9000" (env "USER") (env "APP") (env "ENV") }}
+{{ $serverName := printf "%s.%s.%s" (env "APP") (env "ENV") (env "USER") }}
+{{ $serviceName := printf "%s-%s-%s-php-9000" (env "USER") (env "ENV") (env "APP") }}
 <VirtualHost *:80>
     ServerAdmin technique@1001pharmacies.com
     DocumentRoot "/var/www/web"

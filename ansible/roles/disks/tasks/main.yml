@@ -9,30 +9,38 @@
     state=latest
 
 - name: "Discover NVMe EBS"
-  disk_config:
-    config: "{{ disk_additional_disks }}"
-  register: __disk_config
-  when: disk_discover_aws_nvme_ebs | default(True) | bool
+  disks_ebs_config:
+    config: "{{ disks_additional_disks }}"
+  register: __disks_ebs_config
+  when: disks_discover_aws_nvme_ebs | default(True) | bool
 
 - set_fact:
-    disk_additional_disks: "{{ __disk_config['ansible_facts']['config'] }}"
-  when: __disk_config is defined and __disk_config | success and 'ansible_facts' in __disk_config
+    disks_additional_disks: "{{ disks_additional_disks|defaut([]) + __disks_ebs_config['ansible_facts']['config'] }}"
+  when: __disks_ebs_config is defined and __disks_ebs_config | success and 'ansible_facts' in __disks_ebs_config
 
 - name: "Install parted"
   package:
     name: parted
     state: present
-    use: '{{ disk_package_use }}'
-  when: disk_additional_disks
-  tags: ['disk', 'pkgs']
+    use: '{{ disks_package_use }}'
+  when: disks_additional_disks
+  tags: ['disks', 'pkgs']
 
 - name: "Install additional fs progs"
   package:
     name: "{{ item }}"
     state: present
-  with_items: "{{ additional_fs_utils|default([]) }}"
-  when: additional_fs_utils is defined
-  tags: ['disk', 'pkgs']
+  with_items: "{{ disks_additional_packages|default([]) }}"
+  when: disks_additional_packages is defined
+  tags: ['disks', 'pkgs']
+
+- name: disks - start additional services
+  service:
+    name: "{{item}}"
+    enabled: yes
+    state: started
+  with_items: "{{ disks_additional_services|default([]) }}"
+  tags: ['disks', 'pkgs']
 
 - name: "Get disk alignment for disks"
   shell: |
@@ -46,30 +54,30 @@
   args:
     creates: '{{ item.part | default(item.disk + "1") }}'
     executable: '/bin/bash'
-  with_items: '{{ disk_additional_disks }}'
-  register: disk_offset
-  tags: ['disk']
+  with_items: '{{ disks_additional_disks }}'
+  register: disks_offset
+  tags: ['disks']
 
 - name: "Ensure the disk exists"
   stat:
     path: '{{ item.disk }}'
-  with_items: '{{ disk_additional_disks }}'
-  register: disk_stat
+  with_items: '{{ disks_additional_disks }}'
+  register: disks_stat
   changed_when: False
-  tags: ['disk']
+  tags: ['disks']
 
 - name: "Partition additional disks"
   shell: |
     if
         [ -b {{ item.disk }} ]
     then
-        [ -b {{ item.part | default(item.disk + "1") }} ] || parted -a optimal --script "{{ item.disk }}" mklabel gpt mkpart primary {{ disk_offset.stdout|default("2048") }}s 100% && sleep 5 && partprobe {{ item.disk }}; sleep 5
+        [ -b {{ item.part | default(item.disk + "1") }} ] || parted -a optimal --script "{{ item.disk }}" mklabel gpt mkpart primary {{ disks_offset.stdout|default("2048") }}s 100% && sleep 5 && partprobe {{ item.disk }}; sleep 5
     fi
   args:
     creates: '{{ item.part | default(item.disk + "1") }}'
     executable: '/bin/bash'
-  with_items: '{{ disk_additional_disks }}'
-  tags: ['disk']
+  with_items: '{{ disks_additional_disks }}'
+  tags: ['disks']
 
 - name: "Create filesystem on the first partition"
   filesystem:
@@ -78,40 +86,38 @@
     fstype: '{{ item.0.fstype }}'
     opts: '{{ item.0.fsopts|d(omit) }}'
   with_together:
-    - '{{ disk_additional_disks }}'
-    - '{{ disk_stat.results }}'
+    - '{{ disks_additional_disks }}'
+    - '{{ disks_stat.results }}'
   when: item.1.stat.exists
-  tags: ['disk']
+  tags: ['disks']
 
 - name: "Disable periodic fsck on ext3 or ext4 formatted disks"
   shell: tune2fs -c0 -i0 {{ item.0.part | default(item.0.disk + "1") }}
   with_together:
-    - '{{ disk_additional_disks }}'
-    - '{{ disk_stat.results }}'
-  when: "disk_additional_disks and ( item.0.fstype == 'ext4' or item.0.fstype == 'ext3' ) and item.0.disable_periodic_fsck|default(false)|bool and item.1.stat.exists"
-  tags: ['disk']
+    - '{{ disks_additional_disks }}'
+    - '{{ disks_stat.results }}'
+  when: "disks_additional_disks and ( item.0.fstype == 'ext4' or item.0.fstype == 'ext3' ) and item.0.disable_periodic_fsck|default(false)|bool and item.1.stat.exists"
+  tags: ['disks']
 
 - name: "Ensure the mount directory exists"
   file:
     path: '{{ item.mount }}'
-    owner: '{{ item.user | default("root") }}'
-    group: '{{ item.group | default("root") }}'
     state: directory
-  with_items: '{{ disk_additional_disks }}'
-  tags: ['disk']
+  with_items: '{{ disks_additional_disks }}'
+  tags: ['disks']
 
 - name: "Get UUID for partition"
   command: blkid -s UUID -o value {{ item.0.part | default(item.0.disk + "1") }}
   check_mode: no
-  register: disk_blkid
+  register: disks_blkid
   with_together:
-    - '{{ disk_additional_disks }}'
-    - '{{ disk_stat.results }}'
+    - '{{ disks_additional_disks }}'
+    - '{{ disks_stat.results }}'
   changed_when: False
   when: item.1.stat.exists
-  tags: ['disk']
+  tags: ['disks']
 
-- name: "Mount additional disk"
+- name: "Mount additional disks"
   mount:
     name: '{{ item.0.mount }}'
     fstype: '{{ item.0.fstype }}'
@@ -120,14 +126,28 @@
     src: 'UUID={{ item.1.stdout }}'
     state: '{{ item.0.mount_state|d("mounted") }}'
   with_together:
-    - '{{ disk_additional_disks }}'
-    - '{{ disk_blkid.results }}'
-    - '{{ disk_stat.results }}'
+    - '{{ disks_additional_disks }}'
+    - '{{ disks_blkid.results }}'
+    - '{{ disks_stat.results }}'
   when: item.2.stat.exists
-  tags: ['disk']
-  register: disks_handler_notify
+  tags: ['disks']
+  register: disks_additional_disks_handler_notify
   notify:
-    - restart service
+    - restart services
+
+- name: "Mount additional disks - nfs"
+  mount:
+    name: '{{ item.mount }}'
+    fstype: '{{ item.fstype }}'
+    opts: '{{ item.mount_options|d(omit) }}'
+    src: '{{ item.disk }}'
+    state: '{{ item.mount_state|d("mounted") }}'
+  when: item.fstype == 'nfs'
+  with_items: '{{ disks_additional_disks }}'
+  tags: ['disks']
+  register: disks_additional_disks_nfs_handler_notify
+  notify:
+    - restart services - nfs
 
 - name: "Ensure the permissions are set correctly"
   file:
@@ -135,5 +155,6 @@
     owner: '{{ item.user | default("root") }}'
     group: '{{ item.group | default("root") }}'
     state: directory
-  with_items: '{{ disk_additional_disks }}'
+  with_items: '{{ disks_additional_disks }}'
+  when: item.user is defined or item.group is defined
   tags: ['disk']

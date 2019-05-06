@@ -1,12 +1,12 @@
 CMDS                            += docker-compose-exec
 COMPOSE_VERSION                 ?= 1.22.0
-COMPOSE_PROJECT_NAME            ?= $(USER)_$(APP)_$(ENV)
-COMPOSE_PROJECT_NAME_INFRA_BASE ?= $(USER)_infra_base
+COMPOSE_PROJECT_NAME            ?= $(USER)_$(ENV)_$(APP)
+COMPOSE_PROJECT_NAME_INFRA_BASE ?= $(USER)_base_infra
 COMPOSE_PROJECT_NAME_INFRA_NODE ?= node_infra
 COMPOSE_SERVICE_NAME            ?= $(subst _,-,$(COMPOSE_PROJECT_NAME))
 DOCKER_BUILD_ARGS               ?= $(foreach var,$(DOCKER_BUILD_VARS),$(if $($(var)),--build-arg $(var)='$($(var))'))
 DOCKER_BUILD_CACHE              ?= true
-DOCKER_BUILD_TARGET             ?= local
+DOCKER_BUILD_TARGET             ?= $(ENV)
 DOCKER_BUILD_VARS               ?= APP BRANCH DOCKER_GID DOCKER_REPO GID GIT_AUTHOR_EMAIL GIT_AUTHOR_NAME TARGET UID USER VERSION
 DOCKER_COMPOSE_DOWN_OPTIONS     ?=
 DOCKER_GID                      ?= $(call getent-group,docker)
@@ -14,19 +14,22 @@ DOCKER_IMAGE_CLI                ?= cli:$(DOCKER_BUILD_TARGET)
 DOCKER_IMAGE_SSH                ?= ssh:$(DOCKER_BUILD_TARGET)
 DOCKER_IMAGE_TAG                ?= $(or $(TAG), $(DOCKER_BUILD_TARGET)$(addprefix -,$(DRONE_BUILD_NUMBER)))
 DOCKER_IMAGES                   ?= $(dir $(wildcard docker/*/Dockerfile))
+DOCKER_IMAGES_INFRA_LOCAL       ?= ansible aws openstack packer terraform
 DOCKER_INFRA_CLI                ?= $(COMPOSE_PROJECT_NAME_INFRA_BASE)_cli
 DOCKER_INFRA_SSH                ?= $(COMPOSE_PROJECT_NAME_INFRA_BASE)_ssh
 DOCKER_NETWORK                  ?= $(ENV)
+DOCKER_REGISTRY                 ?= 261323802359.dkr.ecr.eu-west-1.amazonaws.com
 DOCKER_REPO                     ?= $(DOCKER_REPO_INFRA)
 DOCKER_REPO_APP                 ?= $(USER)/$(APP)
 DOCKER_REPO_INFRA               ?= $(USER)/infra
 DOCKER_RUN_OPTIONS              ?= --rm -it
 DOCKER_RUN_VOLUME               ?= -v $$PWD:$$PWD
 DOCKER_RUN_WORKDIR              ?= -w $$PWD
-DOCKER_SERVICE_INFRA_BASE       ?= cli ssh
-DOCKER_SERVICE_INFRA_NODE       ?= consul fabio registrator
+DOCKER_SERVICES_INFRA_BASE      ?= cli ssh
+DOCKER_SERVICES_INFRA_NODE      ?= consul fabio registrator
 DOCKER_SHELL                    ?= $(SHELL)
-ENV_SYSTEM_VARS                 += COMPOSE_PROJECT_NAME COMPOSE_SERVICE_NAME DOCKER_BUILD_TARGET DOCKER_GID DOCKER_IMAGE_CLI DOCKER_IMAGE_SSH DOCKER_IMAGE_TAG DOCKER_INFRA_SSH DOCKER_REPO_APP DOCKER_REPO_INFRA DOCKER_SHELL
+ENV_VARS                        += COMPOSE_PROJECT_NAME COMPOSE_SERVICE_NAME DOCKER_BUILD_TARGET DOCKER_GID DOCKER_IMAGE_CLI DOCKER_IMAGE_SSH DOCKER_IMAGE_TAG DOCKER_INFRA_SSH DOCKER_NETWORK DOCKER_REGISTRY DOCKER_REPO_APP DOCKER_REPO_INFRA DOCKER_SHELL
+MAKE_VARS                       += DOCKER_IMAGE_TAG
 
 ifeq ($(DOCKER), true)
 
@@ -38,7 +41,7 @@ DOCKER_RUN_VOLUME               := -v /var/run/docker.sock:/var/run/docker.sock 
 ENV_SUFFIX                      := $(DRONE_BUILD_NUMBER)
 HOSTNAME                        := $(word 1,$(subst ., ,$(DRONE_RUNNER_HOSTNAME)))
 ifneq ($(APP), infra)
-COMPOSE_PROJECT_NAME            := $(USER)_$(APP)_$(ENV)_$(ENV_SUFFIX)
+COMPOSE_PROJECT_NAME            := $(USER)_$(ENV)$(ENV_SUFFIX)_$(APP)
 COMPOSE_SERVICE_NAME            := $(subst _,-,$(COMPOSE_PROJECT_NAME))
 endif
 else
@@ -60,11 +63,11 @@ define exec
 endef
 else
 define exec
-	$(ECHO) docker exec $(ENV_SYSTEM_ARGS) $(DOCKER_RUN_WORKDIR) $(DOCKER_INFRA_CLI)_1 sh -c '$(1)'
+	$(ECHO) docker exec $(ENV_ARGS) $(DOCKER_RUN_WORKDIR) $(DOCKER_INFRA_CLI)_1 sh -c '$(1)'
 endef
 endif
 define run
-	$(ECHO) docker run $(DOCKER_RUN_OPTIONS) $(patsubst %,--env-file %,$(ENV_FILE)) $(ENV_SYSTEM_ARGS) $(DOCKER_RUN_VOLUME) $(DOCKER_RUN_WORKDIR) $(1)
+	$(ECHO) docker run $(DOCKER_RUN_OPTIONS) $(patsubst %,--env-file %,$(ENV_FILE)) $(ENV_ARGS) $(DOCKER_RUN_VOLUME) $(DOCKER_RUN_WORKDIR) $(1)
 endef
 
 else
@@ -77,13 +80,13 @@ define docker-compose-exec
 	$(call run,docker-compose $(patsubst %,-f %,$(COMPOSE_FILE)) -p $(COMPOSE_PROJECT_NAME) exec -T $(1) sh -c '$(2)')
 endef
 define docker-run
-	$(ECHO) docker run $(DOCKER_RUN_OPTIONS) $(patsubst %,--env-file %,$(ENV_FILE)) $(ENV_SYSTEM_ARGS) $(DOCKER_RUN_VOLUME) $(DOCKER_RUN_WORKDIR) $(1) $(2)
+	$(ECHO) docker run $(DOCKER_RUN_OPTIONS) $(patsubst %,--env-file %,$(ENV_FILE)) $(foreach var,$(ENV_VARS),$(if $($(var)),-e $(var)='$($(var))')) $(shell printenv |awk -F '=' 'NR == FNR { if($$1 !~ /^(\#|$$)/) { A[$$1]; next } } ($$1 in A) {print "-e "$$0}' .env.dist - 2>/dev/null) $(DOCKER_RUN_VOLUME) $(DOCKER_RUN_WORKDIR) $(1) $(2)
 endef
 define exec
 	$(call run,sh -c '$(1)')
 endef
 define run
-	IFS=$$'\n'; $(ECHO) env $(ENV_SYSTEM_ARGS) $$(cat $(ENV_FILE) 2>/dev/null |awk -F "=" '$$1 ~! /^\(#|$$\)/') $(1)
+	IFS=$$'\n'; $(ECHO) env $(ENV_ARGS) $$(cat $(ENV_FILE) 2>/dev/null |awk -F "=" '$$1 ~! /^\(#|$$\)/') $(1)
 endef
 
 endif
@@ -94,7 +97,30 @@ define docker-build
 	$(eval target := $(subst ",,$(subst ',,$(or $(3),$(DOCKER_BUILD_TARGET)))))
 	$(eval image := $(shell docker images -q $(tag) 2>/dev/null))
 	$(eval build_image := $(or $(filter $(DOCKER_BUILD_CACHE),false),$(if $(image),,true)))
-	$(if $(build_image),$(ECHO) docker build $(DOCKER_BUILD_ARGS) --tag $(tag) $(if $(target),--target $(target)) $(path),$(if $(VERBOSE),echo "docker image $(tag) has id $(image)",true))
+	$(if $(build_image),$(ECHO) docker build $(DOCKER_BUILD_ARGS) --tag $(tag) $(if $(target),--target $(target)) $(path),$(if $(filter $(VERBOSE),true),echo "docker image $(tag) has id $(image)",true))
+endef
+define docker-commit
+	$(eval service := $(or $(1),$(DOCKER_SERVICE)))
+	$(eval tag := $(or $(2),$(DOCKER_IMAGE_TAG)))
+	$(eval container := $(or $(3),$(COMPOSE_PROJECT_NAME)_$(service)_1))
+	$(eval repository := $(or $(4),$(DOCKER_REPO_APP)/$(service)))
+	$(if $(filter $(VERBOSE),true),echo docker commit $(container) $(repository):$(tag))
+	$(ECHO) docker commit $(container) $(repository):$(tag)
+endef
+define docker-push
+	$(eval service := $(or $(1),$(DOCKER_SERVICE)))
+	$(eval tag := $(or $(2),$(DOCKER_IMAGE_TAG)))
+	$(eval name := $(or $(4),$(DOCKER_REGISTRY)/1001pharmacies/$(APP)/$(service)))
+	$(if $(filter $(VERBOSE),true),echo docker push $(name):$(tag))
+	$(ECHO) docker push $(name):$(tag)
+endef
+define docker-tag
+	$(eval service := $(or $(1),$(DOCKER_SERVICE)))
+	$(eval tag := $(or $(2),$(DOCKER_IMAGE_TAG)))
+	$(eval source := $(or $(3),$(DOCKER_REPO_APP)/$(service)))
+	$(eval target := $(or $(4),$(DOCKER_REGISTRY)/1001pharmacies/$(APP)/$(service)))
+	$(if $(filter $(VERBOSE),true),echo docker tag $(source):$(tag) $(target):$(tag))
+	$(ECHO) docker tag $(source):$(tag) $(target):$(tag)
 endef
 define docker-volume-copy
 	$(eval from:=$(1))

@@ -202,7 +202,6 @@ RUN echo '#!/usr/bin/env sh' > /usr/local/bin/php-cli \
 " >> /usr/local/bin/php-cli
 
 WORKDIR /var/www
-VOLUME /var/www
 
 FROM dist as local
 ARG UID
