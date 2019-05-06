@@ -1,11 +1,16 @@
 CMDS                            += base-exec node-exec openstack terraform
 COMPOSE_IGNORE_ORPHANS          ?= true
 CONTEXT                         += COMPOSE_PROJECT_NAME GIT_AUTHOR_EMAIL GIT_AUTHOR_NAME
+CRONLOCK_PREFIX                 ?= $(if $(filter $(ENV),prod preprod),1001pharmacies,$(USER)).$(ENV).$(APP).
+CRONLOCK_VERBOSE                ?= yes
 DOCKER_SERVICE                  ?= mysql
-ENV_SYSTEM_VARS                 += COMPOSE_IGNORE_ORPHANS
+ENV_VARS                        += COMPOSE_IGNORE_ORPHANS GIT_AUTHOR_EMAIL GIT_AUTHOR_NAME
 GIT_AUTHOR_EMAIL                ?= $(shell git config user.email 2>/dev/null)
 GIT_AUTHOR_NAME                 ?= $(shell git config user.name 2>/dev/null)
 HOME                            ?= /home/$(USER)
+MOUNT_NFS_CONFIG                ?= addr=$(MOUNT_NFS_HOST),actimeo=3,intr,noacl,noatime,nocto,nodiratime,nolock,soft,rsize=32768,wsize=32768,tcp,rw,vers=3
+MOUNT_NFS_OPTIONS               ?= rw,rsize=8192,wsize=8192,bg,hard,intr,nfsvers=3,noatime,nodiratime,actimeo=3
+MOUNT_NFS_PATH                  ?= /mnt/nfs
 REMOTE                          ?= ssh://git@github.com/1001Pharmacies/$(SUBREPO)
 SETUP_NFSD                      ?= false
 SETUP_NFSD_OSX_CONFIG           ?= nfs.server.bonjour=0 nfs.server.mount.regular_files=1 nfs.server.mount.require_resv_port=0 nfs.server.nfsd_threads=16 nfs.server.async=1
@@ -15,6 +20,18 @@ SHELL                           ?= /bin/sh
 STACK                           ?= services
 STACK_BASE                      ?= base
 STACK_NODE                      ?= node
+
+ifeq ($(ENV),prod)
+CRONLOCK_HOST                   ?= ectoggle.cpumir.ng.0001.euw1.cache.amazonaws.com
+MOUNT_NFS_HOST                  ?= 10.131.148.6
+MOUNT_NFS_DISK                  ?= $(MOUNT_NFS_HOST):/space/NFS/www.1001pharmacies.com
+else ifeq ($(ENV),preprod)
+CRONLOCK_HOST                   ?= enovasanteecpptoggle.cpumir.0001.euw1.cache.amazonaws.com
+MOUNT_NFS_HOST                  ?= 10.131.144.6
+MOUNT_NFS_DISK                  ?= $(MOUNT_NFS_HOST):/space/NFS/preprod.1001pharmacies.com
+else
+CRONLOCK_HOST                   ?= redis
+endif
 
 define setup-nfsd-osx
 	$(eval dir:=$(or $(1),$(MONOREPO_DIR)))

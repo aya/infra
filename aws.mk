@@ -1,8 +1,3 @@
-IAM_ROLE_NAME ?= vmiport
-AWS_SNAPSHOT_S3_BUCKET     ?= production-ftp
-AWS_SNAPSHOT_S3_KEY        ?= alpine-3.9.2-x86_64.iso
-SNAPSHOT_ISO  ?= iso/alpine-3.9.2-x86_64/alpine-3.9.2-x86_64.iso
-ENV_SYSTEM_VARS += AWS_SNAPSHOT_S3_KEY AWS_SNAPSHOT_S3_BUCKET
 .PHONY: aws
 aws: docker-build-aws
 	$(call aws,$(ARGS))
@@ -18,6 +13,13 @@ aws-codedeploy:
 
 .PHONY: aws-role-create-import-image
 aws-role-create-import-image: aws-iam-create-role-$(AWS_VM_IMPORT_ROLE_NAME)  aws-iam-put-role-policy-$(AWS_VM_IMPORT_ROLE_NAME)
+
+.PHONY: aws-ecr-login
+aws-ecr-login: docker-build-aws
+	$(eval DRYRUN_IGNORE := true)
+	$(eval docker_login := $(shell $(call aws,ecr get-login --no-include-email --region $(AWS_DEFAULT_REGION))))
+	$(eval DRYRUN_IGNORE := FALSE)
+	$(ECHO) $(docker_login)
 
 .PHONY: aws-iam-create-role-%
 aws-iam-create-role-%: docker-build-aws

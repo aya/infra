@@ -12,9 +12,21 @@ endif
 
 .PHONY: docker-build-%
 docker-build-%:
+	$(if $(filter $(DOCKER_IMAGES_INFRA_LOCAL),$*),$(eval DOCKER_BUILD_TARGET := local))
 	$(if $(wildcard docker/$*/Dockerfile),$(call docker-build,docker/$*))
 	$(if $(findstring :,$*),$(eval DOCKERFILES := $(wildcard docker/$(subst :,/,$*)/Dockerfile)),$(eval DOCKERFILES := $(wildcard docker/$*/*/Dockerfile)))
 	$(foreach dockerfile,$(DOCKERFILES),$(call docker-build,$(dir $(dockerfile)),$(DOCKER_REPO_APP)/$(word 2,$(subst /, ,$(dir $(dockerfile)))):$(lastword $(subst /, ,$(dir $(dockerfile)))),"") && true)
+
+.PHONY: docker-commit
+docker-commit:
+	$(eval DRYRUN_IGNORE := true)
+	$(eval SERVICE ?= $(shell $(call docker-compose,--log-level critical config --services)))
+	$(eval DRYRUN_IGNORE := false)
+	$(foreach service,$(SERVICE),$(call docker-commit,$(service)))
+
+.PHONY: docker-commit-%
+docker-commit-%:
+	$(call docker-commit,$*)
 
 .PHONY: docker-compose-build
 docker-compose-build: stack
@@ -22,7 +34,7 @@ docker-compose-build: stack
 
 .PHONY: docker-compose-build
 docker-compose-build-%: stack
-	$(eval DOCKER_BUILD_TARGET:=$*)
+	$(eval ENV:=$*)
 	$(call docker-compose,build $(DOCKER_BUILD_ARGS) $(SERVICE))
 
 .PHONY: docker-compose-config
@@ -91,7 +103,7 @@ docker-compose-up: stack
 docker-infra-base: bootstrap-infra
 ifneq ($(wildcard ../infra),)
 ifneq (,$(filter $(MAKECMDGOALS),start up))
-	$(call make,$(patsubst %,base-%,$(MAKECMDGOALS)) STACK_BASE=base,../infra)
+	$(call make,$(patsubst %,base-%,$(MAKECMDGOALS)) SERVICE= STACK_BASE=base,../infra)
 endif
 endif
 
@@ -99,25 +111,35 @@ endif
 docker-infra-images: bootstrap-infra
 ifneq ($(wildcard ../infra),)
 	$(eval DRYRUN_IGNORE := true)
-	$(eval DOCKER_INFRA_IMAGES := $(or $(DOCKER_INFRA_IMAGES),$(shell $(call docker-compose,--log-level critical config --services))))
+	$(eval DOCKER_IMAGES_INFRA := $(or $(DOCKER_IMAGES_INFRA),$(shell $(call docker-compose,--log-level critical config --services))))
 	$(eval DRYRUN_IGNORE := false)
-	$(foreach image,$(DOCKER_INFRA_IMAGES),$(call make,docker-build-$(image),../infra))
+	$(foreach image,$(DOCKER_IMAGES_INFRA),$(call make,docker-build-$(image),../infra))
 endif
 
 .PHONY: docker-infra-node
 docker-infra-node: bootstrap-infra
 ifneq ($(wildcard ../infra),)
 ifneq (,$(filter $(MAKECMDGOALS),start up))
-	$(call make,$(patsubst %,node-%,$(MAKECMDGOALS)) STACK_NODE=node,../infra)
+	$(call make,$(patsubst %,node-%,$(MAKECMDGOALS)) SERVICE= STACK_NODE=node,../infra)
 endif
 endif
+
+.PHONY: docker-infra-registry-login
+docker-infra-registry-login:
+	$(call make,aws-ecr-login)
 
 .PHONY: docker-infra-services
 docker-infra-services: bootstrap-infra
 ifneq ($(wildcard ../infra),)
 ifneq (,$(filter $(MAKECMDGOALS),install ps start up))
-	$(call make,$(MAKECMDGOALS) STACK=services,../infra)
+	$(call make,$(MAKECMDGOALS) SERVICE= STACK=services,../infra)
 endif
+endif
+
+.PHONY: docker-login
+docker-login: bootstrap-infra
+ifneq ($(wildcard ../infra),)
+	$(call make,docker-infra-registry-login,../infra)
 endif
 
 .PHONY: docker-network-create
@@ -130,6 +152,17 @@ docker-network-rm:
 	[ -z "$(shell docker network ls -q --filter name='^$(DOCKER_NETWORK)$$' 2>/dev/null)" ] \
 	  || { echo -n "Removing docker network $(DOCKER_NETWORK) ... " && $(ECHO) docker network rm $(DOCKER_NETWORK) >/dev/null 2>&1 && echo "done" || echo "ERROR"; }
 
+.PHONY: docker-push
+docker-push:
+	$(eval DRYRUN_IGNORE := true)
+	$(eval SERVICE ?= $(shell $(call docker-compose,--log-level critical config --services)))
+	$(eval DRYRUN_IGNORE := false)
+	$(foreach service,$(SERVICE),$(call docker-push,$(service)))
+
+.PHONY: docker-push-%
+docker-push-%:
+	$(call docker-push,$*)
+
 .PHONY: docker-rebuild-images
 docker-rebuild-images:
 	$(call make,docker-build-images DOCKER_BUILD_CACHE=false)
@@ -137,3 +170,14 @@ docker-rebuild-images:
 .PHONY: docker-rebuild-%
 docker-rebuild-%:
 	$(call make,docker-build-$* DOCKER_BUILD_CACHE=false)
+
+.PHONY: docker-tag
+docker-tag:
+	$(eval DRYRUN_IGNORE := true)
+	$(eval SERVICE ?= $(shell $(call docker-compose,--log-level critical config --services)))
+	$(eval DRYRUN_IGNORE := false)
+	$(foreach service,$(SERVICE),$(call docker-tag,$(service)))
+
+.PHONY: docker-tag-%
+docker-tag-%:
+	$(call docker-tag,$*)

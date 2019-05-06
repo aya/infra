@@ -1,8 +1,7 @@
-AWS_AMI_DESCRIPTION             ?= snap: $(AWS_SNAP_ID) env: $(ENV) app: $(APP) branch: $(BRANCH) version: $(VERSION) user: $(USER)
-AWS_AMI_NAME                    ?= $(USER)/$(ENV)/$(BRANCH)/ami/$(PACKER_TEMPLATE)/$(shell date +%Y%m%dT%H%M%S)
+AWS_AMI_DESCRIPTION             ?= app: $(APP) branch: $(BRANCH) env: $(ENV) iso: $(AWS_S3_KEY) user: $(USER) version: $(VERSION)
+AWS_AMI_NAME                    ?= $(USER)/$(ENV)/$(APP)/ami/$(BRANCH)/$(VERSION)/$(shell date +%Y%m%dT%H%M%S)
 AWS_DEFAULT_REGION              ?= eu-west-1
 AWS_DEFAULT_OUTPUT              ?= text
-AWS_DOCKER_REGISTRY             ?= 261323802359.dkr.ecr.eu-west-1.amazonaws.com
 AWS_INSTANCE_ID                 ?= $(shell timeout 0.1 curl -s http://169.254.169.254/latest/meta-data/instance-id 2>/dev/null)
 AWS_PROFILE                     ?= default
 AWS_VM_IMPORT_ROLE_NAME         ?= vmimport
@@ -10,7 +9,7 @@ AWS_S3_BUCKET                   ?= enova-aws-config
 AWS_S3_KEY                      ?= $(PACKER_ISO_NAME).iso
 AWS_SNAP_DESCRIPTION            ?= iso: $(AWS_S3_KEY) env: $(ENV) app: $(APP) branch: $(BRANCH) version: $(VERSION) user: $(USER) etag: $(AWS_S3_KEY_ETAG) date: $(AWS_S3_KEY_DATE)
 CMDS                            += aws
-ENV_SYSTEM_VARS                 += AWS_ACCESS_KEY_ID AWS_AMI_DESCRIPTION AWS_AMI_NAME AWS_DEFAULT_OUTPUT AWS_DEFAULT_REGION AWS_INSTANCE_ID AWS_PROFILE AWS_S3_BUCKET AWS_S3_KEY AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN AWS_SNAP_DESCRIPTION AWS_SNAP_ID
+ENV_VARS                        += AWS_ACCESS_KEY_ID AWS_AMI_DESCRIPTION AWS_AMI_NAME AWS_DEFAULT_OUTPUT AWS_DEFAULT_REGION AWS_INSTANCE_ID AWS_PROFILE AWS_S3_BUCKET AWS_S3_KEY AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN AWS_SNAP_DESCRIPTION AWS_SNAP_ID
 
 ifeq ($(DOCKER), true)
 define aws

@@ -15,7 +15,7 @@ syntax, you have to write it in a `group_vars` directory.
 
 ```yaml
 # inventory/group_vars/GROUP_NAME
-disk_additional_disks:
+disks_additional_disks:
  - disk: /dev/sdb
    fstype: ext4
    mount_options: defaults
@@ -32,6 +32,10 @@ disk_additional_disks:
    fstype: ext4
    mount_options: defaults
    mount: /data
+ - disk: nfs-host:/nfs/export
+   fstype: nfs
+   mount_options: defaults,noatime
+   mount: /mnt/nfs
 ```
 
 * `disk` is the device, you want to mount.
@@ -44,22 +48,25 @@ disk_additional_disks:
 * `disable_periodic_fsck` deactivates the periodic ext3/4 filesystem check for the new disk.
 
 You can add:
-* `disk_package_use` is the required package manager module to use (yum, apt, etc). The default 'auto' will use existing facts or try to autodetect it.
+* `disks_package_use` is the required package manager module to use (yum, apt, etc). The default 'auto' will use existing facts or try to autodetect it.
 
 The following filesystems are currently supported:
+- [btrfs](http://en.wikipedia.org/wiki/BTRFS) *
 - [ext2](http://en.wikipedia.org/wiki/Ext2)
 - [ext3](http://en.wikipedia.org/wiki/Ext3)
 - [ext4](http://en.wikipedia.org/wiki/Ext4)
+- [nfs](http://en.wikipedia.org/wiki/Network_File_System) *
 - [xfs](http://en.wikipedia.org/wiki/XFS) *
-- [btrfs](http://en.wikipedia.org/wiki/BTRFS) *
 
 *) Note: To use these filesystems you have to define and install additional software packages. Please estimate the right package names for your operating system.
 
 ```yaml
 # inventory/group_vars/GROUP_NAME
-additional_fs_utils:
+disks_additional_packages:
   - xfsprogs     # package for mkfs.xfs on RedHat / Ubuntu
   - btrfs-progs  # package for mkfs.btrfs on CentOS / Debian
+disks_additional_services:
+  - rpc.statd    # start rpc.statd service for nfs
 ```
 
 How it works

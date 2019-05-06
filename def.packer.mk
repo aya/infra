@@ -1,5 +1,5 @@
 CMDS                            += packer
-ENV_SYSTEM_VARS                 += PACKER_CACHE_DIR PACKER_KEY_INTERVAL PACKER_LOG
+ENV_VARS                        += PACKER_CACHE_DIR PACKER_KEY_INTERVAL PACKER_LOG
 KVM_GID                         ?= $(call getent-group,kvm)
 PACKER_ARCH                     ?= $(PACKER_ALPINE_ARCH)
 PACKER_BUILD_ARGS               ?= -on-error=cleanup $(foreach var,$(PACKER_BUILD_VARS),$(if $($(var)),-var $(var)='$($(var))'))
@@ -15,6 +15,8 @@ PACKER_KEY_INTERVAL             ?= 10ms
 PACKER_LOG                      ?= 1
 PACKER_PASSWORD                 ?= $(PACKER_TEMPLATE)
 PACKER_RELEASE                  ?= $(PACKER_ALPINE_RELEASE)
+PACKER_SSH_PORT                 ?= $(if $(ssh_port_max),$(ssh_port_max),2222)
+PACKER_SSH_ADDRESS              ?= $(if $(ssh_bind_address),$(ssh_bind_address),0.0.0.0)
 PACKER_TEMPLATES                ?= $(wildcard packer/*/*.json)
 PACKER_TEMPLATE                 ?= alpine
 PACKER_USERNAME                 ?= root
@@ -27,7 +29,7 @@ ifeq ($(FORCE), true)
 PACKER_BUILD_ARGS               += -force
 endif
 ifeq ($(ENV), local)
-PACKER_BUILD_ARGS               += -var vnc_port_max=$(PACKER_VNC_PORT) -var vnc_bind_address=$(PACKER_VNC_ADDRESS)
+PACKER_BUILD_ARGS               += -var ssh_port_max=$(PACKER_SSH_PORT) -var vnc_port_max=$(PACKER_VNC_PORT) -var vnc_bind_address=$(PACKER_VNC_ADDRESS)
 endif
 
 hostname                        ?= $(PACKER_HOSTNAME)
@@ -46,11 +48,11 @@ endif
 ifeq ($(DOCKER), true)
 
 define packer
-	$(call run,$(DOCKER_SSH_AUTH) $(if $(KVM_GID),--group-add $(KVM_GID)) --device /dev/kvm -v $(HOME):/home/$(USER) -p $(PACKER_VNC_PORT):$(PACKER_VNC_PORT) $(DOCKER_REPO)/packer:$(DOCKER_BUILD_TARGET) $(1))
+	$(call run,$(DOCKER_SSH_AUTH) $(if $(KVM_GID),--group-add $(KVM_GID)) --device /dev/kvm -v $(HOME):/home/$(USER) -p $(PACKER_SSH_PORT):$(PACKER_SSH_PORT) -p $(PACKER_VNC_PORT):$(PACKER_VNC_PORT) $(DOCKER_REPO)/packer:local $(1))
 endef
 define packer-qemu
 	echo Running $(1)
-	$(call run,$(if $(KVM_GID),--group-add $(KVM_GID)) --device /dev/kvm -p $(PACKER_VNC_PORT):$(PACKER_VNC_PORT) --entrypoint=qemu-system-x86_64 $(DOCKER_REPO)/packer:$(DOCKER_BUILD_TARGET) -enable-kvm -m 512m -drive file=$(1)$(comma)format=raw -vnc $(PACKER_VNC_ADDRESS):$(subst 590,,$(PACKER_VNC_PORT)))
+	$(call run,$(if $(KVM_GID),--group-add $(KVM_GID)) --device /dev/kvm -p $(PACKER_SSH_PORT):$(PACKER_SSH_PORT) -p $(PACKER_VNC_PORT):$(PACKER_VNC_PORT) --entrypoint=qemu-system-x86_64 $(DOCKER_REPO)/packer:local -enable-kvm -m 512m -drive file=$(1)$(comma)format=raw -net nic$(comma)model=virtio -net user$(comma)hostfwd=tcp:$(PACKER_SSH_ADDRESS):$(PACKER_SSH_PORT)-:22 -vnc $(PACKER_VNC_ADDRESS):$(subst 590,,$(PACKER_VNC_PORT)))
 endef
 
 else
@@ -60,7 +62,7 @@ define packer
 endef
 define packer-qemu
 	echo Running $(1)
-	$(call run,qemu-system-x86_64 -enable-kvm -m 512m -drive file=$(1)$(comma)format=raw)
+	$(call run,qemu-system-x86_64 -enable-kvm -m 512m -drive file=$(1)$(comma)format=raw -net nic$(comma)model=virtio -net user$(comma)hostfwd=tcp:$(PACKER_SSH_ADDRESS):$(PACKER_SSH_PORT)-:22 -vnc $(PACKER_VNC_ADDRESS):$(subst 590,,$(PACKER_VNC_PORT)))
 endef
 
 endif

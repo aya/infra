@@ -3,7 +3,7 @@ FROM alpine:latest as dist
 RUN apk --no-cache add \
         ansible
 
-RUN apk --no-cache upgrade
+RUN pip3 install boto
 
 ENTRYPOINT ["/usr/bin/ansible"]
 CMD ["--help"]

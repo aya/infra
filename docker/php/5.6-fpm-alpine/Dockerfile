@@ -146,8 +146,11 @@ RUN apk add --no-cache \
 		bzip2 \
 		gettext \
 		git \
+        mailx \
+        make \
 		nano \
 		openssh-client \
+        ssmtp \
 		vim
 
 # Iconv fix: https://github.com/docker-library/php/issues/240#issuecomment-305038173
@@ -174,10 +177,16 @@ RUN echo '#!/usr/bin/env sh' > /usr/local/bin/php-cli \
 /usr/local/bin/php -d ${PHP_CLI_CONFIG// / -d } \"\$@\"\
 " >> /usr/local/bin/php-cli
 
-RUN apk add --no-cache make
+# install cronlock
+ADD https://raw.github.com/kvz/cronlock/master/cronlock /usr/bin/cronlock
+RUN chmod +rx /usr/bin/cronlock
+
+# config ssmtp
+RUN echo "FromLineOverride=YES" >> /etc/ssmtp/ssmtp.conf
 
 WORKDIR /var/www
-VOLUME /var/www
+
+CMD [ "sh", "-c", "crond -l8 -L/proc/self/fd/1 && (IFS=$'\n'; env $(cat /var/www/.env 2>/dev/null) php-fpm)" ]
 
 FROM dist as local
 ARG UID
@@ -214,7 +223,3 @@ USER $USER
 
 RUN mkdir -p ~/.ssh \
  && ssh-keyscan -t rsa -H github.com >> ~/.ssh/known_hosts
-
-FROM local as tests
-FROM tests as preprod
-FROM preprod as prod

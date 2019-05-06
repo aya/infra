@@ -8,7 +8,7 @@ node-openssl:
 
 .PHONY: node-%
 node-%: bootstrap-infra
-ifeq (,$(filter-out $(DOCKER_SERVICE_INFRA_NODE),$(SERVICE)))
+ifeq (,$(filter-out $(DOCKER_SERVICES_INFRA_NODE),$(SERVICE)))
 	$(eval SERVICE_NODE:=$(SERVICE))
 endif
 	$(call make,$(patsubst %,-o %,$^) docker-compose-$* COMPOSE_PROJECT_NAME=$(COMPOSE_PROJECT_NAME_INFRA_NODE) DOCKER_NETWORK=node SERVICE=$(SERVICE_NODE) STACK="$(STACK_NODE)",,ARGS COMPOSE_IGNORE_ORPHANS ENV)

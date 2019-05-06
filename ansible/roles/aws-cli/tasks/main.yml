@@ -89,21 +89,24 @@
   when: ansible_ec2_instance_id is defined
 
 - name: aws - set hostname
-  hostname: name={{ ec2_tags.tags.Name }}
+  hostname: name="{{ ec2_tags.tags.hostname }}{% if ec2_tags.tags.domainname is defined %}.{{ ec2_tags.tags.domainname }}{% endif %}"
   tags: 'aws'
-  when: ec2_tags.tags is defined
+  when: ec2_tags.tags is defined and ec2_tags.tags.hostname is defined
 
 - name: aws - ecr login
   shell: "$(aws ecr get-login --no-include-email --region {{ aws_region }})"
   tags: 'aws'
   when: ec2_tags.tags is defined
 
-- name: Launch docker container
+- name: Launch docker services
   docker_container:
-    image: "{{aws_docker_registry}}/{{ec2_tags.tags.user}}/{{ec2_tags.tags.env}}/{{item}}"
+    image: "{{docker_registry|default(ec2_tags.tags.user)}}/{{ec2_tags.tags.user}}/{{item}}:{{docker_image_tag|default(ec2_tags.tags.env)}}"
     name: "{{ec2_tags.tags.user}}_{{ec2_tags.tags.env}}_{{item|replace('/','_')}}"
     network_mode: host
+    pull: yes
     restart_policy: always
+    volumes:
+    - /mnt/nfs:/var/www/shared
   tags: 'aws'
-  with_items: '{{ec2_tags.tags.app.split(" ")}}'
-  when: ec2_tags.tags is defined
+  with_items: '{{ec2_tags.tags.services.split(" ")}}'
+  when: ec2_tags.tags is defined and ec2_tags.tags.env is defined and ec2_tags.tags.services is defined and ec2_tags.tags.user is defined

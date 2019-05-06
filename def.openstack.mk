@@ -1,4 +1,4 @@
-ENV_SYSTEM_VARS                 += OS_AUTH_URL OS_TENANT_ID OS_TENANT_NAME OS_USERNAME OS_PASSWORD OS_REGION_NAME
+ENV_VARS                        += OS_AUTH_URL OS_TENANT_ID OS_TENANT_NAME OS_USERNAME OS_PASSWORD OS_REGION_NAME
 ifeq ($(DEBUG), true)
 OPENSTACK_ARGS                  += --debug
 endif
@@ -8,7 +8,7 @@ endif
 
 ifeq ($(DOCKER), true)
 define openstack
-	$(call run,$(DOCKER_SSH_AUTH) $(DOCKER_REPO)/openstack:$(DOCKER_BUILD_TARGET) $(1))
+	$(call run,$(DOCKER_SSH_AUTH) $(DOCKER_REPO)/openstack:local $(1))
 endef
 else
 define openstack
