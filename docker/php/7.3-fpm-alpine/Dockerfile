@@ -168,13 +168,16 @@ Host * \n\
 " >> /etc/ssh/ssh_config
 
 RUN apk add --no-cache \
-		bash \
-		bzip2 \
-		gettext \
-		git \
-		nano \
-		openssh-client \
-		vim
+        bash \
+        bzip2 \
+        gettext \
+        git \
+        mailx \
+        make \
+        nano \
+        openssh-client \
+        ssmtp \
+        vim
 
 # Iconv fix: https://github.com/docker-library/php/issues/240#issuecomment-305038173
 RUN apk add --no-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/community/ gnu-libiconv
@@ -200,6 +203,13 @@ RUN echo '#!/usr/bin/env sh' > /usr/local/bin/php-cli \
  && echo -e "\
 /usr/local/bin/php -d ${PHP_CLI_CONFIG// / -d } \"\$@\"\
 " >> /usr/local/bin/php-cli
+
+# install cronlock
+ADD https://raw.github.com/kvz/cronlock/master/cronlock /usr/bin/cronlock
+RUN chmod +rx /usr/bin/cronlock
+
+# config ssmtp
+RUN echo "FromLineOverride=YES" >> /etc/ssmtp/ssmtp.conf
 
 WORKDIR /var/www
 
