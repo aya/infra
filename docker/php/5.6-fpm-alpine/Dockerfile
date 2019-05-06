@@ -143,16 +143,16 @@ Host * \n\
 " >> /etc/ssh/ssh_config
 
 RUN apk add --no-cache \
-		bash \
-		bzip2 \
-		gettext \
-		git \
+        bash \
+        bzip2 \
+        gettext \
+        git \
         mailx \
         make \
-		nano \
-		openssh-client \
+        nano \
+        openssh-client \
         ssmtp \
-		vim
+        vim
 
 # Iconv fix: https://github.com/docker-library/php/issues/240#issuecomment-305038173
 RUN apk add --no-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/community/ gnu-libiconv
