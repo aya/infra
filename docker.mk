@@ -43,7 +43,7 @@ docker-compose-config: stack
 
 .PHONY: docker-compose-config-%
 docker-compose-config-%:
-	$(call make,docker-compose-config,,,DOCKER_BUILD_TARGET=$* ENV=$*)
+	$(call make,docker-compose-config DOCKER_BUILD_TARGET=$* ENV=$*)
 
 .PHONY: docker-compose-connect
 docker-compose-connect: SERVICE ?= $(DOCKER_SERVICE)
