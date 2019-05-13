@@ -98,6 +98,15 @@
   tags: 'aws'
   when: ec2_tags.tags is defined
 
+# available in ansible 2.8
+# - name: aws - prune docker objects
+#   docker_prune:
+#     containers: yes
+#     images: yes
+#     networks: yes
+#     volumes: yes
+#     builder_cache: yes
+
 - name: aws - launch docker containers
   docker_container:
     image: "{{docker_registry|default(ec2_tags.tags.user)}}/{{ec2_tags.tags.user}}/{{item}}:{{docker_image_tag|default(ec2_tags.tags.env)}}"
