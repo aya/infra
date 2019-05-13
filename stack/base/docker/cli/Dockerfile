@@ -104,5 +104,5 @@ Thumbs.db\n\
 " > ~/.config/git/ignore
 
 FROM local as tests
-
-USER root
+FROM tests as preprod
+FROM preprod as prod
