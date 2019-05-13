@@ -1,7 +1,7 @@
 CMDS                            += docker-compose-exec
 COMPOSE_VERSION                 ?= 1.22.0
 COMPOSE_PROJECT_NAME            ?= $(USER)_$(ENV)_$(APP)
-COMPOSE_PROJECT_NAME_INFRA_BASE ?= $(USER)_base_infra
+COMPOSE_PROJECT_NAME_INFRA      ?= $(USER)_$(ENV)_infra
 COMPOSE_PROJECT_NAME_INFRA_NODE ?= node_infra
 COMPOSE_SERVICE_NAME            ?= $(subst _,-,$(COMPOSE_PROJECT_NAME))
 DOCKER_BUILD_ARGS               ?= $(foreach var,$(DOCKER_BUILD_VARS),$(if $($(var)),--build-arg $(var)='$($(var))'))
@@ -15,8 +15,8 @@ DOCKER_IMAGE_SSH                ?= ssh:$(DOCKER_BUILD_TARGET)
 DOCKER_IMAGE_TAG                ?= $(or $(TAG), $(DOCKER_BUILD_TARGET)$(addprefix -,$(DRONE_BUILD_NUMBER)))
 DOCKER_IMAGES                   ?= $(dir $(wildcard docker/*/Dockerfile))
 DOCKER_IMAGES_INFRA_LOCAL       ?= ansible aws openstack packer terraform
-DOCKER_INFRA_CLI                ?= $(COMPOSE_PROJECT_NAME_INFRA_BASE)_cli
-DOCKER_INFRA_SSH                ?= $(COMPOSE_PROJECT_NAME_INFRA_BASE)_ssh
+DOCKER_INFRA_CLI                ?= $(COMPOSE_PROJECT_NAME_INFRA)_cli
+DOCKER_INFRA_SSH                ?= $(COMPOSE_PROJECT_NAME_INFRA)_ssh
 DOCKER_NETWORK                  ?= $(ENV)
 DOCKER_REGISTRY                 ?= 261323802359.dkr.ecr.eu-west-1.amazonaws.com
 DOCKER_REPO                     ?= $(DOCKER_REPO_INFRA)

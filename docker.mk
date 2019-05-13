@@ -103,7 +103,7 @@ docker-compose-up: stack
 docker-infra-base: bootstrap-infra
 ifneq ($(wildcard ../infra),)
 ifneq (,$(filter $(MAKECMDGOALS),start up))
-	$(call make,$(patsubst %,base-%,$(MAKECMDGOALS)) SERVICE= STACK_BASE=base,../infra)
+	$(call make,base,../infra)
 endif
 endif
 
