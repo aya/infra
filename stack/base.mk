@@ -18,5 +18,5 @@ base-%: bootstrap-infra
 ifeq (,$(filter-out $(DOCKER_SERVICES_INFRA_BASE),$(SERVICE)))
 	$(eval SERVICE_BASE:=$(SERVICE))
 endif
-	$(call make,$(patsubst %,-o %,$^) docker-compose-$* COMPOSE_PROJECT_NAME=$(COMPOSE_PROJECT_NAME_INFRA_BASE) SERVICE=$(SERVICE_BASE) STACK="$(STACK_BASE)",,ARGS COMPOSE_IGNORE_ORPHANS DOCKER_NETWORK ENV)
+	$(call make,$(patsubst %,-o %,$^) docker-compose-$* SERVICE=$(SERVICE_BASE) STACK="$(STACK_BASE)",,ARGS COMPOSE_IGNORE_ORPHANS DOCKER_NETWORK ENV)
 
