@@ -16,3 +16,8 @@ ansible-run: ansible-run-localhost
 .PHONY: ansible-run-%
 ansible-run-%:
 	$(call ansible-playbook,$(if $(ANSIBLE_TAGS),--tags $(ANSIBLE_TAGS)) $(if $(ANSIBLE_EXTRA_VARS),--extra-vars '$(patsubst target=localhost,target=$*,$(ANSIBLE_EXTRA_VARS))') $(if $(findstring true,$(DRYRUN)),--check) $(if $(ANSIBLE_INVENTORY),--inventory $(patsubst infra/%,%,$(ANSIBLE_INVENTORY))) $(patsubst infra/%,%,$(ANSIBLE_PLAYBOOK)))
+
+.PHONY: ansible-ssh-run-%
+ansible-ssh-run-%: aws-ec2-get-PrivateIpAddress-1001pharmacies.$(ENV).$(APP)
+	$(foreach host,$(AWS_INSTANCE_IP),$(call exec,ssh root@$(host) "make ansible-run ANSIBLE_TAGS=aws") &&) true
+

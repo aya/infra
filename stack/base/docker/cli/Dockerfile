@@ -81,7 +81,16 @@ RUN adduser $USER docker \
 RUN echo -e "\n\
 Host *\n\
   LogLevel quiet\n\
-  Compression yes\
+  Compression yes\n\
+## AWS ##\n\
+Host 10.131.*\n\
+  ProxyCommand ssh -q aws-deploy nc -q0 %h 22\n\
+  HostName %h\n\
+  StrictHostKeyChecking no\n\
+  UserKnownHostsFile /dev/null\n\
+Host aws-deploy\n\
+  HostName 52.50.10.235\n\
+  User sshuser\n\
 " >> /etc/ssh/ssh_config
 
 USER $USER
@@ -92,6 +101,7 @@ WORKDIR /home/$USER
 RUN mkdir -p ~/.ssh ~/.config/git \
  && ssh-keyscan -t rsa -H github.com >> ~/.ssh/known_hosts \
  && ssh-keyscan -t rsa -H 52.31.228.112 >> ~/.ssh/known_hosts \
+ && ssh-keyscan -t rsa -H 52.50.10.235 >> ~/.ssh/known_hosts \
  && echo -e "\
 .DS_Store\n\
 .idea/\n\
@@ -104,5 +114,8 @@ Thumbs.db\n\
 " > ~/.config/git/ignore
 
 FROM local as tests
+
+USER root
+
 FROM tests as preprod
 FROM preprod as prod

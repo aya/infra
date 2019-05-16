@@ -28,7 +28,7 @@ endif
 
 ifeq ($(DOCKER), true)
 define ansible
-	$(call run,$(DOCKER_SSH_AUTH) $(DOCKER_REPO)/ansible:local $(ANSIBLE_ARGS) $(ANSIBLE_VERBOSE) $(1))
+	$(call run,$(DOCKER_SSH_AUTH) -v ~/.aws:/home/$(USER)/.aws $(DOCKER_REPO)/ansible:local $(ANSIBLE_ARGS) $(ANSIBLE_VERBOSE) $(1))
 endef
 define ansible-playbook
 	# TODO : run ansible in docker and target localhost outside docker
