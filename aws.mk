@@ -80,6 +80,24 @@ aws-ec2-describe-import-snapshot-task-%: docker-build-aws
 aws-ec2-describe-import-snapshot-tasks: docker-build-aws
 	$(call aws,ec2 describe-import-snapshot-tasks)
 
+.PHONY: aws-ec2-get-PrivateIpAddress
+aws-ec2-get-PrivateIpAddress: docker-build-aws
+	$(eval AWS_INSTANCE_IP := $(shell $(call aws,ec2 describe-instances --no-paginate --query 'Reservations[*].Instances[*].[Tags[?Key==`Name`].Value$(comma)PrivateIpAddress]' --output text) |sed '$$!N;s/\r\n/ /' |awk '$$2 != "None" {print $$1}' 2>/dev/null))
+	echo PrivateIpAddress: $(AWS_INSTANCE_IP)
+
+.PHONY: aws-ec2-describe-instance-PrivateIpAddress
+aws-ec2-describe-instance-PrivateIpAddress: docker-build-aws
+	$(call aws,ec2 describe-instances --no-paginate --query 'Reservations[*].Instances[*].[Tags[?Key==`Name`].Value$(comma)PrivateIpAddress]' --output text) |sed '$$!N;s/\r\n/ /' |awk 'BEGIN {printf "%-24s%s\r\n"$(comma)"PrivateIpAddress"$(comma)"Name"}; $$2 != "None" {printf "%-24s%s\n"$(comma)$$1$(comma)$$2}'
+
+.PHONY: aws-ec2-get-PrivateIpAddress-%
+aws-ec2-get-PrivateIpAddress-%: docker-build-aws
+	$(eval AWS_INSTANCE_IP := $(shell $(call aws,ec2 describe-instances --no-paginate --query 'Reservations[*].Instances[*].[Tags[?Key==`Name`].Value$(comma)PrivateIpAddress]' --output text) |sed '$$!N;s/\r\n/ /' |awk '$$2 ~ /$*/ {print $$1}' 2>/dev/null))
+	echo PrivateIpAddress: $(AWS_INSTANCE_IP)
+
+.PHONY: aws-ec2-describe-instance-PrivateIpAddress-%
+aws-ec2-describe-instance-PrivateIpAddress-%: docker-build-aws
+	$(call aws,ec2 describe-instances --no-paginate --query 'Reservations[*].Instances[*].[Tags[?Key==`Name`].Value$(comma)PrivateIpAddress]' --output text) |sed '$$!N;s/\r\n/ /' |awk 'BEGIN {printf "%-24s%s\r\n"$(comma)"PrivateIpAddress"$(comma)"Name"}; $$2 ~ /$*/ {printf "%-24s%s\n"$(comma)$$1$(comma)$$2}'
+
 .PHONY: aws-ec2-get-snap-id-import-snapshot-task
 aws-ec2-get-snap-id-import-snapshot-task: aws-ec2-get-snap-id-import-snapshot-task-$(AWS_TASK_ID)
 

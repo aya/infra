@@ -56,5 +56,8 @@ RUN let $UID >/dev/null 2>&1 \
 USER $USER
 
 FROM local as tests
+
+USER root
+
 FROM tests as preprod
 FROM preprod as prod
