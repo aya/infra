@@ -18,6 +18,7 @@ disks_additional_disks:
   mount: "{{ lookup('env','ANSIBLE_DISKS_NFS_PATH') }}"
 disks_additional_services:
 - rpc.statd
+docker_image_tag: "{{ lookup('env','ANSIBLE_DOCKER_IMAGE_TAG') }}"
 docker_registry: "{{ lookup('env','ANSIBLE_DOCKER_REGISTRY') }}"
 hosts_enable_local: true
 hosts_enable_rc: true

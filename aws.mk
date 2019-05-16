@@ -39,16 +39,15 @@ aws-iam-put-role-policy-%: docker-build-aws
 aws-s3-check-upload: docker-build-aws aws-s3api-head-object-query-etag
 	$(eval upload := true)
 	$(eval DRYRUN_IGNORE := true)
-	$(if $(AWS_S3_KEY_ETAG),$(if $(filter $(AWS_S3_KEY_ETAG),"$(shell cat $(PACKER_ISO_FILE).etag 2>/dev/null)"),$(eval upload := false)))
+	$(if $(AWS_S3_KEY_ETAG),$(if $(filter $(AWS_S3_KEY_ETAG),"$(shell cat $(PACKER_ISO_INFO) |awk '$$1 == "etag:" {print $$2}' 2>/dev/null)"),$(eval upload := false)))
 	$(eval DRYRUN_IGNORE := false)
 
 .PHONY: aws-s3-cp
 aws-s3-cp: docker-build-aws $(PACKER_ISO_FILE) aws-s3-check-upload
-	$(if $(filter $(upload),true),$(call aws,s3 cp $(PACKER_ISO_FILE) s3://$(AWS_S3_BUCKET)) $(call make,aws-s3-etag-save))
+	$(if $(filter $(upload),true),$(call aws,s3 cp $(PACKER_ISO_FILE) s3://$(AWS_S3_BUCKET)/$(AWS_S3_KEY)) $(call make,aws-s3-etag-save))
 
 .PHONY: aws-s3-etag-save
 aws-s3-etag-save: docker-build-aws aws-s3api-head-object-query-etag
-	echo $(AWS_S3_KEY_ETAG) > $(PACKER_ISO_FILE).etag
 	echo "etag: $(AWS_S3_KEY_ETAG)" >> $(PACKER_ISO_INFO)
 
 .PHONY: aws-s3api-head-object-query-etag
