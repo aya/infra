@@ -49,6 +49,7 @@ aws-s3-cp: docker-build-aws $(PACKER_ISO_FILE) aws-s3-check-upload
 .PHONY: aws-s3-etag-save
 aws-s3-etag-save: docker-build-aws aws-s3api-head-object-query-etag
 	echo $(AWS_S3_KEY_ETAG) > $(PACKER_ISO_FILE).etag
+	echo "etag: $(AWS_S3_KEY_ETAG)" >> $(PACKER_ISO_INFO)
 
 .PHONY: aws-s3api-head-object-query-etag
 aws-s3api-head-object-query-etag: docker-build-aws

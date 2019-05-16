@@ -3,16 +3,18 @@ ENV_VARS                        += PACKER_CACHE_DIR PACKER_KEY_INTERVAL PACKER_L
 KVM_GID                         ?= $(call getent-group,kvm)
 PACKER_ARCH                     ?= $(PACKER_ALPINE_ARCH)
 PACKER_BUILD_ARGS               ?= -on-error=cleanup $(foreach var,$(PACKER_BUILD_VARS),$(if $($(var)),-var $(var)='$($(var))'))
-PACKER_BUILD_VARS               += hostname iso_name iso_size password template username
+PACKER_BUILD_VARS               += hostname iso_name iso_size output password template username
 PACKER_CACHE_DIR                ?= cache
 PACKER_HOSTNAME                 ?= $(PACKER_TEMPLATE)
 PACKER_ISO_DATE                 ?= $(shell stat -c %y $(PACKER_ISO_FILE) 2>/dev/null)
 PACKER_ISO_FILES                ?= $(wildcard iso/*/*.iso)
-PACKER_ISO_FILE                  = iso/$(PACKER_TEMPLATE)/$(PACKER_ISO_NAME).iso
+PACKER_ISO_FILE                  = $(PACKER_OUTPUT)/$(PACKER_ISO_NAME).iso
+PACKER_ISO_INFO                  = $(PACKER_OUTPUT)/$(PACKER_ISO_NAME).nfo
 PACKER_ISO_NAME                  = $(PACKER_TEMPLATE)-$(PACKER_RELEASE)-$(PACKER_ARCH)
 PACKER_ISO_SIZE                 ?= 2048
 PACKER_KEY_INTERVAL             ?= 10ms
 PACKER_LOG                      ?= 1
+PACKER_OUTPUT                   ?= iso/$(ENV)/$(PACKER_TEMPLATE)
 PACKER_PASSWORD                 ?= $(PACKER_TEMPLATE)
 PACKER_RELEASE                  ?= $(PACKER_ALPINE_RELEASE)
 PACKER_SSH_PORT                 ?= $(if $(ssh_port_max),$(ssh_port_max),2222)
@@ -35,6 +37,7 @@ endif
 hostname                        ?= $(PACKER_HOSTNAME)
 iso_name                        ?= $(PACKER_ISO_NAME)
 iso_size                        ?= $(PACKER_ISO_SIZE)
+output                          ?= $(PACKER_OUTPUT)
 password                        ?= $(PACKER_PASSWORD)
 template                        ?= $(PACKER_TEMPLATE)
 username                        ?= $(PACKER_USERNAME)
@@ -71,7 +74,15 @@ define packer-build
 	$(eval PACKER_TEMPLATE := $(notdir $(basename $(1))))
 	echo Building $(PACKER_ISO_FILE)
 	$(call packer,build $(PACKER_BUILD_ARGS) $(1))
-	echo Built $(PACKER_ISO_FILE)
-	echo Hostname: '$(hostname)'
-	echo Password: '$(password)'
+	echo "aws_key: $(ANSIBLE_AWS_ACCESS_KEY_ID)"                > $(PACKER_ISO_INFO)
+	echo "env: $(ENV)"                                          >> $(PACKER_ISO_INFO)
+	echo "git_repository: $(ANSIBLE_GIT_REPOSITORY)"            >> $(PACKER_ISO_INFO)
+	echo "git_version: $(ANSIBLE_GIT_VERSION)"                  >> $(PACKER_ISO_INFO)
+	echo "host: $(hostname)"                                    >> $(PACKER_ISO_INFO)
+	echo "link: s3://$(AWS_S3_BUCKET)/$(AWS_S3_KEY)"            >> $(PACKER_ISO_INFO)
+	echo "name: $(iso_name)"                                    >> $(PACKER_ISO_INFO)
+	echo "pass: $(password)"                                    >> $(PACKER_ISO_INFO)
+	echo "size: $(iso_size)"                                    >> $(PACKER_ISO_INFO)
+	echo "ssh_key: $(ANSIBLE_SSH_PRIVATE_KEY)"                  >> $(PACKER_ISO_INFO)
+	echo "user: $(username)"                                    >> $(PACKER_ISO_INFO)
 endef
