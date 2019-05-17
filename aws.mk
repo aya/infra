@@ -22,14 +22,14 @@ aws-ecr-login: docker-build-aws
 	$(ECHO) $(docker_login)
 
 .PHONY: aws-iam-create-role-%
-aws-iam-create-role-%: docker-build-aws
+aws-iam-create-role-%: base docker-build-aws
 	$(eval DRYRUN_IGNORE := true)
 	$(eval json := $(shell $(call exec,envsubst < aws/policies/$*-trust.json)))
 	$(eval DRYRUN_IGNORE := false)
 	$(call aws,iam create-role --role-name $* --assume-role-policy-document '$(json)')
 
 .PHONY: aws-iam-put-role-policy-%
-aws-iam-put-role-policy-%: docker-build-aws
+aws-iam-put-role-policy-%: base docker-build-aws
 	$(eval DRYRUN_IGNORE := true)
 	$(eval json := $(shell $(call exec,envsubst < aws/policies/$*.json)))
 	$(eval DRYRUN_IGNORE := false)
@@ -65,7 +65,7 @@ aws-s3api-head-object-query-lastmodified: docker-build-aws
 	echo LastModified: $(AWS_S3_KEY_DATE)
 
 .PHONY: aws-ec2-import-snapshot
-aws-ec2-import-snapshot: docker-build-aws aws-s3api-head-object-query-etag aws-s3api-head-object-query-lastmodified
+aws-ec2-import-snapshot: base docker-build-aws aws-s3api-head-object-query-etag aws-s3api-head-object-query-lastmodified
 	$(eval DRYRUN_IGNORE := true)
 	$(eval json := $(shell $(call exec,envsubst < aws/import-snapshot.json)))
 	$(eval DRYRUN_IGNORE := false)
@@ -143,7 +143,7 @@ aws-ec2-wait-snapshot-%: docker-build-aws
 	$(call aws,ec2 wait snapshot-completed --snapshot-ids $* --output text)
 
 .PHONY: aws-ec2-register-image
-aws-ec2-register-image: docker-build-aws aws-ec2-get-snap-id-import-snapshot-task
+aws-ec2-register-image: base docker-build-aws aws-ec2-get-snap-id-import-snapshot-task
 	$(eval DRYRUN_IGNORE := true)
 	$(eval json := $(shell $(call exec,envsubst < aws/register-image-device-mappings.json)))
 	$(eval DRYRUN_IGNORE := false)
