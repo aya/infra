@@ -78,11 +78,18 @@ ifeq ($(HOST_SYSTEM),DARWIN)
 define getent-group
 $(shell dscl . -read /Groups/$(1) 2>/dev/null |awk '$$1 == "PrimaryGroupID:" {print $$2}')
 endef
+ifneq ($(DOCKER),true)
+SED_SUFFIX='\'\''
+endif
 else
 define getent-group
 $(shell getent group $(1) 2>/dev/null |awk -F: '{print $$3}')
 endef
 endif
+
+define sed
+$(call exec,sed -i $(SED_SUFFIX) '\''$(1)'\'' $(2))
+endef
 
 define make
 	$(eval cmd := $(1))
