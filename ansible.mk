@@ -19,5 +19,6 @@ ansible-run-%:
 
 .PHONY: ansible-ssh-run-%
 ansible-ssh-run-%: aws-ec2-get-PrivateIpAddress-1001pharmacies.$(ENV).$(APP)
-	$(foreach host,$(AWS_INSTANCE_IP),$(call exec,ssh root@$(host) "make ansible-run ANSIBLE_TAGS=aws ANSIBLE_DOCKER_IMAGE_TAG=$(DOCKER_IMAGE_TAG)") &&) true
+	$(eval ENV:=$*)
+	$(foreach host,$(AWS_INSTANCE_IP),$(call exec,ssh root@$(host) "make ansible-run ANSIBLE_TAGS=aws ANSIBLE_DOCKER_IMAGE_TAG=$(ANSIBLE_DOCKER_IMAGE_TAG)") &&) true
 
