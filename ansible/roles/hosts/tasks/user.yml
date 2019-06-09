@@ -40,11 +40,13 @@
 - name: user - update ~/.profile
   with_items:
   - alias vi='vim'
+  - export EDITOR='vim'
+  - export PAGER='less'
   lineinfile: dest=~/.profile create=yes line='{{item}}'
 
 - name: user - update ~/.screenrc
   with_items:
-  - defscrollback 1048576
+  - defscrollback 1024
   - hardstatus alwayslastline "%{= kw}[%{G}%H%{-}] \# %?%-Lw%?[%{G}%n%f %t%{-}]%?%+Lw%?%?%=%-17< [%{B}%l%{-}]"
   - shell -$SHELL
   lineinfile: dest=~/.screenrc create=yes line='{{item}}'

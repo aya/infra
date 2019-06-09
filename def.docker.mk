@@ -6,10 +6,13 @@ COMPOSE_PROJECT_NAME_INFRA_NODE ?= node_infra
 COMPOSE_SERVICE_NAME            ?= $(subst _,-,$(COMPOSE_PROJECT_NAME))
 DOCKER_BUILD_ARGS               ?= $(foreach var,$(DOCKER_BUILD_VARS),$(if $($(var)),--build-arg $(var)='$($(var))'))
 DOCKER_BUILD_CACHE              ?= true
-DOCKER_BUILD_TARGET             ?= $(ENV)
+DOCKER_BUILD_TARGET             ?= $(if $(filter $(ENV),local tests preprod prod),$(ENV),local)
 DOCKER_BUILD_VARS               ?= APP BRANCH DOCKER_GID DOCKER_REPO GID GIT_AUTHOR_EMAIL GIT_AUTHOR_NAME TARGET UID USER VERSION
 DOCKER_COMPOSE_DOWN_OPTIONS     ?=
 DOCKER_GID                      ?= $(call getent-group,docker)
+# https://github.com/docker/libnetwork/pull/2348
+DOCKER_HOST_GW_ADDRESS_EXTERNAL ?= $(shell /sbin/ip route | awk '/default/ { print $$3 }' | awk '!seen[$$0]++')
+DOCKER_HOST_IP_ADDRESS_INTERNAL ?= $(shell /sbin/ip addr show docker0 |awk '$$1 == "inet" {sub(/\/.*/,"",$$2); print $$2}')
 DOCKER_IMAGE_CLI                ?= cli:$(DOCKER_BUILD_TARGET)
 DOCKER_IMAGE_SSH                ?= ssh:$(DOCKER_BUILD_TARGET)
 DOCKER_IMAGE_TAG                ?= $(DOCKER_BUILD_TARGET)$(addprefix -,$(DRONE_BUILD_NUMBER))
