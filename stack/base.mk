@@ -1,6 +1,9 @@
 .PHONY: base
 base: docker-network-create base-ssh-add
 
+.PHONY: ssh-add
+ssh-add: base-ssh-add
+
 .PHONY: base-ssh-add
 base-ssh-add: base-up
 	$(eval SSH_PRIVATE_KEYS := $(foreach file,$(SSH_DIR)/id_rsa $(filter-out $(wildcard $(SSH_DIR)/id_rsa),$(wildcard $(SSH_DIR)/*)),$(if $(shell grep "PRIVATE KEY" $(file) 2>/dev/null),$(notdir $(file)))))

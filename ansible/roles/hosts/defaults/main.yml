@@ -32,8 +32,11 @@ hosts_rc_functions:
 #     - 03_ssh_agent
 #     - 04_attach_tmux
 
-# packages specific to a distribution
+# packages to install
 hosts_packages: []
+
+# packages specific to a distribution
+hosts_packages_distro: []
 
 # packages common to all distributions
 hosts_packages_common:
