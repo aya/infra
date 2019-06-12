@@ -1,6 +1,6 @@
 ---
 # file vars/debian.yml
 
-hosts_packages:
+hosts_packages_distro:
   - { "name": "vim-nox", "state": "present" }
 

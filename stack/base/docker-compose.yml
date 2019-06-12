@@ -18,7 +18,7 @@ services:
           - SSH_AUTH_SOCK=/tmp/ssh-agent/socket
         image: ${DOCKER_REPO_INFRA}/${DOCKER_IMAGE_CLI}
         networks:
-          - public
+          - private
         restart: always
         volumes:
           - ssh:/tmp/ssh-agent:ro
@@ -34,7 +34,7 @@ services:
             target: ${DOCKER_BUILD_TARGET}
         image: ${DOCKER_REPO_INFRA}/${DOCKER_IMAGE_SSH}
         networks:
-          - public
+          - private
         restart: always
         volumes:
           - ssh:/tmp/ssh-agent
@@ -48,6 +48,6 @@ volumes:
             o: uid=${UID}
 
 networks:
-    public:
+    private:
         external: true
-        name: node
+        name: ${DOCKER_NETWORK}
