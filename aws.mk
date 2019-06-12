@@ -80,50 +80,64 @@ aws-ec2-describe-import-snapshot-task-%: docker-build-aws
 aws-ec2-describe-import-snapshot-tasks: docker-build-aws
 	$(call aws,ec2 describe-import-snapshot-tasks)
 
-.PHONY: aws-ec2-get-PrivateIpAddress
-aws-ec2-get-PrivateIpAddress: docker-build-aws
-	$(eval AWS_INSTANCE_IP := $(shell $(call aws,ec2 describe-instances --no-paginate --query 'Reservations[*].Instances[*].[Tags[?Key==`Name`].Value$(comma)PrivateIpAddress]' --output text) |sed '$$!N;s/\r\n/ /' |awk '$$2 != "None" {print $$1}' 2>/dev/null))
-	echo PrivateIpAddress: $(AWS_INSTANCE_IP)
-
 .PHONY: aws-ec2-describe-instance-PrivateIpAddress
 aws-ec2-describe-instance-PrivateIpAddress: docker-build-aws
 	$(call aws,ec2 describe-instances --no-paginate --query 'Reservations[*].Instances[*].[Tags[?Key==`Name`].Value$(comma)PrivateIpAddress]' --output text) |sed '$$!N;s/\r\n/ /' |awk 'BEGIN {printf "%-24s%s\r\n"$(comma)"PrivateIpAddress"$(comma)"Name"}; $$2 != "None" {printf "%-24s%s\n"$(comma)$$1$(comma)$$2}'
 
-.PHONY: aws-ec2-get-PrivateIpAddress-%
-aws-ec2-get-PrivateIpAddress-%: docker-build-aws
-	$(eval AWS_INSTANCE_IP := $(shell $(call aws,ec2 describe-instances --no-paginate --query 'Reservations[*].Instances[*].[Tags[?Key==`Name`].Value$(comma)PrivateIpAddress]' --output text) |sed '$$!N;s/\r\n/ /' |awk '$$2 ~ /$*/ {print $$1}' 2>/dev/null))
-	echo PrivateIpAddress: $(AWS_INSTANCE_IP)
-
 .PHONY: aws-ec2-describe-instance-PrivateIpAddress-%
 aws-ec2-describe-instance-PrivateIpAddress-%: docker-build-aws
 	$(call aws,ec2 describe-instances --no-paginate --query 'Reservations[*].Instances[*].[Tags[?Key==`Name`].Value$(comma)PrivateIpAddress]' --output text) |sed '$$!N;s/\r\n/ /' |awk 'BEGIN {printf "%-24s%s\r\n"$(comma)"PrivateIpAddress"$(comma)"Name"}; $$2 ~ /$*/ {printf "%-24s%s\n"$(comma)$$1$(comma)$$2}'
+
+.PHONY: aws-ec2-get-PrivateIpAddress
+aws-ec2-get-PrivateIpAddress: docker-build-aws
+	$(eval DRYRUN_IGNORE := true)
+	$(eval AWS_INSTANCE_IP := $(shell $(call aws,ec2 describe-instances --no-paginate --query 'Reservations[*].Instances[*].[Tags[?Key==`Name`].Value$(comma)PrivateIpAddress]' --output text) |sed $$'$$!N;s/\r\\n/ /' |awk '$$2 != "None" {print $$1}' 2>/dev/null))
+	$(eval DRYRUN_IGNORE := false)
+	echo PrivateIpAddress: $(AWS_INSTANCE_IP)
+
+.PHONY: aws-ec2-get-PrivateIpAddress-%
+aws-ec2-get-PrivateIpAddress-%: docker-build-aws
+	$(eval DRYRUN_IGNORE := true)
+	$(eval AWS_INSTANCE_IP := $(shell $(call aws,ec2 describe-instances --no-paginate --query 'Reservations[*].Instances[*].[Tags[?Key==`Name`].Value$(comma)PrivateIpAddress]' --output text) |sed $$'$$!N;s/\r\\n/ /' |awk '$$2 ~ /$*/ {print $$1}' 2>/dev/null))
+	$(eval DRYRUN_IGNORE := false)
+	echo PrivateIpAddress: $(AWS_INSTANCE_IP)
 
 .PHONY: aws-ec2-get-snap-id-import-snapshot-task
 aws-ec2-get-snap-id-import-snapshot-task: aws-ec2-get-snap-id-import-snapshot-task-$(AWS_TASK_ID)
 
 .PHONY: aws-ec2-get-snap-id-import-snapshot-task-%
 aws-ec2-get-snap-id-import-snapshot-task-%: docker-build-aws
+	$(eval DRYRUN_IGNORE := true)
 	$(eval AWS_SNAP_ID := $(shell $(call aws,ec2 describe-import-snapshot-tasks --import-task-ids $* --output text --query ImportSnapshotTasks[0].SnapshotTaskDetail.SnapshotId) 2>/dev/null))
+	$(eval DRYRUN_IGNORE := false)
 	echo SnapshotId: $(AWS_SNAP_ID)
 
 .PHONY: aws-ec2-get-snap-message-import-snapshot-task-%
 aws-ec2-get-snap-message-import-snapshot-task-%: docker-build-aws
+	$(eval DRYRUN_IGNORE := true)
 	$(eval AWS_SNAP_MESSAGE := $(shell $(call aws,ec2 describe-import-snapshot-tasks --import-task-ids $* --output text --query ImportSnapshotTasks[0].SnapshotTaskDetail.StatusMessage) 2>/dev/null))
+	$(eval DRYRUN_IGNORE := false)
 	echo StatusMessage: $(AWS_SNAP_MESSAGE)
 
 .PHONY: aws-ec2-get-snap-progress-import-snapshot-task-%
 aws-ec2-get-snap-progress-import-snapshot-task-%: docker-build-aws
+	$(eval DRYRUN_IGNORE := true)
 	$(eval AWS_SNAP_PROGRESS := $(shell $(call aws,ec2 describe-import-snapshot-tasks --import-task-ids $* --output text --query ImportSnapshotTasks[0].SnapshotTaskDetail.Progress) 2>/dev/null))
+	$(eval DRYRUN_IGNORE := false)
 	echo Progress: $(AWS_SNAP_PROGRESS)
 
 .PHONY: aws-ec2-get-snap-size-import-snapshot-task-%
 aws-ec2-get-snap-size-import-snapshot-task-%: docker-build-aws
+	$(eval DRYRUN_IGNORE := true)
 	$(eval AWS_SNAP_SIZE := $(shell $(call aws,ec2 describe-import-snapshot-tasks --import-task-ids $* --output text --query ImportSnapshotTasks[0].SnapshotTaskDetail.DiskImageSize) 2>/dev/null))
+	$(eval DRYRUN_IGNORE := false)
 	echo DiskImageSize: $(AWS_SNAP_SIZE)
 
 .PHONY: aws-ec2-get-snap-status-import-snapshot-task-%
 aws-ec2-get-snap-status-import-snapshot-task-%: docker-build-aws
+	$(eval DRYRUN_IGNORE := true)
 	$(eval AWS_SNAP_STATUS := $(shell $(call aws,ec2 describe-import-snapshot-tasks --import-task-ids $* --output text --query ImportSnapshotTasks[0].SnapshotTaskDetail.Status) 2>/dev/null))
+	$(eval DRYRUN_IGNORE := false)
 	echo Status: $(AWS_SNAP_STATUS)
 
 .PHONY: aws-ec2-wait-snap-completed-import-snapshot-task
