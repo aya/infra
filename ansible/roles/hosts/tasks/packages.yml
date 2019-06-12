@@ -3,5 +3,5 @@
 
 - name: packages - install/remove packages
   package: name="{{item.name}}" state="{{item.state}}"
-  with_items: "{{hosts_packages_common|default([]) + hosts_packages|default([])}}"
+  with_items: "{{hosts_packages_common|default([]) + hosts_packages_distro|default([]) + hosts_packages|default([])}}"
   become: yes
