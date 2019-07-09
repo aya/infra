@@ -116,6 +116,7 @@
     restart_policy: always
     volumes:
     - /mnt/nfs:/var/www/shared
+    - /etc/localtime:/etc/localtime:ro
   tags: 'aws'
   with_items: '{{ec2_tags.tags.services.split(" ")}}'
   when: ec2_tags.tags is defined and ec2_tags.tags.env is defined and ec2_tags.tags.services is defined and ec2_tags.tags.user is defined
