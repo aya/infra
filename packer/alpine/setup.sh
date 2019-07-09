@@ -20,7 +20,6 @@ iface eth1 inet dhcp
 "
 KEYMAPOPTS="fr fr"
 NTPOPTS="-c openntpd"
-PASSWORD="${PASSWORD:-alpine}"
 PROXYOPTS="none"
 SSHDOPTS="-c none"
 TIMEZONEOPTS="-z Europe/Paris"
@@ -49,10 +48,5 @@ sed -i 's/constraints/# constraints/' /etc/ntpd.conf
 sed -i 's/^#NTPD_OPTS=$/NTPD_OPTS=-s/' /etc/conf.d/openntpd
 openrc boot
 openrc default
-
-passwd <<EOF
-$PASSWORD
-$PASSWORD
-EOF
 
 echo "y" | DEFAULT_DISK="none" /sbin/setup-disk -q ${DISKOPTS} || exit

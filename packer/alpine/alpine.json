@@ -63,8 +63,7 @@
         "script": "packer/alpine/setup.sh",
         "environment_vars": [
             "ALPINE_VERSION={{user `alpine_version`}}",
-            "HOSTNAME={{user `hostname`}}",
-            "PASSWORD={{user `password`}}"
+            "HOSTNAME={{user `hostname`}}"
         ]
     },
     {
