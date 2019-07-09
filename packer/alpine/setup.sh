@@ -44,6 +44,9 @@ echo "${INTERFACESOPTS}" | /sbin/setup-interfaces -i
 rc-update --quiet add networking boot
 rc-update --quiet add urandom boot
 /etc/init.d/hostname --quiet restart
+killall ntpd
+sed 's/constraints/# constraints/' /etc/ntpd.conf
+sed 's/^#NTPD_OPTS=$/NTPD_OPTS=-s/' /etc/conf.d/openntpd
 openrc boot
 openrc default
 
