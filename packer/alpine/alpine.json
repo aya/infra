@@ -1,14 +1,14 @@
 {
     "variables": {
         "alpine_arch": "x86_64",
-        "alpine_release": "3.9.4",
-        "alpine_version": "3.9",
+        "alpine_release": "3.10.0",
+        "alpine_version": "3.10",
         "ansible_extra_vars": "target=default",
         "ansible_user": "root",
         "ansible_verbose": "-v",
         "hostname": "alpine",
         "iso_size": "2048",
-        "iso_name": "alpine-3.9.4-x86_64",
+        "iso_name": "alpine-3.10.0-x86_64",
         "output": "iso",
         "password": "alpine",
         "ssh_port_min": "2222",
