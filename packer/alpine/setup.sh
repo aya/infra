@@ -3,7 +3,7 @@
 
 export PATH="/usr/sbin:/usr/bin:/sbin:/bin"
 
-ALPINE_VERSION="${ALPINE_VERSION:-3.9}"
+ALPINE_VERSION="${ALPINE_VERSION:-3.10}"
 APKREPOSOPTS="http://dl-cdn.alpinelinux.org/alpine/v${ALPINE_VERSION}/main http://dl-cdn.alpinelinux.org/alpine/v${ALPINE_VERSION}/community"
 DISKOPTS="-s 0 -m sys /dev/vda"
 DNSOPTS="-n 8.8.8.8"
@@ -45,8 +45,8 @@ rc-update --quiet add networking boot
 rc-update --quiet add urandom boot
 /etc/init.d/hostname --quiet restart
 killall ntpd
-sed 's/constraints/# constraints/' /etc/ntpd.conf
-sed 's/^#NTPD_OPTS=$/NTPD_OPTS=-s/' /etc/conf.d/openntpd
+sed -i 's/constraints/# constraints/' /etc/ntpd.conf
+sed -i 's/^#NTPD_OPTS=$/NTPD_OPTS=-s/' /etc/conf.d/openntpd
 openrc boot
 openrc default
 
