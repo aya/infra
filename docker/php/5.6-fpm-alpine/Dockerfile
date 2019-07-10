@@ -12,7 +12,7 @@ ARG MEMCACHED_VERSION=2.2.0
 ARG MONGODB_VERSION=stable
 ARG NEWRELIC_VERSION=8.7.0.242
 ARG RAR_VERSION=stable
-ARG REDIS_VERSION=stable
+ARG REDIS_VERSION=4.3.0
 ARG UUID_VERSION=stable
 ARG SUHOSIN_VERSION=0.9.38
 ARG TWIG_VERSION=1.35.3
@@ -145,10 +145,13 @@ Host * \n\
 RUN apk add --no-cache \
         bash \
         bzip2 \
+        coreutils \
         gettext \
         git \
+        lftp \
         mailx \
         make \
+        mysql-client \
         nano \
         openssh-client \
         ssmtp \
@@ -165,6 +168,7 @@ RUN docker-php-ext-enable ${PHP_EXT_ENABLE}
 
 # copy *.ini
 COPY *.ini /usr/local/etc/php/conf.d/
+COPY php-fpm-*.conf /usr/local/etc/php-fpm.d/
 
 # custom php config
 ARG PHP_INI_CONFIG
@@ -185,9 +189,10 @@ RUN chmod +rx /usr/bin/cronlock
 # config ssmtp
 RUN echo "FromLineOverride=YES" >> /etc/ssmtp/ssmtp.conf
 
+# default www-data homedir to /var/www for crontabs
+RUN sed -i 's|/home/www-data|/var/www|' /etc/passwd
 WORKDIR /var/www
-
-CMD [ "sh", "-c", "crond -l8 -L/proc/self/fd/1 && (IFS=$'\n'; env $(cat /var/www/.env 2>/dev/null) php-fpm)" ]
+CMD [ "sh", "-c", "crond -l8 -L/proc/self/fd/1 && (IFS=$'\n'; env $(cat .env 2>/dev/null) php-fpm)" ]
 
 FROM dist as local
 ARG UID

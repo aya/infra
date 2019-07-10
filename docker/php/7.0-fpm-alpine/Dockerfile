@@ -170,10 +170,13 @@ Host * \n\
 RUN apk add --no-cache \
         bash \
         bzip2 \
+        coreutils \
         gettext \
         git \
+        lftp \
         mailx \
         make \
+        mysql-client \
         nano \
         openssh-client \
         ssmtp \
@@ -211,7 +214,10 @@ RUN chmod +rx /usr/bin/cronlock
 # config ssmtp
 RUN echo "FromLineOverride=YES" >> /etc/ssmtp/ssmtp.conf
 
+# default www-data homedir to /var/www for crontabs
+RUN sed -i 's|/home/www-data|/var/www|' /etc/passwd
 WORKDIR /var/www
+CMD [ "sh", "-c", "crond -l8 -L/proc/self/fd/1 && (IFS=$'\n'; env $(cat .env 2>/dev/null) php-fpm)" ]
 
 FROM dist as local
 ARG UID

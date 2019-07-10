@@ -2,7 +2,7 @@ version: '3.6'
 
 services:
     drone-agent:
-        image: drone/agent:1.0.0-rc.6
+        image: drone/agent:1.0.0
         depends_on:
           - drone-server
         environment:
@@ -32,8 +32,9 @@ services:
         volumes:
           - /var/run/docker.sock:/var/run/docker.sock
     drone-server:
-        image: drone/drone:1.0.0-rc.6
+        image: drone/drone:1.0.0
         environment:
+          - DRONE_AGENTS_ENABLED=true
           - DRONE_GIT_ALWAYS_AUTH=false
           - DRONE_GITHUB_SERVER=https://github.com
           - DRONE_GITHUB_CLIENT_ID=${DRONE_GITHUB_CLIENT_ID}
