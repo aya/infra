@@ -111,7 +111,7 @@ endif
 docker-infra-images: bootstrap-infra
 ifneq ($(wildcard ../infra),)
 	$(eval DRYRUN_IGNORE := true)
-	$(eval DOCKER_IMAGES_INFRA := $(or $(DOCKER_IMAGES_INFRA),$(shell $(call docker-compose,--log-level critical config --services))))
+	$(eval DOCKER_IMAGES_INFRA := $(or $(subst ',,$(DOCKER_IMAGES_INFRA)),$(shell $(call docker-compose,--log-level critical config --services))))
 	$(eval DRYRUN_IGNORE := false)
 	$(foreach image,$(DOCKER_IMAGES_INFRA),$(call make,docker-build-$(image),../infra))
 endif
