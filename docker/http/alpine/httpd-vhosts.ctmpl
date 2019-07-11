@@ -13,8 +13,9 @@
 {{ end }}        ProxySet lbmethod=bybusyness
     </Proxy>
     <Directory /var/www/web>
-        Options +FollowSymLinks
         AllowOverride All
+        CGIPassAuth On
+        Options +FollowSymLinks
         Require all granted
     </Directory>
 </VirtualHost>
