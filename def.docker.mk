@@ -15,7 +15,7 @@ DOCKER_HOST_GW_ADDRESS_EXTERNAL ?= $(shell /sbin/ip route 2>/dev/null |awk '/def
 DOCKER_HOST_IP_ADDRESS_INTERNAL ?= $(shell /sbin/ip addr show docker0 2>/dev/null |awk '$$1 == "inet" {sub(/\/.*/,"",$$2); print $$2}')
 DOCKER_IMAGE_CLI                ?= cli:$(DOCKER_BUILD_TARGET)
 DOCKER_IMAGE_SSH                ?= ssh:$(DOCKER_BUILD_TARGET)
-DOCKER_IMAGE_TAG                ?= $(DOCKER_BUILD_TARGET)$(addprefix -,$(DRONE_BUILD_NUMBER))
+DOCKER_IMAGE_TAG                ?= $(DOCKER_BUILD_TARGET)$(if $(filter $(ENV),tests),$(addprefix -,$(DRONE_BUILD_NUMBER)))
 DOCKER_IMAGES                   ?= $(dir $(wildcard docker/*/Dockerfile))
 DOCKER_IMAGES_INFRA_LOCAL       ?= ansible aws openstack packer terraform
 DOCKER_INFRA_CLI                ?= $(COMPOSE_PROJECT_NAME_INFRA)_cli

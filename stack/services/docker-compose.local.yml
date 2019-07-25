@@ -1,7 +1,16 @@
 version: '3.6'
 
 services:
-    mysql:
-        ports:
-            - 3306:3306
+  mysql:
+    ports:
+    - 3306:3306
+    volumes:
+    - mysql-config:/etc/mysql/conf.d
 
+volumes:
+  mysql-config:
+    driver: local
+    driver_opts:
+      type: none
+      device: ${SUBREPO_DIR}/stack/services/docker/mysql/conf.d
+      o: bind
