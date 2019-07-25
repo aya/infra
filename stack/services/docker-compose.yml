@@ -100,7 +100,6 @@ services:
           - 3306
         volumes:
           - mysql:/var/lib/mysql
-          - mysql-config:/etc/mysql/conf.d
         restart: always
     rabbitmq:
         image: rabbitmq:management-alpine
@@ -178,12 +177,6 @@ services:
 volumes:
     elasticsearch:
     mysql:
-    mysql-config:
-        driver: local
-        driver_opts:
-            type: none
-            device: ${SUBREPO_DIR}/stack/services/docker/mysql/conf.d
-            o: bind
     rabbitmq:
     redis:
 
