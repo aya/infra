@@ -88,3 +88,54 @@ groups:
       summary: "{{ $labels.instance }} down"
       description: "{{ $labels.instance }} has been {{ $labels.type }} for more than 12 hours"
 
+  # Alert for GMV significantly lower (<33%) than mean value over last 4 weeks from 8AM to 10PM on weekdays
+  - alert: "TEST GMV less than 33% compared to last 4 weeks" 
+    # Prometheus time is GMT
+    expr: gmv_hourly_return_value < .33 * ( gmv_hourly_oneweekago_return_value + gmv_hourly_twoweeksago_return_value + gmv_hourly_threeweeksago_return_value + gmv_hourly_fourweeksago_return_value ) * .25 and ON() hour(european_french_time) > 8 < 22
+    for: 1h
+    labels:
+      severity: "low"
+      type: "lower than last 4 weeks"
+      instance: "Hourly GMV"
+    annotations:
+      summary: "{{ $labels.instance }} GMV alert"
+      description: "`Hourly GMV` has been *significantly lower than usual*, for more than 1 hour.
+        \n
+        \n> Current value is *{{ .Value }}* (over the last hour)"
+      query: '>Mean value observed this month is {{ range query "((gmv_hourly_oneweekago_return_value + gmv_hourly_twoweeksago_return_value + gmv_hourly_threeweeksago_return_value + gmv_hourly_fourweeksago_return_value ) * .25)" }}*{{ .Value }}*{{ end }} (same day of the week, same hour)'
+
+  # Alert for GMV critically lower (<20%) than mean value over last 4 weeks from 8AM to 10PM on weekdays
+  - alert: "TEST GMV less than 20% compared to last 4 weeks" 
+    # Prometheus time is GMT
+    expr: gmv_hourly_return_value < .20 * ( gmv_hourly_oneweekago_return_value + gmv_hourly_twoweeksago_return_value + gmv_hourly_threeweeksago_return_value + gmv_hourly_fourweeksago_return_value ) * .25 and ON() hour(european_french_time) > 8 < 22
+    for: 1h
+    labels:
+      severity: "high"
+      type: "low over last 4 weeks"
+      instance: "Hourly GMV"
+    annotations:
+      summary: "{{ $labels.instance }} GMV alert"
+      description: "`Hourly GMV` has been *critically lower than usual*, for more than 1 hour.
+        \n
+        \n> Current value is *{{ .Value }}* (over the last hour)"
+      query: '>Mean value observed this month is {{ range query "((gmv_hourly_oneweekago_return_value + gmv_hourly_twoweeksago_return_value + gmv_hourly_threeweeksago_return_value + gmv_hourly_fourweeksago_return_value ) * .25)" }}*{{ .Value }}*{{ end }} (same day of the week, same hour)'
+
+  # Alert for GMV suspiciously higher (>400%) than mean value over last 4 weeks from 8AM to 10PM on weekdays
+  - alert: "TEST GMV more than 500% compared to last 4 weeks" 
+    # Prometheus time is GMT
+    expr: gmv_hourly_return_value > 5 * ( gmv_hourly_oneweekago_return_value + gmv_hourly_twoweeksago_return_value + gmv_hourly_threeweeksago_return_value + gmv_hourly_fourweeksago_return_value ) * .25 and ON() hour(european_french_time) > 8 < 22
+    for: 1h
+    labels:
+      severity: "low"
+      type: "low over last 4 weeks"
+      instance: "Hourly GMV"
+    annotations:
+      summary: "{{ $labels.instance }} GMV alert"
+      description: "`Hourly GMV` has been *much higher than usual*, for more than 1 hour.
+        \n(If there is an ongoing sale, it's most probably ok)
+        \n
+        \n> Current value is *{{ .Value }}* (over the last hour)"
+      query: '>Mean value observed this month is {{ range query "((gmv_hourly_oneweekago_return_value + gmv_hourly_twoweeksago_return_value + gmv_hourly_threeweeksago_return_value + gmv_hourly_fourweeksago_return_value ) * .25)" }}*{{ .Value }}*{{ end }} (same day of the week, same hour)'
+
+
+

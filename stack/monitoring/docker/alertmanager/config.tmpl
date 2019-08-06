@@ -1,7 +1,7 @@
 # Documentation : https://prometheus.io/docs/alerting/configuration/
 
 global:
-  resolve_timeout: 10s
+  resolve_timeout: 5m
   slack_api_url: SLACK_WEBHOOK_ID
   # The smarthost and SMTP sender used for mail notifications.
   # smtp_smarthost: 'localhost:25'
@@ -25,7 +25,7 @@ route:
   # This way ensures that you get multiple alerts for the same group that start
   # firing shortly after another are batched together on the first
   # notification.
-  group_wait: 30s
+  group_wait: 1m
 
   # When the first notification was sent, wait 'group_interval' to send a batch
   # of new alerts that started firing for that group.
@@ -33,7 +33,7 @@ route:
 
   # If an alert has successfully been sent, wait 'repeat_interval' to
   # resend them.
-  repeat_interval: 5m
+  repeat_interval: 1h
 
 
   # All the above attributes are inherited by all child routes and can 
@@ -47,23 +47,36 @@ route:
 #       service: ^(foo1|foo2|baz)$
 #     receiver: team-X-mails
 
-
   routes:
   - match:
       severity: "low"
-    receiver: 1001-slack-low
-
-  - match:
-      severity: "medium"
-    receiver: 1001-slack-medium
+      instance: "Hourly GMV"
+    receiver: 1001-slack-gmv-low
 
   - match:
       severity: "high"
-    receiver: 1001-slack-high
+      instance: "Hourly GMV"
+    receiver: 1001-slack-gmv-high
+
+  - match:
+      instance: "Hourly GMV test"
+    receiver: 1001-slack-gmv-low
+
+  - match:
+      severity: "low"
+    receiver: 1001-slack-generic-low
+
+  - match:
+      severity: "medium"
+    receiver: 1001-slack-generic-medium
+
+  - match:
+      severity: "high"
+    receiver: 1001-slack-generic-high
 
   - match:
       severity: "critical"
-    receiver: 1001-slack-critical
+    receiver: 1001-slack-generic-critical
 
 
     # The service has a sub-route for critical alerts, any alerts
@@ -96,32 +109,66 @@ inhibit_rules:
   equal: ['instance']
 
 - source_match:
+    severity: 'high'
+  target_match:
+    severity: 'low'
+  # Addition for GMV, which has no "medium" severity
+  equal: ['instance']
+
+- source_match:
     severity: 'critical'
   target_match:
     severity: 'high'
   # Apply inhibition if the alertname is the same.
   equal: ['instance']
 
+
+
+
+
+
 receivers:
-- name: '1001-slack-low'
+- name: '1001-slack-gmv-low'
   slack_configs:
   - api_url: SLACK_WEBHOOK_ID
     send_resolved: true
     username: 'Chouette Vigilante [severity - low]'
     icon_emoji: ':owl:'
-    title: ':mostly_sunny: {{ .Status|toUpper }} issue on {{ .CommonLabels.instance }}'
-    text: "*{{ .CommonLabels.instance }}* had a *{{ .CommonLabels.type }}* issue for a few seconds"
+    title: ':mostly_sunny: {{ .Status|toUpper }} issue on [ {{ .CommonLabels.instance }} ]'
+    text: "{{ .CommonAnnotations.description }} 
+      \n
+      \n{{ .CommonAnnotations.query }}"
 
-- name: '1001-slack-medium'
+- name: '1001-slack-gmv-high'
+  slack_configs:
+  - api_url: SLACK_WEBHOOK_ID
+    send_resolved: true
+    username: 'Chouette Vigilante [severity - high]'
+    icon_emoji: ':fallen_leaf:'
+    title: ':tornado: {{ .Status|toUpper }} issue on [ {{ .CommonLabels.instance }} ]'
+    text: "{{ .CommonAnnotations.description }} 
+      \n
+      \n{{ .CommonAnnotations.query }}"
+      
+- name: '1001-slack-generic-low'
+  slack_configs:
+  - api_url: SLACK_WEBHOOK_ID
+    send_resolved: true
+    username: 'Chouette Vigilante [severity - low]'
+    icon_emoji: ':owl:'
+    title: ':mostly_sunny: {{ .Status|toUpper }} issue on [ {{ .CommonLabels.instance }} ]'
+    text: "*{{ .CommonLabels.instance }}* had a *{{ .CommonLabels.type }}* issue for a few seconds."
+
+- name: '1001-slack-generic-medium'
   slack_configs:
   - api_url: SLACK_WEBHOOK_ID
     send_resolved: true
     username: 'Chouette Vigilante [severity - medium]'
     icon_emoji: ':owl:'
-    title: ':sun_behind_rain_cloud: {{ .Status|toUpper }} issue on {{ .CommonLabels.instance }}'
-    text: "*{{ .CommonLabels.instance }}* had a *{{ .CommonLabels.type }}* issue for 5mn"
+    title: ':sun_behind_rain_cloud: {{ .Status|toUpper }} issue on [ {{ .CommonLabels.instance }} ]'
+    text: "*{{ .CommonLabels.instance }}* had a *{{ .CommonLabels.type }}* issue for more than 5 minutes."
 
-- name: '1001-slack-high'
+- name: '1001-slack-generic-high'
   slack_configs:
   - api_url: SLACK_WEBHOOK_ID
     send_resolved: true
@@ -130,7 +177,7 @@ receivers:
     title: ':tornado: {{ .Status|toUpper }} issue on {{ .CommonLabels.instance }}'
     text: "*{{ .CommonLabels.instance }}* had a *{{ .CommonLabels.type }}* issue for an hour"
 
-- name: '1001-slack-critical'
+- name: '1001-slack-generic-critical'
   slack_configs:
   - api_url: SLACK_WEBHOOK_ID
     send_resolved: true
