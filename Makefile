@@ -17,7 +17,11 @@ install: base node up ## Install docker $(STACK) services
 # CLEAN
 
 .PHONY: clean
-clean: clean-app docker-down clean-env
+clean: clean-app docker-compose-down clean-env
+
+.PHONY: clean-%
+clean-%:
+	$(call make,docker-compose-down DOCKER_COMPOSE_DOWN_OPTIONS="--rmi all -v" ENV=$*)
 
 .PHONY: clean-app
 clean-app:
