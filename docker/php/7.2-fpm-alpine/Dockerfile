@@ -213,10 +213,16 @@ RUN chmod +rx /usr/bin/cronlock
 # config ssmtp
 RUN echo "FromLineOverride=YES" >> /etc/ssmtp/ssmtp.conf
 
+# https://bugs.php.net/bug.php?id=71880
+ENV LOG_STREAM="/tmp/stdout"
+RUN mkfifo $LOG_STREAM && chmod 777 $LOG_STREAM
+
 # default www-data homedir to /var/www for crontabs
 RUN sed -i 's|/home/www-data|/var/www|' /etc/passwd
 WORKDIR /var/www
-CMD [ "sh", "-c", "(IFS=$'\n'; env $(cat .env 2>/dev/null) php-fpm)" ]
+
+# redirect LOG_STREAM to stdout and start php-fpm with environment variables from .env
+CMD [ "sh", "-c", "(exec 3<>$LOG_STREAM; cat <&3 >&1 & IFS=$'\n'; exec env $(cat .env 2>/dev/null) php-fpm)" ]
 
 FROM dist as local
 ARG UID
