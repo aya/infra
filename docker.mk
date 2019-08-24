@@ -18,7 +18,7 @@ docker-build-%:
 	$(foreach dockerfile,$(DOCKERFILES),$(call docker-build,$(dir $(dockerfile)),$(DOCKER_REPO_APP)/$(word 2,$(subst /, ,$(dir $(dockerfile)))):$(lastword $(subst /, ,$(dir $(dockerfile)))),"") && true)
 
 .PHONY: docker-commit
-docker-commit:
+docker-commit: stack
 	$(eval DRYRUN_IGNORE := true)
 	$(eval SERVICE ?= $(shell $(call docker-compose,--log-level critical config --services)))
 	$(eval DRYRUN_IGNORE := false)
@@ -153,7 +153,7 @@ docker-network-rm:
 	  || { echo -n "Removing docker network $(DOCKER_NETWORK) ... " && $(ECHO) docker network rm $(DOCKER_NETWORK) >/dev/null 2>&1 && echo "done" || echo "ERROR"; }
 
 .PHONY: docker-push
-docker-push:
+docker-push: stack
 	$(eval DRYRUN_IGNORE := true)
 	$(eval SERVICE ?= $(shell $(call docker-compose,--log-level critical config --services)))
 	$(eval DRYRUN_IGNORE := false)
@@ -172,7 +172,7 @@ docker-rebuild-%:
 	$(call make,docker-build-$* DOCKER_BUILD_CACHE=false)
 
 .PHONY: docker-tag
-docker-tag:
+docker-tag: stack
 	$(eval DRYRUN_IGNORE := true)
 	$(eval SERVICE ?= $(shell $(call docker-compose,--log-level critical config --services)))
 	$(eval DRYRUN_IGNORE := false)

@@ -30,3 +30,23 @@ clean-app:
 clean-env:
 	rm -i .env || true
 	rm -i stack/*/.env || true
+
+#########
+# Build #
+#########
+
+.PHONY: build-rm
+build-rm:
+	rm -rf build && mkdir -p build
+
+.PHONY: build-%
+build-%: build-rm
+	$(eval ENV:=$*)
+	$(call make,up docker-commit ENV=$*)
+
+##########
+# Deploy #
+##########
+
+.PHONY: deploy
+deploy: deploy-ping

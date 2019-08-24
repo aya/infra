@@ -56,17 +56,6 @@ services:
     ports:
     - 5601
     restart: always
-  logagent:
-    image: sematext/logagent:latest
-    environment:
-    - LOGAGENT_ARGS="-u 514 --docker /tmp/docker.sock --dockerEvents"
-    - LOGS_RECEIVER_URL=http://elasticsearch:9200
-    - LOGS_TOKEN=logs
-    networks:
-    - public
-    restart: always
-    volumes:
-    - /var/run/docker.sock:/tmp/docker.sock
   mailcatcher:
     image: 1001pharmadev/mailcatcher
     labels:
