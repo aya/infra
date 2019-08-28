@@ -148,6 +148,7 @@ RUN apk add --no-cache \
         coreutils \
         gettext \
         git \
+        imagemagick \
         lftp \
         mailx \
         make \
