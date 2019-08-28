@@ -2,8 +2,8 @@
 # file: inventories/host_vars/default
 
 aws_access_key_id: "{{ lookup('env','ANSIBLE_AWS_ACCESS_KEY_ID') }}"
-aws_output_format: "{{ lookup('env','ANSIBLE_AWS_DEFAULT_OUTPUT')|default('json') }}"
-aws_region: "{{ lookup('env','ANSIBLE_AWS_DEFAULT_REGION')|default('eu-west-1') }}"
+aws_output_format: "{{ lookup('env','ANSIBLE_AWS_DEFAULT_OUTPUT') or 'json' }}"
+aws_region: "{{ lookup('env','ANSIBLE_AWS_DEFAULT_REGION') or 'eu-west-1' }}"
 aws_secret_access_key: "{{ lookup('env','ANSIBLE_AWS_SECRET_ACCESS_KEY') }}"
 disks_additional_packages:
 - e2fsprogs-extra
@@ -12,7 +12,7 @@ hosts_enable_local: true
 hosts_enable_rc: true
 hosts_enable_zram: true
 hosts_git_repositories:
-- { "repo": "{{ lookup('env','ANSIBLE_GIT_REPOSITORY') }}", "dest": "{{ lookup('env','ANSIBLE_GIT_DIRECTORY') }}", "key_file": "{{ lookup('env','ANSIBLE_GIT_KEY_FILE')|default('~/.ssh/id_rsa') }}", "version": "{{ lookup('env','ANSIBLE_GIT_VERSION') }}" }
+- { "repo": "{{ lookup('env','ANSIBLE_GIT_REPOSITORY') }}", "dest": "{{ lookup('env','ANSIBLE_GIT_DIRECTORY') }}", "key_file": "{{ lookup('env','ANSIBLE_GIT_KEY_FILE') or '~/.ssh/id_rsa' }}", "version": "{{ lookup('env','ANSIBLE_GIT_VERSION') }}" }
 hosts_packages:
 - { "name": "ansible", "state": "present" }
 - { "name": "coreutils", "state": "present" }
@@ -28,7 +28,7 @@ hosts_packages:
 - { "name": "vim", "state": "present" }
 - { "name": "zsh", "state": "present" }
 hosts_ssh_private_keys:
-- "{{ lookup('env','ANSIBLE_SSH_PRIVATE_KEY')|default('~/.ssh/id_rsa') }}"
+- "{{ lookup('env','ANSIBLE_SSH_PRIVATE_KEY') or '~/.ssh/id_rsa' }}"
 hosts_ssh_users:
 - 1001pharmadev
 - aya
