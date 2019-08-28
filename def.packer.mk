@@ -44,7 +44,7 @@ username                        ?= $(PACKER_USERNAME)
 
 ifneq ($(filter $(ENV),prod preprod),)
 ifeq ($(password), $(template))
-password                        := $(or $(shell pwgen -csy -r\' 64 1 2>/dev/null),$(shell date +%s | shasum -a 256 | base64 | head -c 64))
+password                        := $(or $(shell pwgen -csy -r\' 64 1 2>/dev/null),$(shell date +%s | shasum -a 256 2>/dev/null | base64 | head -c 64))
 endif
 endif
 
