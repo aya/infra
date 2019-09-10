@@ -75,7 +75,8 @@ services:
         build:
             context: ../monitoring/docker/prometheus
             args:
-              - MONITORING_TARGETS_BLACKBOX=${MONITORING_TARGETS_BLACKBOX}
+              - MONITORING_PRIMARY_TARGETS_BLACKBOX=${MONITORING_PRIMARY_TARGETS_BLACKBOX}
+              - MONITORING_SECONDARY_TARGETS_BLACKBOX=${MONITORING_SECONDARY_TARGETS_BLACKBOX}
         labels:
           - SERVICE_9090_NAME=${COMPOSE_SERVICE_NAME}-prometheus-9090
           - SERVICE_9090_CHECK_TCP=true
