@@ -51,6 +51,18 @@ route:
   - match:
       severity: "low"
       instance: "Hourly GMV"
+      type: "lower than static threshold"
+    receiver: 1001-slack-gmv-static-low
+
+  - match:
+      severity: "high"
+      instance: "Hourly GMV"
+      type: "lower than static threshold"
+    receiver: 1001-slack-gmv-static-high
+
+  - match:
+      severity: "low"
+      instance: "Hourly GMV"
     receiver: 1001-slack-gmv-low
 
   - match:
@@ -128,6 +140,24 @@ inhibit_rules:
 
 
 receivers:
+- name: '1001-slack-gmv-static-low'
+  slack_configs:
+  - api_url: SLACK_WEBHOOK_ID
+    send_resolved: true
+    username: 'Chouette Vigilante [severity - low]'
+    icon_emoji: ':owl:'
+    title: ':mostly_sunny: {{ .Status|toUpper }} issue on [ {{ .CommonLabels.instance }} ]'
+    text: "{{ .CommonAnnotations.description }}"
+
+- name: '1001-slack-gmv-static-high'
+  slack_configs:
+  - api_url: SLACK_WEBHOOK_ID
+    send_resolved: true
+    username: 'Chouette Vigilante [severity - high]'
+    icon_emoji: ':fallen_leaf:'
+    title: ':tornado: {{ .Status|toUpper }} issue on [ {{ .CommonLabels.instance }} ]'
+    text: "{{ .CommonAnnotations.description }}"
+
 - name: '1001-slack-gmv-low'
   slack_configs:
   - api_url: SLACK_WEBHOOK_ID
