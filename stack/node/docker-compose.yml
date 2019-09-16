@@ -14,7 +14,7 @@ services:
           - SERVICE_8500_NAME=${COMPOSE_SERVICE_NAME}-consul-8500
           - SERVICE_8500_CHECK_TCP=true
           - SERVICE_8500_CHECK_INITIAL_STATUS=passing
-          - SERVICE_8500_TAGS=${SERVICE_CONSUL_HTTP_TAGS}
+          - SERVICE_8500_TAGS=${CONSUL_SERVICE_8500_TAGS}
           - SERVICE_8600_IGNORE=true
         networks:
           - public
@@ -39,7 +39,7 @@ services:
           - SERVICE_9998_NAME=${COMPOSE_SERVICE_NAME}-fabio-9998
           - SERVICE_9998_CHECK_TCP=true
           - SERVICE_9998_CHECK_INITIAL_STATUS=passing
-          - SERVICE_9998_TAGS=${SERVICE_FABIO_ADMIN_HTTP_TAGS}
+          - SERVICE_9998_TAGS=${FABIO_SERVICE_9998_TAGS}
           - SERVICE_9999_IGNORE=true
         networks:
           - public
@@ -50,6 +50,23 @@ services:
         restart: always
         volumes:
           - ssl-certs:/certs
+    portainer:
+        image: portainer/portainer
+        labels:
+          - SERVICE_8000_IGNORE=true
+          - SERVICE_9000_NAME=${COMPOSE_SERVICE_NAME}-portainer-9000
+          - SERVICE_9000_CHECK_TCP=true
+          - SERVICE_9000_CHECK_INITIAL_STATUS=passing
+          - SERVICE_9000_TAGS=${PORTAINER_SERVICE_9000_TAGS}
+        networks:
+          - public
+        ports:
+          - 8000
+          - 9000
+        restart: always
+        volumes:
+          - /var/run/docker.sock:/var/run/docker.sock
+          - portainer:/data
     registrator:
         image: gliderlabs/registrator:master
         command: -internal -cleanup=true -deregister always -resync=30 consul://consul:8500
@@ -64,6 +81,7 @@ services:
 
 volumes:
     consul:
+    portainer:
     ssl-certs:
 
 networks:

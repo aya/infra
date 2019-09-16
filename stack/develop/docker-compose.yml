@@ -1,7 +1,6 @@
 version: '3.6'
 
 services:
-services:
   redmine:
     image: sameersbn/redmine:4.0.4
     # command: /bin/sh -c "crontab -l |sed 's|@hourly|@hourly cd /home/redmine/data/files/1001Pharmacies \&\& git fetch -q --all -p \&\&|' |crontab"
