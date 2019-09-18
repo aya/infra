@@ -4,8 +4,7 @@ services:
     consul:
         image: consul:latest
         environment:
-          - CONSUL_BIND_INTERFACE=eth0
-          - CONSUL_CLIENT_INTERFACE=eth0
+            CONSUL_LOCAL_CONFIG: '{"log_level": "warn"}'
         hostname: ${HOSTNAME}
         labels:
           - SERVICE_8300_IGNORE=true
@@ -16,10 +15,7 @@ services:
           - SERVICE_8500_CHECK_INITIAL_STATUS=passing
           - SERVICE_8500_TAGS=${CONSUL_SERVICE_8500_TAGS}
           - SERVICE_8600_IGNORE=true
-        networks:
-          - public
-        ports:
-          - 8500:8500
+        network_mode: host
         restart: always
         volumes:
           - consul:/consul/data
@@ -41,12 +37,7 @@ services:
           - SERVICE_9998_CHECK_INITIAL_STATUS=passing
           - SERVICE_9998_TAGS=${FABIO_SERVICE_9998_TAGS}
           - SERVICE_9999_IGNORE=true
-        networks:
-          - public
-        ports:
-          - 80:80
-          - 443:443
-          - 9998
+        network_mode: host
         restart: always
         volumes:
           - ssl-certs:/certs
