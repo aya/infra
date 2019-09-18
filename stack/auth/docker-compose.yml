@@ -10,7 +10,6 @@ services:
     - SERVICE_80_TAGS=${LAM_SERVICE_80_TAGS}
     networks:
     - private
-    - public
     ports:
     - 80
     restart: always
@@ -33,7 +32,6 @@ services:
     - SERVICE_8989_CHECK_TCP=true
     networks:
     - private
-    - public
     ports:
     - 389
     - 636
@@ -52,6 +50,3 @@ networks:
   private:
     external: true
     name: ${DOCKER_NETWORK}
-  public:
-    external: true
-    name: node
