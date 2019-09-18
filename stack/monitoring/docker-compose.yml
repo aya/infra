@@ -1,104 +1,96 @@
 version: '3.6'
 
 services:
-    alertmanager:
-        build:
-            context: ../monitoring/docker/alertmanager
-            args:
-              - SLACK_WEBHOOK_ID=${SLACK_WEBHOOK_ID}
-        labels:
-          - SERVICE_9093_NAME=${COMPOSE_SERVICE_NAME}-alertmanager-9093
-          - SERVICE_9093_CHECK_TCP=true
-          - SERVICE_9093_CHECK_INITIAL_STATUS=passing
-          - SERVICE_9093_TAGS=${SERVICE_ALERTMANAGER_HTTP_TAGS}
-        networks:
-          - backend
-          - frontend
-        ports:
-          - 9093
-        restart: always
-    blackbox:
-        build:
-            context: ../monitoring/docker/blackbox
-        labels:
-          - SERVICE_9115_NAME=${COMPOSE_SERVICE_NAME}-blackbox-9115
-          - SERVICE_9115_CHECK_TCP=true
-          - SERVICE_9115_CHECK_INITIAL_STATUS=passing
-          - SERVICE_9115_TAGS=${SERVICE_BLACKBOX_HTTP_TAGS}
-        networks:
-          - backend
-          - frontend
-        ports:
-          - 9115
-        restart: always
-    es-exporter:
-        build:
-            context: ../monitoring/docker/es-exporter
-        command: -e 52.48.69.60:9200
-        image: braedon/prometheus-es-exporter:latest
-        labels:
-          - SERVICE_9206_NAME=${COMPOSE_SERVICE_NAME}-es-exporter-9206
-          - SERVICE_9206_CHECK_TCP=true
-          - SERVICE_9206_CHECK_INITIAL_STATUS=passing
-          - SERVICE_9206_TAGS=${ES_EXPORTER_SERVICE_9206_TAGS}
-        networks:
-          - backend
-          - frontend
-        ports:
-          - 9206
-        restart: always
-    grafana:
-        build:
-            context:  ../monitoring/docker/grafana
-            args:
-              - AWS_ACCESS_KEY=${AWS_ACCESS_KEY}
-              - AWS_SECRET_KEY=${AWS_SECRET_KEY}
-              - MYSQL_GRAFANA_USER=${MYSQL_GRAFANA_USER}
-              - MYSQL_GRAFANA_PASSWORD=${MYSQL_GRAFANA_PASSWORD}
-              - MYSQL_GRAFANA_DB=${MYSQL_GRAFANA_DB}
-        environment:
-          - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource
-        labels:
-          - SERVICE_3000_NAME=${COMPOSE_SERVICE_NAME}-grafana-3000
-          - SERVICE_3000_CHECK_TCP=true
-          - SERVICE_3000_CHECK_INITIAL_STATUS=passing
-          - SERVICE_3000_TAGS=${SERVICE_GRAFANA_HTTP_TAGS}
-        networks:
-          - backend
-          - frontend
-        ports:
-          - 3000
-        restart: always
-        volumes:
-          - grafana:/var/lib/grafana
-    prometheus:
-        build:
-            context: ../monitoring/docker/prometheus
-            args:
-              - MONITORING_PRIMARY_TARGETS_BLACKBOX=${MONITORING_PRIMARY_TARGETS_BLACKBOX}
-              - MONITORING_SECONDARY_TARGETS_BLACKBOX=${MONITORING_SECONDARY_TARGETS_BLACKBOX}
-        labels:
-          - SERVICE_9090_NAME=${COMPOSE_SERVICE_NAME}-prometheus-9090
-          - SERVICE_9090_CHECK_TCP=true
-          - SERVICE_9090_CHECK_INITIAL_STATUS=passing
-          - SERVICE_9090_TAGS=${SERVICE_PROMETHEUS_HTTP_TAGS}
-        networks:
-          - backend
-          - frontend
-        ports:
-          - 9090
-        restart: always
-        volumes:
-          - prometheus:/prometheus
+  alertmanager:
+    build:
+      context: ../monitoring/docker/alertmanager
+      args:
+      - SLACK_WEBHOOK_ID=${SLACK_WEBHOOK_ID}
+    labels:
+    - SERVICE_9093_NAME=${COMPOSE_SERVICE_NAME}-alertmanager-9093
+    - SERVICE_9093_CHECK_TCP=true
+    - SERVICE_9093_CHECK_INITIAL_STATUS=passing
+    - SERVICE_9093_TAGS=${SERVICE_ALERTMANAGER_HTTP_TAGS}
+    networks:
+    - private
+    ports:
+    - 9093
+    restart: always
+  blackbox:
+    build:
+      context: ../monitoring/docker/blackbox
+    labels:
+    - SERVICE_9115_NAME=${COMPOSE_SERVICE_NAME}-blackbox-9115
+    - SERVICE_9115_CHECK_TCP=true
+    - SERVICE_9115_CHECK_INITIAL_STATUS=passing
+    - SERVICE_9115_TAGS=${SERVICE_BLACKBOX_HTTP_TAGS}
+    networks:
+    - private
+    ports:
+    - 9115
+    restart: always
+  es-exporter:
+    build:
+      context: ../monitoring/docker/es-exporter
+    command: -e 52.48.69.60:9200
+    image: braedon/prometheus-es-exporter:latest
+    labels:
+    - SERVICE_9206_NAME=${COMPOSE_SERVICE_NAME}-es-exporter-9206
+    - SERVICE_9206_CHECK_TCP=true
+    - SERVICE_9206_CHECK_INITIAL_STATUS=passing
+    - SERVICE_9206_TAGS=${ES_EXPORTER_SERVICE_9206_TAGS}
+    networks:
+    - private
+    ports:
+    - 9206
+    restart: always
+  grafana:
+    build:
+      context:  ../monitoring/docker/grafana
+      args:
+      - AWS_ACCESS_KEY=${AWS_ACCESS_KEY}
+      - AWS_SECRET_KEY=${AWS_SECRET_KEY}
+      - MYSQL_GRAFANA_USER=${MYSQL_GRAFANA_USER}
+      - MYSQL_GRAFANA_PASSWORD=${MYSQL_GRAFANA_PASSWORD}
+      - MYSQL_GRAFANA_DB=${MYSQL_GRAFANA_DB}
+    environment:
+    - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource
+    labels:
+    - SERVICE_3000_NAME=${COMPOSE_SERVICE_NAME}-grafana-3000
+    - SERVICE_3000_CHECK_TCP=true
+    - SERVICE_3000_CHECK_INITIAL_STATUS=passing
+    - SERVICE_3000_TAGS=${SERVICE_GRAFANA_HTTP_TAGS}
+    networks:
+    - private
+    ports:
+    - 3000
+    restart: always
+    volumes:
+    - grafana:/var/lib/grafana
+  prometheus:
+    build:
+      context: ../monitoring/docker/prometheus
+      args:
+      - MONITORING_PRIMARY_TARGETS_BLACKBOX=${MONITORING_PRIMARY_TARGETS_BLACKBOX}
+      - MONITORING_SECONDARY_TARGETS_BLACKBOX=${MONITORING_SECONDARY_TARGETS_BLACKBOX}
+    labels:
+    - SERVICE_9090_NAME=${COMPOSE_SERVICE_NAME}-prometheus-9090
+    - SERVICE_9090_CHECK_TCP=true
+    - SERVICE_9090_CHECK_INITIAL_STATUS=passing
+    - SERVICE_9090_TAGS=${SERVICE_PROMETHEUS_HTTP_TAGS}
+    networks:
+    - private
+    ports:
+    - 9090
+    restart: always
+    volumes:
+    - prometheus:/prometheus
 
 volumes:
-    grafana:
-    prometheus:
+  grafana:
+  prometheus:
 
 networks:
-    backend:
-        external: true
-        name: ${DOCKER_NETWORK}
-    frontend:
-        external: true
-        name: node
+  private:
+    external: true
+    name: ${DOCKER_NETWORK}

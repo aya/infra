@@ -1,81 +1,76 @@
 version: '3.6'
 
 services:
-    drone-agent:
-        image: drone/agent:1.2.1
-        depends_on:
-          - drone-server
-        environment:
-          # - DRONE_LOGS_DEBUG=true
-          - DRONE_LOGS_NOCOLOR=false
-          - DRONE_LOGS_PRETTY=true
-          # - DRONE_LOGS_TRACE=true
-          - DRONE_RPC_SECRET=${DRONE_RPC_SECRET}
-          - DRONE_RPC_SERVER=http://drone-server
-          - DRONE_RUNNER_CAPACITY=${DRONE_RUNNER_CAPACITY}
-          - DRONE_RUNNER_NAME=${HOSTNAME}
-        labels:
-          - SERVICE_80_IGNORE=true
-        networks:
-          - backend
-          - frontend
-        restart: always
-        volumes:
-          - /var/run/docker.sock:/var/run/docker.sock
-    drone-gc:
-        image: drone/gc:latest
-        environment:
-          # - GC_DEBUG=true
-          # - GC_DEBUG_COLOR=true
-          # - GC_DEBUG_PRETTY=true
-          - GC_CACHE=20gb
-          - GC_INTERVAL=5m
-        networks:
-          - backend
-        restart: always
-        volumes:
-          - /var/run/docker.sock:/var/run/docker.sock
-    drone-server:
-        image: drone/drone:1.2.1
-        environment:
-          - DRONE_AGENTS_ENABLED=true
-          - DRONE_GIT_ALWAYS_AUTH=false
-          - DRONE_GITHUB_SERVER=https://github.com
-          - DRONE_GITHUB_CLIENT_ID=${DRONE_GITHUB_CLIENT_ID}
-          - DRONE_GITHUB_CLIENT_SECRET=${DRONE_GITHUB_CLIENT_SECRET}
-          - DRONE_LOGS_COLOR=true
-          # - DRONE_LOGS_DEBUG=true
-          - DRONE_LOGS_PRETTY=true
-          # - DRONE_LOGS_TRACE=true
-          - DRONE_RPC_SECRET=${DRONE_RPC_SECRET}
-          - DRONE_SERVER_HOST=${DRONE_SERVER_HOST}
-          - DRONE_SERVER_PROTO=${DRONE_SERVER_PROTO}
-          - DRONE_TLS_AUTOCERT=true
-          - DRONE_USER_CREATE=${DRONE_USER_CREATE}
-          - DRONE_USER_FILTER=${DRONE_USER_FILTER}
-        labels:
-          - SERVICE_80_NAME=${COMPOSE_SERVICE_NAME}-drone-server-80
-          - SERVICE_80_CHECK_TCP=true
-          - SERVICE_80_CHECK_INITIAL_STATUS=passing
-          - SERVICE_80_TAGS=${DRONE_SERVER_SERVICE_80_TAGS}
-          - SERVICE_443_IGNORE=true
-        networks:
-          - backend
-          - frontend
-        ports:
-          - 80
-          - 443
-        restart: always
-        volumes:
-          - drone:/data
+  drone-agent:
+    image: drone/agent:1.2.1
+    depends_on:
+    - drone-server
+    environment:
+    # - DRONE_LOGS_DEBUG=true
+    - DRONE_LOGS_NOCOLOR=false
+    - DRONE_LOGS_PRETTY=true
+    # - DRONE_LOGS_TRACE=true
+    - DRONE_RPC_SECRET=${DRONE_RPC_SECRET}
+    - DRONE_RPC_SERVER=http://drone-server
+    - DRONE_RUNNER_CAPACITY=${DRONE_RUNNER_CAPACITY}
+    - DRONE_RUNNER_NAME=${HOSTNAME}
+    labels:
+    - SERVICE_80_IGNORE=true
+    networks:
+    - private
+    restart: always
+    volumes:
+    - /var/run/docker.sock:/var/run/docker.sock
+  drone-gc:
+    image: drone/gc:latest
+    environment:
+    # - GC_DEBUG=true
+    # - GC_DEBUG_COLOR=true
+    # - GC_DEBUG_PRETTY=true
+    - GC_CACHE=20gb
+    - GC_INTERVAL=5m
+    networks:
+    - private
+    restart: always
+    volumes:
+    - /var/run/docker.sock:/var/run/docker.sock
+  drone-server:
+    image: drone/drone:1.2.1
+    environment:
+    - DRONE_AGENTS_ENABLED=true
+    - DRONE_GIT_ALWAYS_AUTH=false
+    - DRONE_GITHUB_SERVER=https://github.com
+    - DRONE_GITHUB_CLIENT_ID=${DRONE_GITHUB_CLIENT_ID}
+    - DRONE_GITHUB_CLIENT_SECRET=${DRONE_GITHUB_CLIENT_SECRET}
+    - DRONE_LOGS_COLOR=true
+    # - DRONE_LOGS_DEBUG=true
+    - DRONE_LOGS_PRETTY=true
+    # - DRONE_LOGS_TRACE=true
+    - DRONE_RPC_SECRET=${DRONE_RPC_SECRET}
+    - DRONE_SERVER_HOST=${DRONE_SERVER_HOST}
+    - DRONE_SERVER_PROTO=${DRONE_SERVER_PROTO}
+    - DRONE_TLS_AUTOCERT=true
+    - DRONE_USER_CREATE=${DRONE_USER_CREATE}
+    - DRONE_USER_FILTER=${DRONE_USER_FILTER}
+    labels:
+    - SERVICE_80_NAME=${COMPOSE_SERVICE_NAME}-drone-server-80
+    - SERVICE_80_CHECK_TCP=true
+    - SERVICE_80_CHECK_INITIAL_STATUS=passing
+    - SERVICE_80_TAGS=${DRONE_SERVER_SERVICE_80_TAGS}
+    - SERVICE_443_IGNORE=true
+    networks:
+     - private
+    ports:
+    - 80
+    - 443
+    restart: always
+    volumes:
+    - drone:/data
 
 volumes:
-    drone:
+  drone:
 
 networks:
-    backend:
-        external: true
-        name: ${DOCKER_NETWORK}
-    frontend:
-        external: true
-        name: node
+  private:
+      external: true
+      name: ${DOCKER_NETWORK}
