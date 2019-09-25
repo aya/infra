@@ -16,7 +16,7 @@ ARG MCRYPT_VERSION=stable
 ARG MEMCACHE_VERSION=4.0.1-php73
 ARG MEMCACHED_VERSION=stable
 ARG MONGODB_VERSION=stable
-ARG NEWRELIC_VERSION=9.0.2.245
+ARG NEWRELIC_VERSION=9.1.0.246
 ARG OAUTH_VERSION=stable
 ARG RAR_VERSION=stable
 ARG REDIS_VERSION=stable
@@ -72,7 +72,7 @@ RUN apk --no-cache upgrade \
  # https://github.com/websupport-sk/pecl-memcache/pull/40 \
  && sed -i '47i#if PHP_VERSION_ID < 70200\n    register size_t newlen;\n#endif' /tmp/memcache-${MEMCACHE_VERSION}/php7/memcache_pool.c \
  # newrelic \
- && wget https://download.newrelic.com/php_agent/release/newrelic-php5-${NEWRELIC_VERSION}-linux-musl.tar.gz -O /tmp/newrelic-${NEWRELIC_VERSION}.tar.gz \
+ && wget https://download.newrelic.com/php_agent/archive/${NEWRELIC_VERSION}/newrelic-php5-${NEWRELIC_VERSION}-linux-musl.tar.gz -O /tmp/newrelic-${NEWRELIC_VERSION}.tar.gz \
  && mkdir -p /tmp/newrelic-${NEWRELIC_VERSION} \
  && tar xzf /tmp/newrelic-${NEWRELIC_VERSION}.tar.gz -C /tmp/newrelic-${NEWRELIC_VERSION} --strip-components=1 \
  && mv /tmp/newrelic-${NEWRELIC_VERSION}/agent/x64/newrelic-20160303.so $(php -r "echo ini_get('extension_dir');")/newrelic.so \

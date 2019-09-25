@@ -28,6 +28,7 @@ services:
     - SERVICE_9300_CHECK_INITIAL_STATUS=passing
     networks:
     - private
+    - public
     ports:
     - 9200
     - 9300
@@ -51,6 +52,7 @@ services:
     - SERVICE_5601_TAGS=${SERVICE_KIBANA_HTTP_TAGS}
     networks:
     - private
+    - public
     ports:
     - 5601
     restart: always
@@ -66,6 +68,7 @@ services:
     - SERVICE_1080_TAGS=${SERVICE_MAILCATCHER_HTTP_TAGS}
     networks:
     - private
+    - public
     ports:
     - 1025
     - 1080
@@ -112,6 +115,7 @@ services:
     - SERVICE_25672_IGNORE=true
     networks:
     - private
+    - public
     ports:
     - 5672
     - 15672
@@ -145,6 +149,7 @@ services:
     - SERVICE_80_TAGS=${SERVICE_TOGGLE_API_HTTP_TAGS}
     networks:
     - private
+    - public
     ports:
     - 80
     restart: always
@@ -161,6 +166,7 @@ services:
     - SERVICE_80_TAGS=${SERVICE_TOGGLE_UI_HTTP_TAGS}
     networks:
     - private
+    - public
     ports:
     - 80
     restart: always
@@ -175,3 +181,6 @@ networks:
   private:
     external: true
     name: ${DOCKER_NETWORK}
+  public:
+    external: true
+    name: node

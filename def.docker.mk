@@ -10,9 +10,6 @@ DOCKER_BUILD_TARGET             ?= $(if $(filter $(ENV),local tests preprod prod
 DOCKER_BUILD_VARS               ?= APP BRANCH DOCKER_GID DOCKER_REPO GID GIT_AUTHOR_EMAIL GIT_AUTHOR_NAME TARGET UID USER VERSION
 DOCKER_COMPOSE_DOWN_OPTIONS     ?=
 DOCKER_GID                      ?= $(call getent-group,docker)
-# https://github.com/docker/libnetwork/pull/2348
-DOCKER_HOST_GW_ADDRESS_EXTERNAL ?= $(shell /sbin/ip route 2>/dev/null |awk '/default/ { print $$3 }' |awk '!seen[$$0]++')
-DOCKER_HOST_IP_ADDRESS_INTERNAL ?= $(shell /sbin/ip addr show docker0 2>/dev/null |awk '$$1 == "inet" {sub(/\/.*/,"",$$2); print $$2}')
 DOCKER_IMAGE_CLI                ?= cli:$(DOCKER_BUILD_TARGET)
 DOCKER_IMAGE_SSH                ?= ssh:$(DOCKER_BUILD_TARGET)
 DOCKER_IMAGE_TAG                ?= $(DOCKER_BUILD_TARGET)$(if $(filter $(ENV),tests),$(addprefix -,$(DRONE_BUILD_NUMBER)))
@@ -31,7 +28,20 @@ DOCKER_RUN_WORKDIR              ?= -w $$PWD
 DOCKER_SERVICES_INFRA_BASE      ?= cli ssh
 DOCKER_SERVICES_INFRA_NODE      ?= consul fabio registrator
 DOCKER_SHELL                    ?= $(SHELL)
-ENV_VARS                        += COMPOSE_PROJECT_NAME COMPOSE_SERVICE_NAME DOCKER_BUILD_TARGET DOCKER_GID DOCKER_IMAGE_CLI DOCKER_IMAGE_SSH DOCKER_IMAGE_TAG DOCKER_INFRA_SSH DOCKER_NETWORK DOCKER_REGISTRY DOCKER_REPO_APP DOCKER_REPO_INFRA DOCKER_SHELL
+ENV_VARS                        += COMPOSE_PROJECT_NAME COMPOSE_SERVICE_NAME DOCKER_BUILD_TARGET DOCKER_GID DOCKER_HOST_IFACE DOCKER_HOST_INET DOCKER_IMAGE_CLI DOCKER_IMAGE_SSH DOCKER_IMAGE_TAG DOCKER_INFRA_SSH DOCKER_NETWORK DOCKER_REGISTRY DOCKER_REPO_APP DOCKER_REPO_INFRA DOCKER_SHELL
+
+# https://github.com/docker/libnetwork/pull/2348
+ifeq ($(HOST_SYSTEM), DARWIN)
+DOCKER_HOST_IFACE               ?= $(shell docker run --rm -it --net=host alpine /sbin/ip -4 route list match 0/0 2>/dev/null |awk '{print $$5}' |awk '!seen[$$0]++')
+DOCKER_HOST_INET                ?= $(shell docker run --rm -it --net=host alpine /sbin/ip -4 addr show $(DOCKER_HOST_IFACE) 2>/dev/null |awk '$$1 == "inet" {sub(/\/.*/,"",$$2); print $$2}')
+DOCKER_INTERNAL_DOCKER_GATEWAY  ?= $(shell docker run --rm -it alpine getent hosts gateway.docker.internal |awk '{print $$1}')
+DOCKER_INTERNAL_DOCKER_HOST     ?= $(shell docker run --rm -it alpine getent hosts host.docker.internal |awk '{print $$1}')
+else
+DOCKER_HOST_IFACE               ?= $(shell /sbin/ip -4 route list match 0/0 2>/dev/null |awk '{print $$5}' |awk '!seen[$$0]++')
+DOCKER_HOST_INET                ?= $(shell /sbin/ip -4 addr show $(DOCKER_HOST_IFACE) 2>/dev/null |awk '$$1 == "inet" {sub(/\/.*/,"",$$2); print $$2}')
+DOCKER_INTERNAL_DOCKER_GATEWAY  ?= $(shell /sbin/ip -4 route list match 0/0 2>/dev/null |awk '{print $$3}' |awk '!seen[$$0]++')
+DOCKER_INTERNAL_DOCKER_HOST     ?= $(shell /sbin/ip addr show docker0 2>/dev/null |awk '$$1 == "inet" {sub(/\/.*/,"",$$2); print $$2}')
+endif
 
 ifeq ($(DOCKER), true)
 
