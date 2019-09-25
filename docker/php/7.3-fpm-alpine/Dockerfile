@@ -16,7 +16,7 @@ ARG MCRYPT_VERSION=1.0.2
 ARG MEMCACHE_VERSION=4.0.1-php73
 ARG MEMCACHED_VERSION=stable
 ARG MONGODB_VERSION=stable
-ARG NEWRELIC_VERSION=9.0.2.245
+ARG NEWRELIC_VERSION=9.1.0.246
 ARG OAUTH_VERSION=stable
 ARG REDIS_VERSION=stable
 ARG SNUFFLEUPAGUS_VERSION=0.4.1
@@ -58,10 +58,9 @@ RUN apk --no-cache upgrade \
         pcre-dev \
         rabbitmq-c-dev \
         yaml-dev \
-        zlib-dev 
-
+        zlib-dev \
  # blackfire \
-RUN wget https://packages.blackfire.io/binaries/blackfire-php/${BLACKFIRE_VERSION}/blackfire-php-alpine_amd64-php-$(php -r "echo PHP_MAJOR_VERSION.PHP_MINOR_VERSION;").so -O $(php -r "echo ini_get('extension_dir');")/blackfire.so \
+ && wget https://packages.blackfire.io/binaries/blackfire-php/${BLACKFIRE_VERSION}/blackfire-php-alpine_amd64-php-$(php -r "echo PHP_MAJOR_VERSION.PHP_MINOR_VERSION;").so -O $(php -r "echo ini_get('extension_dir');")/blackfire.so \
  # gd \
  && docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ --with-png-dir=/usr/include/ \
  # memcache \
@@ -73,7 +72,7 @@ RUN wget https://packages.blackfire.io/binaries/blackfire-php/${BLACKFIRE_VERSIO
  # https://github.com/websupport-sk/pecl-memcache/pull/40 \
  && sed -i '47i#if PHP_VERSION_ID < 70200\n    register size_t newlen;\n#endif' /tmp/memcache-${MEMCACHE_VERSION}/php7/memcache_pool.c \
  # newrelic \
- && wget https://download.newrelic.com/php_agent/release/newrelic-php5-${NEWRELIC_VERSION}-linux-musl.tar.gz -O /tmp/newrelic-${NEWRELIC_VERSION}.tar.gz \
+ && wget https://download.newrelic.com/php_agent/archive/${NEWRELIC_VERSION}/newrelic-php5-${NEWRELIC_VERSION}-linux-musl.tar.gz -O /tmp/newrelic-${NEWRELIC_VERSION}.tar.gz \
  && mkdir -p /tmp/newrelic-${NEWRELIC_VERSION} \
  && tar xzf /tmp/newrelic-${NEWRELIC_VERSION}.tar.gz -C /tmp/newrelic-${NEWRELIC_VERSION} --strip-components=1 \
  && mv /tmp/newrelic-${NEWRELIC_VERSION}/agent/x64/newrelic-20180731.so $(php -r "echo ini_get('extension_dir');")/newrelic.so \
@@ -86,8 +85,8 @@ RUN wget https://packages.blackfire.io/binaries/blackfire-php/${BLACKFIRE_VERSIO
  && wget https://github.com/longxinH/xhprof/archive/v${XHPROF_VERSION}.tar.gz -O /tmp/xhprof-${XHPROF_VERSION}.tar.gz \
  && mkdir -p /tmp/xhprof-${XHPROF_VERSION} \
  && tar xzf /tmp/xhprof-${XHPROF_VERSION}.tar.gz -C /tmp/xhprof-${XHPROF_VERSION} --strip-components=1 \
- && docker-php-ext-configure /tmp/xhprof-${XHPROF_VERSION}/extension --with-php-config=/usr/local/bin/php-config 
-RUN docker-php-ext-install -j$(nproc) \
+ && docker-php-ext-configure /tmp/xhprof-${XHPROF_VERSION}/extension --with-php-config=/usr/local/bin/php-config \
+ && docker-php-ext-install -j$(nproc) \
         bcmath \
         bz2 \
         calendar \
@@ -126,9 +125,8 @@ RUN docker-php-ext-install -j$(nproc) \
  && rm -rf /tmp/memcache-* \
  && rm -rf /tmp/newrelic-* \
  && rm -rf /tmp/snuffleupagus-* \
- && rm -rf /tmp/xhprof-*
- 
- RUN pecl install amqp-${AMQP_VERSION} \
+ && rm -rf /tmp/xhprof-* \
+ && pecl install amqp-${AMQP_VERSION} \
  && pecl install apcu-${APCU_VERSION} \
  && pecl install ast-${AST_VERSION} \
  && pecl install ds-${DS_VERSION} \

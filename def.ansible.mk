@@ -37,10 +37,10 @@ endif
 
 ifeq ($(DOCKER), true)
 define ansible
-	$(call run,$(DOCKER_SSH_AUTH) -v ~/.aws:/home/$(USER)/.aws --add-host=host.docker.internal:$(DOCKER_HOST_IP_ADDRESS_INTERNAL) $(DOCKER_REPO)/ansible:local $(ANSIBLE_ARGS) $(ANSIBLE_VERBOSE) $(1))
+	$(call run,$(DOCKER_SSH_AUTH) -v ~/.aws:/home/$(USER)/.aws --add-host=host.docker.internal:$(DOCKER_INTERNAL_DOCKER_HOST) $(DOCKER_REPO)/ansible:local $(ANSIBLE_ARGS) $(ANSIBLE_VERBOSE) $(1))
 endef
 define ansible-playbook
-	$(call run,$(DOCKER_SSH_AUTH) -v ~/.aws:/home/$(USER)/.aws --add-host=host.docker.internal:$(DOCKER_HOST_IP_ADDRESS_INTERNAL) --entrypoint=ansible-playbook $(DOCKER_REPO)/ansible:local $(ANSIBLE_ARGS) $(ANSIBLE_VERBOSE) $(1))
+	$(call run,$(DOCKER_SSH_AUTH) -v ~/.aws:/home/$(USER)/.aws --add-host=host.docker.internal:$(DOCKER_INTERNAL_DOCKER_HOST) --entrypoint=ansible-playbook $(DOCKER_REPO)/ansible:local $(ANSIBLE_ARGS) $(ANSIBLE_VERBOSE) $(1))
 endef
 define ansible-pull
 	# TODO : run ansible in docker and target localhost outside docker

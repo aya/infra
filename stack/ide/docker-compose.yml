@@ -30,6 +30,7 @@ services:
     - SERVICE_3000_TAGS=${SERVICE_IDE_SERVICE_3000_TAGS}
     networks:
     - private
+    - public
     restart: always
     volumes:
     - monorepo:/Sources/${MONOREPO}:cached
@@ -51,3 +52,6 @@ networks:
   private:
     external: true
     name: ${DOCKER_NETWORK}
+  public:
+    external: true
+    name: node

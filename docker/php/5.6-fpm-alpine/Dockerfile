@@ -10,7 +10,7 @@ ARG GEOIP_VERSION=stable
 ARG MEMCACHE_VERSION=stable
 ARG MEMCACHED_VERSION=2.2.0
 ARG MONGODB_VERSION=stable
-ARG NEWRELIC_VERSION=9.0.2.245
+ARG NEWRELIC_VERSION=9.1.0.246
 ARG RAR_VERSION=stable
 ARG REDIS_VERSION=4.3.0
 ARG UUID_VERSION=stable
@@ -50,7 +50,7 @@ RUN apk --no-cache upgrade \
         rabbitmq-c-dev \
         zlib-dev \
  && wget https://packages.blackfire.io/binaries/blackfire-php/${BLACKFIRE_VERSION}/blackfire-php-alpine_amd64-php-$(php -r "echo PHP_MAJOR_VERSION.PHP_MINOR_VERSION;").so -O $(php -r "echo ini_get('extension_dir');")/blackfire.so \
- && wget https://download.newrelic.com/php_agent/release/newrelic-php5-${NEWRELIC_VERSION}-linux-musl.tar.gz -O /tmp/newrelic-${NEWRELIC_VERSION}.tar.gz \
+ && wget https://download.newrelic.com/php_agent/archive/${NEWRELIC_VERSION}/newrelic-php5-${NEWRELIC_VERSION}-linux-musl.tar.gz -O /tmp/newrelic-${NEWRELIC_VERSION}.tar.gz \
  && mkdir -p /tmp/newrelic-${NEWRELIC_VERSION} \
  && tar xzf /tmp/newrelic-${NEWRELIC_VERSION}.tar.gz -C /tmp/newrelic-${NEWRELIC_VERSION} --strip-components=1 \
  && rm /tmp/newrelic-${NEWRELIC_VERSION}.tar.gz \

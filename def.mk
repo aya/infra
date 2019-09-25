@@ -37,18 +37,6 @@ else
 ENV_ARGS                         = $(foreach var,$(ENV_VARS),$(if $($(var)),$(var)='$($(var))')) $(shell printenv |awk -F '=' 'NR == FNR { if($$1 !~ /^(\#|$$)/) { A[$$1]; next } } ($$1 in A)' .env.dist - 2>/dev/null)
 endif
 
-include def.*.mk
-
-# Accept arguments for CMDS targets
-ifneq ($(filter $(CMDS),$(firstword $(MAKECMDGOALS))),)
-# set $ARGS with following arguments
-ARGS                            := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
-ARGS                            := $(subst :,\:,$(ARGS))
-ARGS                            := $(subst &,\&,$(ARGS))
-# ...and turn them into do-nothing targets
-$(eval $(ARGS):;@:)
-endif
-
 # Guess OS
 ifeq ($(OSTYPE),cygwin)
 HOST_SYSTEM                     := CYGWIN
@@ -62,6 +50,18 @@ endif
 ifeq ($(UNAME_S),Darwin)
 HOST_SYSTEM                     := DARWIN
 endif
+endif
+
+include def.*.mk
+
+# Accept arguments for CMDS targets
+ifneq ($(filter $(CMDS),$(firstword $(MAKECMDGOALS))),)
+# set $ARGS with following arguments
+ARGS                            := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
+ARGS                            := $(subst :,\:,$(ARGS))
+ARGS                            := $(subst &,\&,$(ARGS))
+# ...and turn them into do-nothing targets
+$(eval $(ARGS):;@:)
 endif
 
 ifneq ($(DEBUG), true)

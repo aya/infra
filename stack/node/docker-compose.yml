@@ -4,6 +4,8 @@ services:
   consul:
     image: consul:latest
     environment:
+      CONSUL_BIND_INTERFACE: '${DOCKER_HOST_IFACE}'
+      CONSUL_CLIENT_INTERFACE: '${DOCKER_HOST_IFACE}'
       CONSUL_LOCAL_CONFIG: '{"log_level": "warn"}'
     hostname: ${HOSTNAME}
     labels:
@@ -24,6 +26,8 @@ services:
     command: -registry.backend "consul" -registry.consul.addr "consul:8500" -proxy.addr ":80,:443;cs=local" -proxy.cs "cs=local;type=file;cert=/certs/${SSL_HOSTNAME}.crt;key=/certs/${SSL_HOSTNAME}.key"
     depends_on:
     - consul
+    extra_hosts:
+    - "consul:${DOCKER_HOST_INET}"
     hostname: ${HOSTNAME}
     labels:
     - SERVICE_80_NAME=${COMPOSE_SERVICE_NAME}-fabio-80
@@ -37,7 +41,12 @@ services:
     - SERVICE_9998_CHECK_INITIAL_STATUS=passing
     - SERVICE_9998_TAGS=${FABIO_SERVICE_9998_TAGS}
     - SERVICE_9999_IGNORE=true
-    network_mode: host
+    ports:
+    - 80:80
+    - 443:443
+    - 9998
+    networks:
+    - public
     restart: always
     volumes:
       - ssl-certs:/certs
@@ -63,6 +72,8 @@ services:
     command: -internal -cleanup=true -deregister always -resync=30 consul://consul:8500
     depends_on:
     - consul
+    extra_hosts:
+    - "consul:${DOCKER_HOST_INET}"
     hostname: ${HOSTNAME}
     networks:
     - public

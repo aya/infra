@@ -60,6 +60,7 @@ services:
     - SERVICE_443_IGNORE=true
     networks:
      - private
+     - public
     ports:
     - 80
     - 443
@@ -74,3 +75,6 @@ networks:
   private:
       external: true
       name: ${DOCKER_NETWORK}
+  public:
+    external: true
+    name: node
