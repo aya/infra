@@ -85,11 +85,16 @@ services:
     - 11211
     restart: always
   mysql:
-    image: mariadb:latest
+    build:
+      context: ../services
+      dockerfile: docker/mysql/Dockerfile
+    image: ${DOCKER_REPO_INFRA}/mysql
     environment:
     - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
     labels:
     - SERVICE_3306_NAME=${COMPOSE_SERVICE_NAME}-mysql-3306
+    - SERVICE_CHECK_SCRIPT="check-container-status \$SERVICE_IP"
+    - SERVICE_CHECK_INITIAL_STATUS=passing
     networks:
     - private
     ports:

@@ -2,7 +2,10 @@ version: '3.6'
 
 services:
   consul:
-    image: consul:latest
+    build:
+      context: ../node
+      dockerfile: docker/consul/Dockerfile
+    image: node/infra/consul
     environment:
       CONSUL_BIND_INTERFACE: '${DOCKER_HOST_IFACE}'
       CONSUL_CLIENT_INTERFACE: '${DOCKER_HOST_IFACE}'
@@ -21,6 +24,7 @@ services:
     restart: always
     volumes:
     - consul:/consul/data
+    - /var/run/docker.sock:/var/run/docker.sock
   fabio:
     image: fabiolb/fabio:latest
     command: -registry.backend "consul" -registry.consul.addr "consul:8500" -proxy.addr ":80,:443;cs=local" -proxy.cs "cs=local;type=file;cert=/certs/${SSL_HOSTNAME}.crt;key=/certs/${SSL_HOSTNAME}.key"
@@ -69,7 +73,7 @@ services:
     - portainer:/data
   registrator:
     build:
-      context: .
+      context: ../node
       dockerfile: docker/registrator/Dockerfile
     command: -internal -cleanup -deregister always -resync=30 -useIpFromNetwork node consul://consul:8500
     depends_on:
