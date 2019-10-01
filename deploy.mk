@@ -13,26 +13,24 @@ deploy-%: docker-login
 
 .PHONY: deploy-assets-install
 deploy-assets-install:
-	php app/console --no-interaction assets:install --env=prod
-	php app/console --no-interaction assetic:dump --env=prod
+	su -s /bin/sh www-data -c "php app/console --no-interaction assets:install --env=prod"
+	su -s /bin/sh www-data -c "php app/console --no-interaction assetic:dump --env=prod"
 
 .PHONY: deploy-cache-clear
 deploy-cache-clear:
-	php app/console --no-interaction cache:clear --env=prod
+	su -s /bin/sh www-data -c "php app/console --no-interaction cache:clear --env=prod"
 
 .PHONY: deploy-cache-warmup
 deploy-cache-warmup:
-	php app/console --no-interaction cache:warmup --env=prod
-	chown -R www-data app/cache 2>/dev/null ||:
-	chown -R www-data var/cache 2>/dev/null ||:
+	su -s /bin/sh www-data -c "php app/console --no-interaction cache:warmup --env=prod"
 
 .PHONY: deploy-composer
 deploy-composer:
-	composer install --prefer-dist --optimize-autoloader --no-progress --no-interaction --no-dev
+	su -s /bin/sh www-data -c "composer install --prefer-dist --optimize-autoloader --no-progress --no-interaction --no-dev"
 
 .PHONY: deploy-doctrine-migrations-migrate
 deploy-doctrine-migrations-migrate:
-	php app/console --no-interaction doctrine:migrations:migrate
+	su -s /bin/sh www-data -c "php app/console --no-interaction doctrine:migrations:migrate"
 
 .PHONY: deploy-npm
 deploy-npm: deploy-npm-install deploy-npm-run-build
