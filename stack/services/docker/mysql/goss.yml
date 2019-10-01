@@ -1,0 +1,23 @@
+file:
+  /usr/sbin/mysqld:
+    exists: true
+    filetype: file
+    mode: "0755"
+    owner: root
+    sha256: 02e0838a34819c3a1d9d911aaa40b1ce18eae263393cdb6aaf63155cda1777f0
+package:
+  mariadb-server:
+    installed: true
+  mysql-common:
+    installed: true
+port:
+  tcp6:3306:
+    listening: true
+    ip:
+process:
+  mysqld:
+    running: true
+user:
+  mysql:
+    exists: true
+    uid: 999
