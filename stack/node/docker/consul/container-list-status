@@ -1,0 +1,4 @@
+#!/bin/sh
+# https://github.com/hashicorp/consul/issues/3182
+
+docker inspect -f '{{.Id}} {{.Config.Hostname}} {{.Name}} {{range .NetworkSettings.Networks}}{{.IPAddress}} {{end}} {{.State.Health.Status}}' $(docker ps -q) 2>/dev/null

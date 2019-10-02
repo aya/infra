@@ -93,8 +93,10 @@ services:
     - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
     labels:
     - SERVICE_3306_NAME=${COMPOSE_SERVICE_NAME}-mysql-3306
-    - SERVICE_CHECK_SCRIPT="check-container-status \$SERVICE_IP"
-    - SERVICE_CHECK_INITIAL_STATUS=passing
+    - SERVICE_CHECK_DEREGISTER_AFTER=1m
+    - SERVICE_CHECK_INTERVAL=10s
+    - SERVICE_CHECK_SCRIPT=container-check-status $$SERVICE_IP
+    - SERVICE_CHECK_TIMEOUT=5s
     networks:
     - private
     ports:

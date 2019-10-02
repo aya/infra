@@ -1,0 +1,24 @@
+#!/bin/sh
+# https://github.com/hashicorp/consul/issues/3182
+
+if [ $# -ne 1 ]; then
+    >&2 echo "Invalid parameters: '$@'"
+    echo "USAGE: $0 <container-id|container-name|container-hostname|container-ip>"
+    exit 2
+fi
+
+CONTAINER_ID="$1"
+CONTAINER_STATUS=$(sudo container-list-status |awk '/\<'${CONTAINER_ID}'\>/ {print $NF}')
+
+echo ${CONTAINER_STATUS}
+
+case "${CONTAINER_STATUS}" in
+  healthy)
+    exit 0
+    ;;
+  starting)
+    exit 1
+    ;;
+esac
+
+exit 2
