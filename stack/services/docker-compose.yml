@@ -90,8 +90,6 @@ services:
     - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
     labels:
     - SERVICE_3306_NAME=${COMPOSE_SERVICE_NAME}-mysql-3306
-    - SERVICE_3306_CHECK_TCP=true
-    - SERVICE_3306_CHECK_INITIAL_STATUS=passing
     networks:
     - private
     ports:
