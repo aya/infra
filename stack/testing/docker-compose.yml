@@ -2,7 +2,7 @@ version: '3.6'
 
 services:
   drone-agent:
-    image: drone/agent:1.2.1
+    image: drone/agent:1.5.1
     depends_on:
     - drone-server
     environment:
@@ -35,7 +35,7 @@ services:
     volumes:
     - /var/run/docker.sock:/var/run/docker.sock
   drone-server:
-    image: drone/drone:1.2.1
+    image: drone/drone:1.5.1
     environment:
     - DRONE_AGENTS_ENABLED=true
     - DRONE_GIT_ALWAYS_AUTH=false
