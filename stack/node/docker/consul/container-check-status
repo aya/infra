@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # https://github.com/hashicorp/consul/issues/3182
 
 if [ $# -ne 1 ]; then
@@ -8,10 +8,10 @@ if [ $# -ne 1 ]; then
 fi
 
 CONTAINER_ID="$1"
-CONTAINER_STATUS=$(sudo container-list-status |awk '/\<'${CONTAINER_ID}'\>/ {print $NF}')
+# CONTAINER_STATUS=$(sudo container-list-status |awk '/\<'${CONTAINER_ID}'\>/ {print $NF}')
+read -d "\n" CONTAINER_STATUS CONTAINER_OUTPUT <<< $(sudo container-list-status |awk 'BEGIN {FS="\t"; RS="\0"} /\<'${CONTAINER_ID}'\>/ {print $1,$NF}')
 
-echo ${CONTAINER_STATUS}
-
+echo ${CONTAINER_STATUS:-undefined}: "${CONTAINER_OUTPUT}"
 case "${CONTAINER_STATUS}" in
   healthy)
     exit 0

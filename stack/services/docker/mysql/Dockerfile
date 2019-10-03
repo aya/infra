@@ -10,7 +10,7 @@ ADD https://github.com/aelsabbahy/goss/releases/latest/download/goss-linux-amd64
 RUN chmod +rx /usr/bin/goss
 COPY docker/mysql/goss.yml /tests/goss.yml
 
-HEALTHCHECK CMD goss -g /tests/goss.yml validate --format json_oneline
+HEALTHCHECK CMD goss -g /tests/goss.yml validate --format tap
 
 FROM dist as local
 
