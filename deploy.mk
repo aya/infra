@@ -49,7 +49,7 @@ deploy-ping: deploy-ping-slack
 
 .PHONY: deploy-ping-slack
 deploy-ping-slack:
-	curl -X POST --data-urlencode 'payload={"text": "app: *$(APP)* branch: *$(BRANCH)* env: *$(ENV)* version: *$(VERSION)* container: *$(CONTAINER)* host: *$(HOST)*"}' https://hooks.slack.com/services/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
+	curl -X POST --data-urlencode 'payload={"text": "$(DEPLOY_PING_TEXT)"}' $(DEPLOY_SLACK_HOOK) ||:
 
 .PHONY: deploy-yarn
 deploy-yarn: deploy-yarn-install

@@ -1,6 +1,6 @@
 USER    := 1001pharmacies
-APP     ?=$(shell hostname -s)
-SERVICE ?=php
+APP     ?= $(shell hostname -s)
+SERVICE ?= php
 -include .env
 
 ansible:
