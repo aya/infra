@@ -58,7 +58,6 @@ RUN apk --no-cache upgrade \
         pcre-dev \
         rabbitmq-c-dev \
         yaml-dev \
-        zlib-dev \
  # blackfire \
  && wget https://packages.blackfire.io/binaries/blackfire-php/${BLACKFIRE_VERSION}/blackfire-php-alpine_amd64-php-$(php -r "echo PHP_MAJOR_VERSION.PHP_MINOR_VERSION;").so -O $(php -r "echo ini_get('extension_dir');")/blackfire.so \
  # gd \
