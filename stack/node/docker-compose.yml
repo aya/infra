@@ -5,7 +5,6 @@ services:
     build:
       context: ../node
       dockerfile: docker/consul/Dockerfile
-    command: agent -dev
     image: node/infra/consul
     environment:
       CONSUL_BIND_INTERFACE: '${DOCKER_HOST_IFACE}'
