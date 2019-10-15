@@ -25,4 +25,4 @@ packer-qemu: packer-qemu-$(PACKER_ISO_NAME) ## Launch iso image in qemu
 
 .PHONY: packer-qemu-%
 packer-qemu-%: docker-build-packer ## Run iso image in qemu
-	$(if $(wildcard iso/*/$*.iso),$(call packer-qemu,$(wildcard iso/*/$*.iso)))
+	$(if $(wildcard $(PACKER_OUTPUT)/$*.iso),$(call packer-qemu,$(wildcard $(PACKER_OUTPUT)/$*.iso)))

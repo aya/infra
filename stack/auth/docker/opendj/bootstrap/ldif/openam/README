@@ -1,9 +1,0 @@
-
-These are the original files from OpenAM 14. 
-
-Some of these need to be tag swapped - so we can load them directly 
-
-TODO: Figure out how to tag swap these in the configure script
-
-
-

@@ -47,7 +47,7 @@
 - name: user - update ~/.screenrc
   with_items:
   - defscrollback 1024
-  - hardstatus alwayslastline "%{= kw}[%{G}%H%{-}] \# %?%-Lw%?[%{G}%n%f %t%{-}]%?%+Lw%?%?%=%-17< [%{B}%l%{-}]"
+  - hardstatus alwayslastline "%{= kw}[%{G}$USER@%H%{-}] \# %?%-Lw%?[%{G}%n%f %t%{-}]%?%+Lw%?%?%=%-17< [%{B}%l%{-}]"
   - shell -$SHELL
   lineinfile: dest=~/.screenrc create=yes line='{{item}}'
 

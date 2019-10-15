@@ -5,6 +5,7 @@ export PATH="/usr/sbin:/usr/bin:/sbin:/bin"
 
 ALPINE_VERSION="${ALPINE_VERSION:-3.10}"
 APKREPOSOPTS="http://dl-cdn.alpinelinux.org/alpine/v${ALPINE_VERSION}/main http://dl-cdn.alpinelinux.org/alpine/v${ALPINE_VERSION}/community"
+BOOT_SIZE="32"
 DISKOPTS="-s 0 -m sys /dev/vda"
 DNSOPTS="-n 8.8.8.8"
 HOSTNAME="${HOSTNAME:-alpine}"
@@ -49,4 +50,4 @@ sed -i 's/^#NTPD_OPTS=$/NTPD_OPTS=-s/' /etc/conf.d/openntpd
 openrc boot
 openrc default
 
-echo "y" | DEFAULT_DISK="none" /sbin/setup-disk -q ${DISKOPTS} || exit
+echo "y" | BOOT_SIZE="${BOOT_SIZE}" DEFAULT_DISK="none" /sbin/setup-disk -q ${DISKOPTS} || exit

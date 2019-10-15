@@ -1,5 +1,5 @@
 # force a command to run and restart it when it exits
-function force {
+force () {
     PS_X_FIELD=5
     if [ $# -gt 0 ]; then
         # awk expression to match $@
@@ -13,93 +13,118 @@ function force {
                     }
                     if (matched == nargs) {found++}
                 }
-                END {print found+0}' field=${PS_X_FIELD}) -eq 0 ] \
-            && $@ || sleep 1;
+                END {print found+0}' field="${PS_X_FIELD}") -eq 0 ] \
+            && "$@" || sleep 1;
         done
     fi
 }
 
 # start an ssh agent and add any private key in ~/.ssh
-function ssh_agent {
-    which ssh-agent >/dev/null 2>&1 && which ssh-add >/dev/null 2>&1 || return
-    [ -z "$SSH_AUTH_SOCK" ] || return
-    [ -d /tmp/ssh-${UID} ] || { mkdir /tmp/ssh-${UID} 2>/dev/null && chmod 0700 /tmp/ssh-${UID}; }
-    [ $(ps x |awk '$5 == "ssh-agent" && $7 == "'/tmp/ssh-${UID}/agent@${HOSTNAME}'"' |wc -l) -eq 0 ] && rm -f /tmp/ssh-${UID}/agent@${HOSTNAME} && ssh-agent -a /tmp/ssh-${UID}/agent@${HOSTNAME} 2>/dev/null > ${HOME}/.ssh/agent@${HOSTNAME}
-    export SSH_AUTH_SOCK="/tmp/ssh-${UID}/agent@${HOSTNAME}"
-    ssh-add -l >/dev/null 2>&1 || for file in ${HOME}/.ssh/*; do
-        [ -f "$file" ] && grep "PRIVATE KEY" ${file} >/dev/null 2>&1 && ssh-add $file 2>/dev/null;
+ssh_agent () {
+    command -v ssh-agent >/dev/null 2>&1 && command -v ssh-add >/dev/null 2>&1 || return
+    SSH_AGENT_DIR="/tmp/ssh-$(id -u)"
+    SSH_AGENT_SOCK="${SSH_AGENT_DIR}/agent@$(hostname |sed 's/\..*//')"
+    [ -z "${SSH_AUTH_SOCK}" ] \
+     && { [ -d "${SSH_AGENT_DIR}" ] || { mkdir "${SSH_AGENT_DIR}" 2>/dev/null && chmod 0700 "${SSH_AGENT_DIR}"; } } \
+     && [ $(ps x |awk '$5 == "ssh-agent" && $7 == "'"${SSH_AGENT_SOCK}"'"' |wc -l) -eq 0 ] \
+     && rm -f "${SSH_AGENT_SOCK}" \
+     && ssh-agent -a "${SSH_AGENT_SOCK}" >/dev/null 2>&1
+    export SSH_AUTH_SOCK="${SSH_AUTH_SOCK:-${SSH_AGENT_SOCK}}"
+    (echo "${HOME}"/.ssh/id_rsa; grep -l 'PRIVATE KEY' "${HOME}"/.ssh/* |grep -vE "^${HOME}/.ssh/id_rsa$") |while read -r file; do
+        [ -r "${file}" ] && [ -z "$(ssh-add -l |awk '{print $3}' |grep -E "^${file}$")" ] && ssh-add "${file}"
     done
+    unset SSH_AGENT_DIR SSH_AGENT_SOCK
 }
 
 # attach an existing screen or create a new one
-function attach_screen {
-    which screen >/dev/null 2>&1 || return
-    if [ -z "$STY" ]; then
-        # attach screen in tmux only in tmux window 0
-        [ -n "${TMUX}" -a "$(tmux_window 2>/dev/null)" != "0" ] && return
-        echo -n 'Attaching screen.' && sleep 1 && echo -n '.' && sleep 1 && echo -n '.' && sleep 1 && screen -xRR -S "${USER}" 2>/dev/null
+attach_screen () {
+    command -v screen >/dev/null 2>&1 || return
+    if [ -z "${STY}" ]; then
+        # attach screen in tmux window 0
+        [ -n "${TMUX}" ] && [ "$(tmux list-window 2>/dev/null |awk '$NF == "(active)" {print $1}' |sed 's/:$//')" != "0" ] && return
+        /bin/echo -n 'Attaching screen.' && sleep 1 && /bin/echo -n '.' && sleep 1 && /bin/echo -n '.' && sleep 1 && screen -xRR -S "$(id -nu)" 2>/dev/null
     fi
 }
 
 # attach an existing tmux or create a new one
-function attach_tmux {
-    which tmux >/dev/null 2>&1 || return
-    if [ -z "$TMUX" ]; then
-        echo -n 'Attaching tmux.' && sleep 1 && echo -n '.' && sleep 1 && echo -n '.' && sleep 1 && tmux -L$USER@$HOSTNAME -q has-session >/dev/null 2>&1 && tmux -L$USER@$HOSTNAME attach-session -d || tmux -L$USER@$HOSTNAME new-session -n$USER -s$USER@$HOSTNAME
+attach_tmux () {
+    command -v tmux >/dev/null 2>&1 || return
+    SESSION_NAME="$(id -nu)@$(hostname |sed 's/\..*//')"
+    if [ -z "${TMUX}" ]; then
+        /bin/echo -n 'Attaching tmux.' && sleep 1 && /bin/echo -n '.' && sleep 1 && /bin/echo -n '.' && sleep 1 && tmux -L"${SESSION_NAME}" -q has-session >/dev/null 2>&1 && tmux -L"${SESSION_NAME}" attach-session -d || tmux -L"${SESSION_NAME}" new-session -s"${SESSION_NAME}"
     fi
-}
-
-# echo the current active tmux window
-function tmux_window {
-    which tmux >/dev/null 2>&1 || return
-    if [ -n "$TMUX" ]; then
-       tmux list-window |awk '$NF == "(active)" {print $1}' |sed 's/:$//'
-    fi
-}
-
-# echo the current git branch
-function git_branch {
-    git branch --no-color 2>/dev/null |awk '$1 == "*" {match($0, "("FS")+"); print substr($0, RSTART+RLENGTH);}'
 }
 
 # echo the "number of running processes"/"total number of processes"/"number of processes in D-state"
-function process_count {
+process_count () {
     ps ax 2>/dev/null |awk 'BEGIN {r_count=d_count=0}; $3 ~ /R/ {r_count=r_count+1}; $3 ~ /D/ {d_count=d_count+1}; END {print r_count"/"d_count"/"NR-1}'
 }
 
+# echo the "number of distinct logged in users"/"number of logged in users"
+user_count () {
+    who |awk '{user[$1]++} END {print length(user)"/"NR}'
+}
+
 # echo the load average
-function load_average {
-    awk '{print $1}' /proc/loadavg 2>/dev/null
+load_average () {
+    awk '{print $1}' /proc/loadavg 2>/dev/null || uptime 2>/dev/null |awk '{print $(NF-2)}'
 }
 
 # export PS1
-function custom_ps1 {
-    DGRAY="\[\033[1;30m\]"
-    RED="\[\033[01;31m\]"
-    GREEN="\[\033[01;32m\]"
-    BROWN="\[\033[0;33m\]"
-    YELLOW="\[\033[01;33m\]"
-    BLUE="\[\033[01;34m\]"
-    CYAN="\[\033[0;36m\]"
-    GRAY="\[\033[0;37m\]"
-    NC="\[\033[0m\]"
+custom_ps1 () {
+    case "$0" in
+      sh)
+        HOSTNAME="$(hostname)"
+        USER="$(id -nu)"
+        ;;
+      *ash)
+        DGRAY="\[\033[1;30m\]"
+        RED="\[\033[01;31m\]"
+        GREEN="\[\033[01;32m\]"
+        BROWN="\[\033[0;33m\]"
+        YELLOW="\[\033[01;33m\]"
+        BLUE="\[\033[01;34m\]"
+        CYAN="\[\033[0;36m\]"
+        GRAY="\[\033[0;37m\]"
+        NC="\[\033[0m\]"
+        ;;
+      *)
+        ;;
+    esac
 
-    if [ $UID = 0 ]; then
-        COLOR=$RED
-        INFO="[\$(process_count)|\$(load_average)]"
+    if [ "$(id -u)" = 0 ]; then
+        COLOR=${RED}
         END="#"
     else
-        COLOR=$BROWN
-        INFO=""
+        COLOR=${BROWN}
         END="\$"
     fi
 
-    BRANCH="\$(GIT_BRANCH=\$(git_branch 2>/dev/null); [ -n \"\$GIT_BRANCH\" ] && echo \"$DGRAY@$CYAN\$GIT_BRANCH\")"
+    COUNT="${DGRAY}[${BLUE}\$(user_count 2>/dev/null)${DGRAY}|${BLUE}\$(process_count 2>/dev/null)${DGRAY}|${BLUE}\$(load_average 2>/dev/null)${DGRAY}]"
 
-    export PS1="$NC$BLUE$INFO$COLOR\u$DGRAY@$CYAN\h$DGRAY:$GRAY\w$BRANCH$DGRAY$END$NC "
+    type __git_ps1 >/dev/null 2>&1 \
+     && GIT="\$(__git_ps1 2>/dev/null \" (%s)\")" \
+     || GIT="\$(BRANCH=\$(git rev-parse --abbrev-ref HEAD 2>/dev/null); [ -n \"\${BRANCH}\" ] && echo \" (\${BRANCH})\")"
+
+    export PS1="${COUNT}${COLOR}${USER}${DGRAY}@${CYAN}${HOSTNAME%%.*}${DGRAY}:${GRAY}\$(pwd |sed 's|^${HOME}\(/.*\)*$|~\1|')${CYAN}${GIT}${DGRAY}${END}${NC} "
 }
 
-# export PROMPT_COMMAND inside a screen
-function custom_prompt {
-    [ -n "$STY" ] && export PROMPT_COMMAND='echo -ne "\033k${HOSTNAME%%.*}\033\\"'
+# export PROMPT_COMMAND
+custom_prompt () {
+    case "${TERM}" in
+      screen*)
+        ESCAPE_CODE_DCS="\033k"
+        ESCAPE_CODE_ST="\033\\"
+        ;;
+      linux*|xterm*|rxvt*)
+        ESCAPE_CODE_DCS="\033]0;"
+        ESCAPE_CODE_ST="\007"
+        ;;
+      *)
+        ;;
+    esac
+    # in a screen
+    [ -n "${STY}" ] \
+     && export PROMPT_COMMAND='printf "${ESCAPE_CODE_DCS:-\033]0;}%s${ESCAPE_CODE_ST:-\007}" "${PWD##*/}"' \
+     || export PROMPT_COMMAND='printf "${ESCAPE_CODE_DCS:-\033]0;}%s@%s:%s${ESCAPE_CODE_ST:-\007}" "${USER}" "${HOSTNAME%%.*}" "${PWD##*/}"'
 }
