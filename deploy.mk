@@ -51,6 +51,18 @@ deploy-ping: deploy-ping-slack
 deploy-ping-slack:
 	curl -X POST --data-urlencode 'payload={"text": "$(DEPLOY_PING_TEXT)"}' $(DEPLOY_SLACK_HOOK) ||:
 
+.PHONY: deploy-supervisorctl-restart-all
+deploy-supervisorctl-restart-all:
+	supervisorctl restart all
+
+.PHONY: deploy-supervisorctl-start-all
+deploy-supervisorctl-start-all:
+	supervisorctl start all
+
+.PHONY: deploy-supervisorctl-stop-all
+deploy-supervisorctl-stop-all:
+	supervisorctl stop all
+
 .PHONY: deploy-yarn
 deploy-yarn: deploy-yarn-install
 

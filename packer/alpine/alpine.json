@@ -1,18 +1,22 @@
 {
     "variables": {
+        "accelerator": "kvm",
         "alpine_arch": "x86_64",
-        "alpine_release": "3.10.0",
+        "alpine_release": "3.10.2",
         "alpine_version": "3.10",
         "ansible_extra_vars": "target=default",
         "ansible_user": "root",
         "ansible_verbose": "-v",
+        "boot_wait": "8s",
         "hostname": "alpine",
-        "iso_size": "2048",
-        "iso_name": "alpine-3.10.0-x86_64",
+        "iso_size": "1024",
+        "iso_name": "alpine-3.10.2-x86_64",
         "output": "iso",
         "password": "alpine",
+        "qemuargs": "",
         "ssh_port_min": "2222",
         "ssh_port_max": "2222",
+        "ssh_wait_timeout": "16s",
         "template": "alpine",
         "username": "root",
         "vnc_bind_address": "127.0.0.1",
@@ -22,7 +26,11 @@
     "builders": [
     {
     "type": "qemu",
-    "accelerator": "kvm",
+    "accelerator": "{{user `accelerator`}}",
+    "qemuargs": [
+        [ "-device", "virtio-rng-pci,rng=rng0,bus=pci.0,addr=0x7" ],
+        [ "-object", "rng-random,filename=/dev/urandom,id=rng0" ]
+    ],
     "iso_url": "http://dl-cdn.alpinelinux.org/alpine/v{{user `alpine_version`}}/releases/{{user `alpine_arch`}}/alpine-virt-{{user `alpine_release`}}-{{user `alpine_arch`}}.iso",
     "iso_checksum_url": "http://dl-cdn.alpinelinux.org/alpine/v{{user `alpine_version`}}/releases/{{user `alpine_arch`}}/alpine-virt-{{user `alpine_release`}}-{{user `alpine_arch`}}.iso.sha256",
     "iso_checksum_type": "sha256",
@@ -37,14 +45,14 @@
     "ssh_username": "{{user `username`}}",
     "ssh_password": "{{user `password`}}",
     "ssh_port": 22,
-    "ssh_wait_timeout": "16s",
+    "ssh_wait_timeout": "{{user `ssh_wait_timeout`}}",
     "vm_name": "{{user `iso_name`}}.iso",
     "vnc_bind_address": "{{user `vnc_bind_address`}}",
     "vnc_port_min": "{{user `vnc_port_min`}}",
     "vnc_port_max": "{{user `vnc_port_max`}}",
     "net_device": "virtio-net",
     "disk_interface": "virtio",
-    "boot_wait": "8s",
+    "boot_wait": "{{user `boot_wait`}}",
     "boot_command": [
         "{{user `username`}}<enter>",
         "passwd<enter>{{user `password`}}<enter>{{user `password`}}<enter>",
@@ -76,12 +84,12 @@
     },
     {
         "type": "ansible",
-        "playbook_file": "ansible/playbook.yml",
         "inventory_directory": "ansible/inventories",
         "extra_arguments": [
             "--extra-vars", "{{user `ansible_extra_vars`}}",
             "{{user `ansible_verbose`}}"
         ],
+        "playbook_file": "ansible/playbook.yml",
         "sftp_command": "/usr/lib/ssh/sftp-server -e",
         "user": "{{user `ansible_user`}}",
         "pause_before": "16s"

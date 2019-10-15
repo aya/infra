@@ -1,5 +1,7 @@
 comma                           ?= ,
 dollar                          ?= $
+dquote                          ?= "
+quote                           ?= '
 APP                             ?= $(SUBREPO)
 BRANCH                          ?= $(shell git rev-parse --abbrev-ref HEAD)
 CMDS                            ?= exec run
