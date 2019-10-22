@@ -105,6 +105,7 @@
     networks: yes
     volumes: yes
     builder_cache: yes
+  tags: 'aws'
 
 - name: aws - launch docker containers
   docker_container:
