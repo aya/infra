@@ -87,31 +87,8 @@ function show_help(){
 
 
 
-function set_IFS() {
-	# remember original IFS
-    if  [ "${IFS+set}" = set ] ; then # IFS was set
-        IFS_wasSet=1
-        OIFS="$IFS"
-    else
-        IFS_wasSet=0
-    fi
-    IFS=$'\n'
-}
-
-
-
-function restore_IFS() {
-	# restore IFS
-    if [ $IFS_wasSet -eq 1 ] ; then # IFS was set
-        IFS="$OIFS"
-    else
-        unset IFS
-    fi
-}
-
-
 function user_confirmation() {
-	# user confirmation
+    # user confirmation
     if [ "$yes" -eq 0 ] ; then
         read -p "Are you sure you want to proceed ? (y/n) " -n 1 -r
         echo
@@ -171,8 +148,8 @@ done
 shift "$((OPTIND -1))"
 
 if [ -z "$1" ] ; then
-	echo ; echo "You must specify at least one target directory"
-	echo ; show_help ; exit 1
+    echo ; echo "You must specify at least one target directory"
+    echo ; show_help ; exit 1
 fi
 
 if [ $backup -eq 1 ] && [ $undo -eq 1 ] ; then
@@ -221,7 +198,7 @@ user_confirmation
 if [ $undo -eq 1 ] ; then # Restore available backups
     echo ; echo -e "${BLUE}Restoring available backups in target subfolders...${COLOR_RESET}"
 
-    while IFS="" read -r folder || [ -n "$folder" ] ; do
+    while IFS="" read -r folder ; do
         echo
         echo
         echo
@@ -229,7 +206,7 @@ if [ $undo -eq 1 ] ; then # Restore available backups
         echo
         echo -e "${BLUE}Restoring files...${COLOR_RESET}"
 
-            while IFS="" read -r file || [ -n "$file" ] ; do
+            while IFS="" read -r file ; do
                 if [ -z "$file" ] ; then # list is empty
                     echo -e "${BLUE}No new files to restore in this folder${COLOR_RESET}"
                 else
@@ -251,7 +228,7 @@ fi
 
 
 ### COMPRESSION ###
-while IFS="" read -r folder || [ -n "$folder" ] ; do
+while IFS="" read -r folder ; do
     echo
     echo
     echo
@@ -301,7 +278,7 @@ while IFS="" read -r folder || [ -n "$folder" ] ; do
         folder_before=0
         folder_after=0
 
-        while IFS="" read -r file || [ -n "$file" ] ; do
+        while IFS="" read -r file ; do
 
             # Create backup
             if [ $backup -eq 1 ] ; then
@@ -367,7 +344,3 @@ else
     fi
 fi
 echo ;
-
-
-
-
