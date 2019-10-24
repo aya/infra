@@ -56,6 +56,7 @@ fi
 
 lastrun_marker=compression_marker
 backup_extension=uncompressedbak
+convert_args="-sampling-factor 4:2:0 -strip -quality 85 -interlace JPEG -colorspace RGB"
 
 RED="\033[31m"
 GREEN="\033[32m"
@@ -286,7 +287,7 @@ while IFS="" read -r folder ; do
             folder_before=$(( $folder_before + $size_before ))
             total_before=$(( $total_before + $size_before ))
 
-            $convert -sampling-factor 4:2:0 -strip -quality 85 -interlace JPEG -colorspace RGB "$file" "$file"
+            $convert $convert_args "$file" "$file"
 
             # Stats after
             size_after=$(stat -c%s "$file")
