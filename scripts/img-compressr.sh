@@ -44,7 +44,7 @@
 #
 #
 
-
+PATH=${PATH:-/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/bin}
 
 # imagemagick convert binary
 convert=convert
@@ -160,7 +160,6 @@ fi
 if [ $do_clean_backups -eq 1 ] ; then
     clean_backups "$@"
 fi
-
 
 
 
