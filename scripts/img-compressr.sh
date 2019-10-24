@@ -265,7 +265,7 @@ while IFS="" read -r folder ; do
 
     ### FILE COMPRESSION ###
     [ "$verbose" -eq 1 ] && echo ; echo -e "${BLUE}Converting files...${COLOR_RESET}"
-    [ "$verbose" -eq 1 ] && echo -e "${BLUE}command : ${GREEN}$convert -sampling-factor 4:2:0 -strip -quality 85 -interlace JPEG -colorspace RGB <src> <dst>${COLOR_RESET}"
+    [ "$verbose" -eq 1 ] && echo -e "${BLUE}command : ${GREEN}$convert $convert_args <src> <dst>${COLOR_RESET}"
 
     if [ -z "$images_list" ] ; then # list is empty
         echo -e "${BLUE}No new files to compress in this folder${COLOR_RESET}"
