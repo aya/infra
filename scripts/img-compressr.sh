@@ -88,7 +88,6 @@ function show_help(){
 
 
 function user_confirmation() {
-    # user confirmation
     if [ "$yes" -eq 0 ] ; then
         read -p "Are you sure you want to proceed ? (y/n) " -n 1 -r
         echo
@@ -104,11 +103,9 @@ function clean_backups() {
 user_confirmation
 echo ; echo -e "${BLUE}Cleaning backups...${COLOR_RESET}"
 
-set_IFS
     for target_folder in "$@" ; do
         find "$target_folder" -type f -iname '*.$backup_extension' -delete
     done
-restore_IFS
 
 echo -e "${BLUE}Cleaning backups ${BRIGHTGREEN}OK${COLOR_RESET}"
 exit 0
