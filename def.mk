@@ -89,6 +89,32 @@ $(shell getent group $(1) 2>/dev/null |awk -F: '{print $$3}')
 endef
 endif
 
+define conf
+	$(eval file := $(1))
+	$(eval block := $(2))
+	$(eval variable := $(3))
+	[ -r "$(file)" ] && while IFS='=' read -r key value; do \
+		case $${key} in \
+		  \#*) \
+			continue; \
+			;; \
+		  \[*\]) \
+			current_bloc="$${key##\[}"; \
+			current_bloc="$${current_bloc%%\]}"; \
+			[ -z "$(block)" ] && [ -z "$(variable)" ] && printf '%s\n' "$${current_bloc}" ||:; \
+			;; \
+		  *) \
+			key=$${key%$${key##*[![:space:]]}}; \
+			value=$${value#$${value%%[![:space:]]*}}; \
+			if [ "$(block)" = "$${current_bloc}" ] && [ "$${key}" ]; then \
+				[ -z "$(variable)" ] && printf '%s=%s\n' "$${key}" "$${value}" ||:; \
+				[ "$(variable)" = "$${key}" ] && printf '%s\n' "$${value}" ||:; \
+			fi \
+			;; \
+		esac \
+	done < "$(file)" || echo "Unable to read $(file)" >&2
+endef
+
 define sed
 $(call exec,sed -i $(SED_SUFFIX) '\''$(1)'\'' $(2))
 endef

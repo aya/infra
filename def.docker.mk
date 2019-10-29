@@ -18,6 +18,10 @@ DOCKER_IMAGES_INFRA_LOCAL       ?= ansible aws openstack packer terraform
 DOCKER_INFRA_CLI                ?= $(COMPOSE_PROJECT_NAME_INFRA)_cli
 DOCKER_INFRA_SSH                ?= $(COMPOSE_PROJECT_NAME_INFRA)_ssh
 DOCKER_NETWORK                  ?= $(ENV)
+DOCKER_PLUGIN                   ?= rexray/s3fs:latest
+DOCKER_PLUGIN_ARGS              ?= $(foreach var,$(DOCKER_PLUGIN_VARS),$(if $($(var)),$(var)='$($(var))'))
+DOCKER_PLUGIN_OPTIONS           ?= --grant-all-permissions
+DOCKER_PLUGIN_VARS              ?= S3FS_ACCESSKEY S3FS_OPTIONS S3FS_SECRETKEY S3FS_REGION
 DOCKER_REGISTRY                 ?= 261323802359.dkr.ecr.eu-west-1.amazonaws.com
 DOCKER_REPO                     ?= $(DOCKER_REPO_INFRA)
 DOCKER_REPO_APP                 ?= $(USER)/$(APP)
@@ -29,6 +33,10 @@ DOCKER_SERVICES_INFRA_BASE      ?= cli ssh
 DOCKER_SERVICES_INFRA_NODE      ?= consul fabio registrator
 DOCKER_SHELL                    ?= $(SHELL)
 ENV_VARS                        += COMPOSE_PROJECT_NAME COMPOSE_SERVICE_NAME DOCKER_BUILD_TARGET DOCKER_GID DOCKER_HOST_IFACE DOCKER_HOST_INET DOCKER_IMAGE_CLI DOCKER_IMAGE_SSH DOCKER_IMAGE_TAG DOCKER_INFRA_SSH DOCKER_NETWORK DOCKER_REGISTRY DOCKER_REPO_APP DOCKER_REPO_INFRA DOCKER_SHELL
+S3FS_ACCESSKEY                  ?= $(shell $(call conf,$(HOME)/.aws/credentials,$(or $(AWS_PROFILE),default),aws_access_key_id))
+S3FS_OPTIONS                    ?= allow_other,nonempty,use_path_request_style,url=https://s3-eu-west-1.amazonaws.com
+S3FS_SECRETKEY                  ?= $(shell $(call conf,$(HOME)/.aws/credentials,$(or $(AWS_PROFILE),default),aws_secret_access_key))
+S3FS_REGION                     ?= eu-west-1
 
 # https://github.com/docker/libnetwork/pull/2348
 ifeq ($(HOST_SYSTEM), DARWIN)
