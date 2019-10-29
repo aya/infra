@@ -53,7 +53,9 @@
 
 - name: user - update ~/.vimrc
   with_items:
-  - :set et ai bg=dark sw=4 ts=4 mouse=
+  - :set et ai bg=dark sw=4 ts=4 encoding=utf-8 mouse=""
+  - :syn on
+  - :filetype plugin indent on
   lineinfile: dest=~/.vimrc create=yes line='{{item}}'
 
 - name: user - update ~/Makefile
