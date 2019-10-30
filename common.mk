@@ -26,7 +26,16 @@ connect: docker-compose-connect ## Connect to docker $(SERVICE)
 down: docker-compose-down ## Remove application dockers
 
 .PHONY: exec
-exec: docker-compose-exec ## Exec a command in docker $(SERVICE)
+exec: ## Exec a command in docker $(SERVICE)
+ifneq (,$(filter $(ENV),prod preprod))
+	$(call exec,$(ARGS))
+else
+	$(call make,docker-compose-exec ARGS='$(ARGS)')
+endif
+
+.PHONY: exec@%
+exec@%: ## Exec a command in docker $(SERVICE) with ssh on remote ENV $*
+	$(call make,exec-ssh APP=$(APP) DOCKER_REPO_APP=$(DOCKER_REPO_INFRA) ENV=$* ARGS='$(ARGS)' SERVICE=$(DOCKER_SERVICE),../infra)
 
 .PHONY: logs
 logs: docker-compose-logs ## Display application dockers logs

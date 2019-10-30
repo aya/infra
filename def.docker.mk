@@ -10,6 +10,7 @@ DOCKER_BUILD_TARGET             ?= $(if $(filter $(ENV),local tests preprod prod
 DOCKER_BUILD_VARS               ?= APP BRANCH DOCKER_GID DOCKER_REPO GID GIT_AUTHOR_EMAIL GIT_AUTHOR_NAME TARGET UID USER VERSION
 DOCKER_COMPOSE_DOWN_OPTIONS     ?=
 DOCKER_GID                      ?= $(call getent-group,docker)
+DOCKER_IMAGE                    ?= $(DOCKER_REPO_INFRA)/$(DOCKER_IMAGE_CLI)
 DOCKER_IMAGE_CLI                ?= cli:$(DOCKER_BUILD_TARGET)
 DOCKER_IMAGE_SSH                ?= ssh:$(DOCKER_BUILD_TARGET)
 DOCKER_IMAGE_TAG                ?= $(DOCKER_BUILD_TARGET)$(if $(filter $(ENV),tests),$(addprefix -,$(DRONE_BUILD_NUMBER)))
@@ -17,6 +18,7 @@ DOCKER_IMAGES                   ?= $(dir $(wildcard docker/*/Dockerfile))
 DOCKER_IMAGES_INFRA_LOCAL       ?= ansible aws openstack packer terraform
 DOCKER_INFRA_CLI                ?= $(COMPOSE_PROJECT_NAME_INFRA)_cli
 DOCKER_INFRA_SSH                ?= $(COMPOSE_PROJECT_NAME_INFRA)_ssh
+DOCKER_NAME                     ?= $(DOCKER_INFRA_CLI)_1
 DOCKER_NETWORK                  ?= $(ENV)
 DOCKER_PLUGIN                   ?= rexray/s3fs:latest
 DOCKER_PLUGIN_ARGS              ?= $(foreach var,$(DOCKER_PLUGIN_VARS),$(if $($(var)),$(var)='$($(var))'))
@@ -79,11 +81,11 @@ define docker-run
 endef
 ifeq ($(DRONE), true)
 define exec
-	$(call run,$(DOCKER_SSH_AUTH) ${DOCKER_REPO_INFRA}/${DOCKER_IMAGE_CLI} sh -c '$(1)')
+	$(call run,$(DOCKER_SSH_AUTH) $(DOCKER_IMAGE) sh -c '$(1)')
 endef
 else
 define exec
-	$(ECHO) docker exec $(ENV_ARGS) $(DOCKER_RUN_WORKDIR) $(DOCKER_INFRA_CLI)_1 sh -c '$(1)'
+	$(ECHO) docker exec $(ENV_ARGS) $(DOCKER_RUN_WORKDIR) $(DOCKER_NAME) sh -c '$(1)'
 endef
 endif
 define run
@@ -110,6 +112,13 @@ define run
 endef
 
 endif
+
+define exec-ssh
+	$(eval hosts := $(1))
+	$(eval command := $(2))
+	$(eval user := $(or $(3),root))
+	$(foreach host,$(hosts),$(call exec,ssh $(user)@$(host) "$(command)") &&) true
+endef
 
 define force
 	while true; do [ $$(ps x |awk 'BEGIN {nargs=split("'"$$*"'",args)} $$field == args[1] { matched=1; for (i=1;i<=NF-field;i++) { if ($$(i+field) == args[i+1]) {matched++} } if (matched == nargs) {found++} } END {print found+0}' field=4) -eq 0 ] && $(ECHO) $(1) || sleep 1; done

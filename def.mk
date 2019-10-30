@@ -4,7 +4,7 @@ dquote                          ?= "
 quote                           ?= '
 APP                             ?= $(SUBREPO)
 BRANCH                          ?= $(shell git rev-parse --abbrev-ref HEAD)
-CMDS                            ?= exec run
+CMDS                            ?= exec exec@% run
 COMMIT                          ?= $(shell git rev-parse $(BRANCH) 2>/dev/null)
 CONTEXT                         ?= $(shell awk 'BEGIN {FS="="}; $$1 !~ /^(\#|$$)/ {print $$1}' .env.dist 2>/dev/null) BRANCH UID USER VERSION
 DEBUG                           ?= false
