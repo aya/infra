@@ -9,7 +9,7 @@ deploy-%: docker-login
 	$(eval ENV:=$*)
 	$(call make,docker-tag ENV=$*)
 	$(call make,docker-push ENV=$*)
-	$(call make,ansible-ssh-run-$* APP=$(APP) ENV=$*,../infra)
+	$(call make,ansible-ssh-run-$* APP=$(APP) DOCKER_REPO_APP=$(DOCKER_REPO_INFRA) ENV=$*,../infra)
 
 .PHONY: deploy-assets-install
 deploy-assets-install:
