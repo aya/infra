@@ -21,11 +21,13 @@ hosts_rc_functions:
     # customize PROMPT variable
     - 02_custom_prompt
     # launch a ssh agent and load all private keys located in ~/.ssh
-    # - 03_ssh_agent
+    - 03_ssh_agent
     # create and/or attach a tmux session
     # - 04_attach_tmux
     # create and/or attach a screen session
     - 05_attach_screen
+    # display system information
+    - 06_pfetch
 
 # list of rc functions to cleanup (remove files)
 # hosts_rc_cleanup:
