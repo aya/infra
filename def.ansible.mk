@@ -9,7 +9,7 @@ ANSIBLE_DISKS_NFS_PATH          ?= $(MOUNT_NFS_PATH)
 ANSIBLE_DOCKER_IMAGE_TAG        ?= $(ENV)
 ANSIBLE_DOCKER_REGISTRY         ?= $(DOCKER_REGISTRY)
 ANSIBLE_EXTRA_VARS              ?= target=localhost
-ANSIBLE_GIT_DIRECTORY           ?= /src
+ANSIBLE_GIT_DIRECTORY           ?= /src/$(APP)
 ANSIBLE_GIT_KEY_FILE            ?= ~$(ANSIBLE_USERNAME)/.ssh/$(notdir $(ANSIBLE_SSH_PRIVATE_KEY))
 ANSIBLE_GIT_REPOSITORY          ?= $(REMOTE)
 ANSIBLE_GIT_VERSION             ?= $(BRANCH)
@@ -27,10 +27,10 @@ endif
 
 ifeq ($(DOCKER), true)
 define ansible
-	$(call run,$(DOCKER_SSH_AUTH) -v ~/.aws:/home/$(USER)/.aws --add-host=host.docker.internal:$(DOCKER_INTERNAL_DOCKER_HOST) $(DOCKER_REPO)/ansible:local $(ANSIBLE_ARGS) $(ANSIBLE_VERBOSE) $(1))
+	$(call run,$(DOCKER_SSH_AUTH) -v ~/.aws:/home/$(USER)/.aws --add-host=host.docker.internal:$(DOCKER_INTERNAL_DOCKER_HOST) $(DOCKER_REPO)/ansible:local $(ANSIBLE_ARGS) -i $(ANSIBLE_INVENTORY)/.host.docker.internal $(ANSIBLE_VERBOSE) $(1))
 endef
 define ansible-playbook
-	$(call run,$(DOCKER_SSH_AUTH) -v ~/.aws:/home/$(USER)/.aws --add-host=host.docker.internal:$(DOCKER_INTERNAL_DOCKER_HOST) --entrypoint=ansible-playbook $(DOCKER_REPO)/ansible:local $(ANSIBLE_ARGS) $(ANSIBLE_VERBOSE) $(1))
+	$(call run,$(DOCKER_SSH_AUTH) -v ~/.aws:/home/$(USER)/.aws --add-host=host.docker.internal:$(DOCKER_INTERNAL_DOCKER_HOST) --entrypoint=ansible-playbook $(DOCKER_REPO)/ansible:local $(ANSIBLE_ARGS) -i $(ANSIBLE_INVENTORY)/.host.docker.internal $(ANSIBLE_VERBOSE) $(1))
 endef
 define ansible-pull
 	# TODO : run ansible in docker and target localhost outside docker

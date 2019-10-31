@@ -1,10 +1,10 @@
 # force a command to run and restart it when it exits
 force () {
-    PS_X_FIELD=5
+    PS_X_FIELD=1
     if [ $# -gt 0 ]; then
         # awk expression to match $@
         while true; do
-            [ $(ps x |awk '
+            [ $(ps wwx -o args |awk '
                 BEGIN {nargs=split("'"$*"'",args)}
                 $field == args[1] {
                     matched=1;
@@ -26,7 +26,7 @@ ssh_agent () {
     SSH_AGENT_SOCK="${SSH_AGENT_DIR}/agent@$(hostname |sed 's/\..*//')"
     [ -z "${SSH_AUTH_SOCK}" ] \
      && { [ -d "${SSH_AGENT_DIR}" ] || { mkdir "${SSH_AGENT_DIR}" 2>/dev/null && chmod 0700 "${SSH_AGENT_DIR}"; } } \
-     && [ $(ps x |awk '$5 == "ssh-agent" && $7 == "'"${SSH_AGENT_SOCK}"'"' |wc -l) -eq 0 ] \
+     && [ $(ps wwx -o args |awk '$1 == "ssh-agent" && $3 == "'"${SSH_AGENT_SOCK}"'"' |wc -l) -eq 0 ] \
      && rm -f "${SSH_AGENT_SOCK}" \
      && ssh-agent -a "${SSH_AGENT_SOCK}" >/dev/null 2>&1
     export SSH_AUTH_SOCK="${SSH_AUTH_SOCK:-${SSH_AGENT_SOCK}}"
@@ -57,12 +57,12 @@ attach_tmux () {
 
 # echo the "number of running processes"/"total number of processes"/"number of processes in D-state"
 process_count () {
-    ps ax 2>/dev/null |awk 'BEGIN {r_count=d_count=0}; $3 ~ /R/ {r_count=r_count+1}; $3 ~ /D/ {d_count=d_count+1}; END {print r_count"/"d_count"/"NR-1}'
+    ps ax -o stat 2>/dev/null |awk '$1 ~ /R/ {r_processes++}; $1 ~ /D/ {d_processes++}; END {print r_processes+0"/"d_processes+0"/"NR-1}'
 }
 
-# echo the "number of distinct logged in users"/"number of logged in users"
+# echo the "number of distinct logged in users"/"number of logged in users"/"number of distinct users running processes"
 user_count () {
-    who |awk '{user[$1]++} END {print length(user)"/"NR}'
+    ps ax -o user,tty,comm 2>/dev/null |awk '$2 !~ /^\?/ && $3 !~ /getty$/ {l_users++; d_users[$1]++}; {p_users[$1]++}; END {print length(user)-1"/"(l_users-1)/2"/"length(users)}'
 }
 
 # echo the load average
