@@ -12,11 +12,12 @@ services:
       dockerfile: docker/cli/Dockerfile
       target: ${DOCKER_BUILD_TARGET}
     command: tail -f /dev/null
+    container_name: ${DOCKER_NAME_CLI}
     depends_on:
     - ssh
     environment:
     - SSH_AUTH_SOCK=/tmp/ssh-agent/socket
-    image: ${DOCKER_REPO_INFRA}/${DOCKER_IMAGE_CLI}
+    image: ${DOCKER_IMAGE_CLI}:${DOCKER_IMAGE_TAG}
     networks:
     - private
     restart: always
@@ -32,7 +33,8 @@ services:
       context: .
       dockerfile: docker/ssh/Dockerfile
       target: ${DOCKER_BUILD_TARGET}
-    image: ${DOCKER_REPO_INFRA}/${DOCKER_IMAGE_SSH}
+    container_name: ${DOCKER_NAME_SSH}
+    image: ${DOCKER_IMAGE_SSH}:${DOCKER_IMAGE_TAG}
     networks:
     - private
     restart: always

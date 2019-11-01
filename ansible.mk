@@ -14,15 +14,14 @@ ansible-playbook:
 ansible-pull:
 	$(call ansible-pull,--url $(ANSIBLE_GIT_REPOSITORY) $(if $(ANSIBLE_GIT_KEY_FILE),--key-file $(ANSIBLE_GIT_KEY_FILE)) $(if $(ANSIBLE_GIT_VERSION),--checkout $(ANSIBLE_GIT_VERSION)) $(if $(ANSIBLE_GIT_DIRECTORY),--directory $(ANSIBLE_GIT_DIRECTORY)) $(if $(ANSIBLE_TAGS),--tags $(ANSIBLE_TAGS)) $(if $(ANSIBLE_EXTRA_VARS),--extra-vars '$(ANSIBLE_EXTRA_VARS)') $(if $(findstring true,$(FORCE)),--force) $(if $(findstring true,$(DRYRUN)),--check) --full $(if $(ANSIBLE_INVENTORY),--inventory $(ANSIBLE_INVENTORY)) $(ANSIBLE_PLAYBOOK))
 
+.PHONY: ansible-pull@%
+ansible-pull@%: aws-ec2-get-PrivateIpAddress-$(SERVER_NAME)
+	$(eval ENV:=$*)
+	$(call exec-ssh,$(AWS_INSTANCE_IP),make ansible-pull ANSIBLE_DOCKER_IMAGE_TAG=$(ANSIBLE_DOCKER_IMAGE_TAG) ANSIBLE_TAGS=$(ANSIBLE_TAGS))
+
 .PHONY: ansible-run
 ansible-run: base-ssh-add docker-build-ansible ansible-run-localhost
 
 .PHONY: ansible-run-%
 ansible-run-%:
 	$(call ansible-playbook,$(if $(ANSIBLE_TAGS),--tags $(ANSIBLE_TAGS)) $(if $(ANSIBLE_EXTRA_VARS),--extra-vars '$(patsubst target=localhost,target=$*,$(ANSIBLE_EXTRA_VARS))') $(if $(findstring true,$(DRYRUN)),--check) $(if $(ANSIBLE_INVENTORY),--inventory $(ANSIBLE_INVENTORY)) $(ANSIBLE_PLAYBOOK))
-
-.PHONY: ansible-ssh-run-%
-ansible-ssh-run-%: aws-ec2-get-PrivateIpAddress-1001pharmacies.$(ENV).$(APP)
-	$(eval ENV:=$*)
-	$(call exec-ssh,$(AWS_INSTANCE_IP),make ansible-pull ANSIBLE_TAGS=aws)
-

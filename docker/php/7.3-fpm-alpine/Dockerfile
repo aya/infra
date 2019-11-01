@@ -252,5 +252,3 @@ USER $USER
 
 RUN mkdir -p ~/.ssh \
  && ssh-keyscan -t rsa -H github.com >> ~/.ssh/known_hosts
-
-FROM local as tests

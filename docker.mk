@@ -1,8 +1,8 @@
 ##
 # DOCKER
 
-.PHONY: docker-build-images
-docker-build-images: $(DOCKER_IMAGES)
+.PHONY: docker-build docker-build-images
+docker-build docker-build-images: $(DOCKER_IMAGES)
 
 .PHONY: $(DOCKER_IMAGES)
 $(DOCKER_IMAGES):
@@ -12,10 +12,9 @@ endif
 
 .PHONY: docker-build-%
 docker-build-%:
-	$(if $(filter $(DOCKER_IMAGES_INFRA_LOCAL),$*),$(eval DOCKER_BUILD_TARGET := local))
 	$(if $(wildcard docker/$*/Dockerfile),$(call docker-build,docker/$*))
 	$(if $(findstring :,$*),$(eval DOCKERFILES := $(wildcard docker/$(subst :,/,$*)/Dockerfile)),$(eval DOCKERFILES := $(wildcard docker/$*/*/Dockerfile)))
-	$(foreach dockerfile,$(DOCKERFILES),$(call docker-build,$(dir $(dockerfile)),$(DOCKER_REPO_APP)/$(word 2,$(subst /, ,$(dir $(dockerfile)))):$(lastword $(subst /, ,$(dir $(dockerfile)))),"") && true)
+	$(foreach dockerfile,$(DOCKERFILES),$(call docker-build,$(dir $(dockerfile)),$(DOCKER_REPOSITORY)/$(word 2,$(subst /, ,$(dir $(dockerfile)))):$(lastword $(subst /, ,$(dir $(dockerfile)))),"") && true)
 
 .PHONY: docker-commit
 docker-commit: stack
@@ -25,17 +24,20 @@ docker-commit: stack
 	$(foreach service,$(SERVICE),$(call docker-commit,$(service)))
 
 .PHONY: docker-commit-%
-docker-commit-%:
-	$(call docker-commit,$*)
+docker-commit-%: stack
+	$(eval DRYRUN_IGNORE := true)
+	$(eval SERVICE ?= $(shell $(call docker-compose,--log-level critical config --services)))
+	$(eval DRYRUN_IGNORE := false)
+	$(foreach service,$(SERVICE),$(call docker-commit,$(service),,,$*))
 
 .PHONY: docker-compose-build
 docker-compose-build: stack
-	$(call docker-compose,build $(DOCKER_BUILD_ARGS) $(SERVICE))
+	$(call docker-compose,build $(SERVICE))
 
 .PHONY: docker-compose-build
 docker-compose-build-%: stack
 	$(eval ENV:=$*)
-	$(call docker-compose,build $(DOCKER_BUILD_ARGS) $(SERVICE))
+	$(call docker-compose,build $(SERVICE))
 
 .PHONY: docker-compose-config
 docker-compose-config: stack
@@ -69,12 +71,12 @@ docker-compose-ps: stack
 
 .PHONY: docker-compose-rebuild
 docker-compose-rebuild: stack
-	$(call docker-compose,build $(DOCKER_BUILD_ARGS) --pull --no-cache $(SERVICE))
+	$(call docker-compose,build --pull --no-cache $(SERVICE))
 
 .PHONY: docker-compose-rebuild-%
 docker-compose-rebuild-%: stack
 	$(eval DOCKER_BUILD_TARGET:=$*)
-	$(call docker-compose,build $(DOCKER_BUILD_ARGS) --pull --no-cache $(SERVICE))
+	$(call docker-compose,build --pull --no-cache $(SERVICE))
 
 .PHONY: docker-compose-recreate
 docker-compose-recreate: stack docker-compose-rm docker-compose-up
@@ -86,6 +88,11 @@ docker-compose-restart: stack
 .PHONY: docker-compose-rm
 docker-compose-rm: stack
 	$(call docker-compose,rm -fs $(SERVICE))
+
+.PHONY: docker-compose-scale
+docker-compose-scale: SERVICE ?= $(DOCKER_SERVICE)
+docker-compose-scale: stack
+	$(call docker-compose,up -d --scale $(SERVICE)=$(NUM))
 
 .PHONY: docker-compose-start
 docker-compose-start: stack
@@ -165,8 +172,11 @@ docker-push: stack
 	$(foreach service,$(SERVICE),$(call docker-push,$(service)))
 
 .PHONY: docker-push-%
-docker-push-%:
-	$(call docker-push,$*)
+docker-push-%: stack
+	$(eval DRYRUN_IGNORE := true)
+	$(eval SERVICE ?= $(shell $(call docker-compose,--log-level critical config --services)))
+	$(eval DRYRUN_IGNORE := false)
+	$(foreach service,$(SERVICE),$(call docker-push,$(service),,$*))
 
 .PHONY: docker-rebuild-images
 docker-rebuild-images:
@@ -184,5 +194,8 @@ docker-tag: stack
 	$(foreach service,$(SERVICE),$(call docker-tag,$(service)))
 
 .PHONY: docker-tag-%
-docker-tag-%:
-	$(call docker-tag,$*)
+docker-tag-%: stack
+	$(eval DRYRUN_IGNORE := true)
+	$(eval SERVICE ?= $(shell $(call docker-compose,--log-level critical config --services)))
+	$(eval DRYRUN_IGNORE := false)
+	$(foreach service,$(SERVICE),$(call docker-tag,$(service),,,,$*))

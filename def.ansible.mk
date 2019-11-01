@@ -6,7 +6,7 @@ ANSIBLE_CONFIG                  ?= ansible.cfg
 ANSIBLE_DISKS_NFS_DISK          ?= $(MOUNT_NFS_DISK)
 ANSIBLE_DISKS_NFS_OPTIONS       ?= $(MOUNT_NFS_OPTIONS)
 ANSIBLE_DISKS_NFS_PATH          ?= $(MOUNT_NFS_PATH)
-ANSIBLE_DOCKER_IMAGE_TAG        ?= $(ENV)
+ANSIBLE_DOCKER_IMAGE_TAG        ?= latest
 ANSIBLE_DOCKER_REGISTRY         ?= $(DOCKER_REGISTRY)
 ANSIBLE_EXTRA_VARS              ?= target=localhost
 ANSIBLE_GIT_DIRECTORY           ?= /src/$(APP)
@@ -16,6 +16,7 @@ ANSIBLE_GIT_VERSION             ?= $(BRANCH)
 ANSIBLE_INVENTORY               ?= ansible/inventories
 ANSIBLE_PLAYBOOK                ?= ansible/playbook.yml
 ANSIBLE_SSH_PRIVATE_KEY         ?= ~/.ssh/id_rsa
+ANSIBLE_SERVER_NAME             ?= $(SERVER_NAME)
 ANSIBLE_USERNAME                ?= root
 ANSIBLE_VERBOSE                 ?= -v
 CMDS                            += ansible ansible-playbook
@@ -27,10 +28,10 @@ endif
 
 ifeq ($(DOCKER), true)
 define ansible
-	$(call run,$(DOCKER_SSH_AUTH) -v ~/.aws:/home/$(USER)/.aws --add-host=host.docker.internal:$(DOCKER_INTERNAL_DOCKER_HOST) $(DOCKER_REPO)/ansible:local $(ANSIBLE_ARGS) -i $(ANSIBLE_INVENTORY)/.host.docker.internal $(ANSIBLE_VERBOSE) $(1))
+	$(call run,$(DOCKER_SSH_AUTH) -v ~/.aws:/home/$(USER)/.aws --add-host=host.docker.internal:$(DOCKER_INTERNAL_DOCKER_HOST) $(DOCKER_REPOSITORY)/ansible:$(DOCKER_IMAGE_TAG) $(ANSIBLE_ARGS) -i $(ANSIBLE_INVENTORY)/.host.docker.internal $(ANSIBLE_VERBOSE) $(1))
 endef
 define ansible-playbook
-	$(call run,$(DOCKER_SSH_AUTH) -v ~/.aws:/home/$(USER)/.aws --add-host=host.docker.internal:$(DOCKER_INTERNAL_DOCKER_HOST) --entrypoint=ansible-playbook $(DOCKER_REPO)/ansible:local $(ANSIBLE_ARGS) -i $(ANSIBLE_INVENTORY)/.host.docker.internal $(ANSIBLE_VERBOSE) $(1))
+	$(call run,$(DOCKER_SSH_AUTH) -v ~/.aws:/home/$(USER)/.aws --add-host=host.docker.internal:$(DOCKER_INTERNAL_DOCKER_HOST) --entrypoint=ansible-playbook $(DOCKER_REPOSITORY)/ansible:$(DOCKER_IMAGE_TAG) $(ANSIBLE_ARGS) -i $(ANSIBLE_INVENTORY)/.host.docker.internal $(ANSIBLE_VERBOSE) $(1))
 endef
 define ansible-pull
 	# TODO : run ansible in docker and target localhost outside docker
