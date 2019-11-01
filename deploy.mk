@@ -2,14 +2,12 @@
 # DEPLOY #
 ##########
 
-HASH ?= $(shell date +%s)
-
 .PHONY: deploy-%
 deploy-%: docker-login
 	$(eval ENV:=$*)
-	$(call make,docker-tag ENV=$*)
-	$(call make,docker-push ENV=$*)
-	$(call make,ansible-ssh-run-$* APP=$(APP) DOCKER_REPO_APP=$(DOCKER_REPO_INFRA) ENV=$*,../infra)
+	$(call make,docker-tag docker-tag-latest ENV=$*)
+	$(call make,docker-push docker-push-latest ENV=$*)
+	$(call make,ansible-pull@$* ANSIBLE_DOCKER_IMAGE_TAG=$(VERSION) ANSIBLE_TAGS=aws SERVER_NAME=$(SERVER_NAME) ENV=$*,../infra)
 
 .PHONY: deploy-assets-install
 deploy-assets-install:

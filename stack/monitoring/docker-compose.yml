@@ -6,6 +6,7 @@ services:
       context: ../monitoring/docker/alertmanager
       args:
       - SLACK_WEBHOOK_ID=${SLACK_WEBHOOK_ID}
+    image: ${DOCKER_REPOSITORY}/alertmanager:${DOCKER_IMAGE_TAG}
     labels:
     - SERVICE_9093_NAME=${COMPOSE_SERVICE_NAME}-alertmanager-9093
     - SERVICE_9093_CHECK_TCP=true
@@ -20,6 +21,7 @@ services:
   blackbox:
     build:
       context: ../monitoring/docker/blackbox
+    image: ${DOCKER_REPOSITORY}/blackbox:${DOCKER_IMAGE_TAG}
     labels:
     - SERVICE_9115_NAME=${COMPOSE_SERVICE_NAME}-blackbox-9115
     - SERVICE_9115_CHECK_TCP=true
@@ -35,7 +37,7 @@ services:
     build:
       context: ../monitoring/docker/es-exporter
     command: -e 52.48.69.60:9200
-    image: braedon/prometheus-es-exporter:latest
+    image: ${DOCKER_REPOSITORY}/es-exporter:${DOCKER_IMAGE_TAG}
     labels:
     - SERVICE_9206_NAME=${COMPOSE_SERVICE_NAME}-es-exporter-9206
     - SERVICE_9206_CHECK_TCP=true
@@ -58,6 +60,7 @@ services:
       - MYSQL_GRAFANA_DB=${MYSQL_GRAFANA_DB}
     environment:
     - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource
+    image: ${DOCKER_REPOSITORY}/grafana:${DOCKER_IMAGE_TAG}
     labels:
     - SERVICE_3000_NAME=${COMPOSE_SERVICE_NAME}-grafana-3000
     - SERVICE_3000_CHECK_TCP=true
@@ -77,6 +80,7 @@ services:
       args:
       - MONITORING_PRIMARY_TARGETS_BLACKBOX=${MONITORING_PRIMARY_TARGETS_BLACKBOX}
       - MONITORING_SECONDARY_TARGETS_BLACKBOX=${MONITORING_SECONDARY_TARGETS_BLACKBOX}
+    image: ${DOCKER_REPOSITORY}/prometheus:${DOCKER_IMAGE_TAG}
     labels:
     - SERVICE_9090_NAME=${COMPOSE_SERVICE_NAME}-prometheus-9090
     - SERVICE_9090_CHECK_TCP=true

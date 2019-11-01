@@ -76,11 +76,11 @@ ifeq ($(DOCKER), true)
 ## ANSIBLE_SSH_PRIVATE_KEY set to a key giving access to ANSIBLE_GIT_REPOSITORY without password
 ## ANSIBLE_AWS_ACCESS_KEY_ID and ANSIBLE_AWS_SECRET_ACCESS_KEY
 define packer
-	$(call run,$(DOCKER_RUN_OPTIONS_PACKER) $(DOCKER_SSH_AUTH) -p $(PACKER_SSH_PORT):$(PACKER_SSH_PORT) -p $(PACKER_VNC_PORT):$(PACKER_VNC_PORT) $(DOCKER_REPO)/packer:local $(1))
+	$(call run,$(DOCKER_RUN_OPTIONS_PACKER) $(DOCKER_SSH_AUTH) -p $(PACKER_SSH_PORT):$(PACKER_SSH_PORT) -p $(PACKER_VNC_PORT):$(PACKER_VNC_PORT) $(DOCKER_REPOSITORY)/packer:$(DOCKER_IMAGE_TAG) $(1))
 endef
 define packer-qemu
 	echo Running $(1)
-	$(call run,$(DOCKER_RUN_OPTIONS_PACKER) -p $(PACKER_SSH_PORT):$(PACKER_SSH_PORT) -p $(PACKER_VNC_PORT):$(PACKER_VNC_PORT) --entrypoint=qemu-system-x86_64 $(DOCKER_REPO)/packer:local $(PACKER_QEMU_ARGS) -m 512m -drive file=$(1)$(comma)format=raw -net nic$(comma)model=virtio -net user$(comma)hostfwd=tcp:$(PACKER_SSH_ADDRESS):$(PACKER_SSH_PORT)-:22 -vnc $(PACKER_VNC_ADDRESS):$(subst 590,,$(PACKER_VNC_PORT)))
+	$(call run,$(DOCKER_RUN_OPTIONS_PACKER) -p $(PACKER_SSH_PORT):$(PACKER_SSH_PORT) -p $(PACKER_VNC_PORT):$(PACKER_VNC_PORT) --entrypoint=qemu-system-x86_64 $(DOCKER_REPOSITORY)/packer:$(DOCKER_IMAGE_TAG) $(PACKER_QEMU_ARGS) -m 512m -drive file=$(1)$(comma)format=raw -net nic$(comma)model=virtio -net user$(comma)hostfwd=tcp:$(PACKER_SSH_ADDRESS):$(PACKER_SSH_PORT)-:22 -vnc $(PACKER_VNC_ADDRESS):$(subst 590,,$(PACKER_VNC_PORT)))
 endef
 
 else

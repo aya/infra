@@ -1,40 +1,42 @@
 CMDS                            += docker-compose-exec
-COMPOSE_VERSION                 ?= 1.22.0
+COMPOSE_VERSION                 ?= 1.24.1
 COMPOSE_PROJECT_NAME            ?= $(USER)_$(ENV)_$(APP)
 COMPOSE_PROJECT_NAME_INFRA      ?= $(USER)_$(ENV)_infra
 COMPOSE_PROJECT_NAME_INFRA_NODE ?= node_infra
 COMPOSE_SERVICE_NAME            ?= $(subst _,-,$(COMPOSE_PROJECT_NAME))
 DOCKER_BUILD_ARGS               ?= $(foreach var,$(DOCKER_BUILD_VARS),$(if $($(var)),--build-arg $(var)='$($(var))'))
 DOCKER_BUILD_CACHE              ?= true
-DOCKER_BUILD_TARGET             ?= $(if $(filter $(ENV),local tests preprod prod),$(ENV),local)
-DOCKER_BUILD_VARS               ?= APP BRANCH DOCKER_GID DOCKER_REPO GID GIT_AUTHOR_EMAIL GIT_AUTHOR_NAME TARGET UID USER VERSION
+DOCKER_BUILD_TARGET             ?= $(if $(filter-out $(APP),infra),$(if $(filter $(ENV),local tests preprod prod),$(ENV),local),local)
+DOCKER_BUILD_VARS               ?= APP BRANCH DOCKER_GID DOCKER_REPOSITORY GID GIT_AUTHOR_EMAIL GIT_AUTHOR_NAME TARGET UID USER VERSION
 DOCKER_COMPOSE_DOWN_OPTIONS     ?=
 DOCKER_GID                      ?= $(call getent-group,docker)
-DOCKER_IMAGE                    ?= $(DOCKER_REPO_INFRA)/$(DOCKER_IMAGE_CLI)
-DOCKER_IMAGE_CLI                ?= cli:$(DOCKER_BUILD_TARGET)
-DOCKER_IMAGE_SSH                ?= ssh:$(DOCKER_BUILD_TARGET)
-DOCKER_IMAGE_TAG                ?= $(DOCKER_BUILD_TARGET)$(if $(filter $(ENV),tests),$(addprefix -,$(DRONE_BUILD_NUMBER)))
+DOCKER_IMAGE                    ?= $(DOCKER_IMAGE_CLI)
+DOCKER_IMAGE_CLI                ?= $(DOCKER_REPOSITORY_INFRA)/cli
+DOCKER_IMAGE_SSH                ?= $(DOCKER_REPOSITORY_INFRA)/ssh
+DOCKER_IMAGE_TAG                ?= $(if $(filter-out $(APP),infra),$(if $(filter $(ENV),preprod prod),$(VERSION),$(if $(DRONE_BUILD_NUMBER),$(DRONE_BUILD_NUMBER),latest)),latest)
 DOCKER_IMAGES                   ?= $(dir $(wildcard docker/*/Dockerfile))
-DOCKER_IMAGES_INFRA_LOCAL       ?= ansible aws openstack packer terraform
-DOCKER_INFRA_CLI                ?= $(COMPOSE_PROJECT_NAME_INFRA)_cli
-DOCKER_INFRA_SSH                ?= $(COMPOSE_PROJECT_NAME_INFRA)_ssh
-DOCKER_NAME                     ?= $(DOCKER_INFRA_CLI)_1
+DOCKER_NAME                     ?= $(DOCKER_NAME_CLI)
+DOCKER_NAME_CLI                 ?= $(COMPOSE_PROJECT_NAME_INFRA)_cli
+DOCKER_NAME_SSH                 ?= $(COMPOSE_PROJECT_NAME_INFRA)_ssh
 DOCKER_NETWORK                  ?= $(ENV)
 DOCKER_PLUGIN                   ?= rexray/s3fs:latest
 DOCKER_PLUGIN_ARGS              ?= $(foreach var,$(DOCKER_PLUGIN_VARS),$(if $($(var)),$(var)='$($(var))'))
 DOCKER_PLUGIN_OPTIONS           ?= --grant-all-permissions
 DOCKER_PLUGIN_VARS              ?= S3FS_ACCESSKEY S3FS_OPTIONS S3FS_SECRETKEY S3FS_REGION
 DOCKER_REGISTRY                 ?= 261323802359.dkr.ecr.eu-west-1.amazonaws.com
-DOCKER_REPO                     ?= $(DOCKER_REPO_INFRA)
-DOCKER_REPO_APP                 ?= $(USER)/$(APP)
-DOCKER_REPO_INFRA               ?= $(USER)/infra
+DOCKER_REGISTRY_USERNAME        ?= 1001pharmacies
+DOCKER_REGISTRY_REPOSITORY      ?= $(addsuffix /,$(DOCKER_REGISTRY))$(subst $(USER),$(DOCKER_REGISTRY_USERNAME),$(DOCKER_REPOSITORY))
+DOCKER_REPOSITORY               ?= $(subst _,/,$(COMPOSE_PROJECT_NAME))
+DOCKER_REPOSITORY_INFRA         ?= $(subst _,/,$(COMPOSE_PROJECT_NAME_INFRA))
+DOCKER_REPOSITORY_INFRA_NODE    ?= $(subst _,/,$(COMPOSE_PROJECT_NAME_INFRA_NODE))
 DOCKER_RUN_OPTIONS              ?= --rm -it
 DOCKER_RUN_VOLUME               ?= -v $$PWD:$$PWD
 DOCKER_RUN_WORKDIR              ?= -w $$PWD
 DOCKER_SERVICES_INFRA_BASE      ?= cli ssh
 DOCKER_SERVICES_INFRA_NODE      ?= consul fabio registrator
 DOCKER_SHELL                    ?= $(SHELL)
-ENV_VARS                        += COMPOSE_PROJECT_NAME COMPOSE_SERVICE_NAME DOCKER_BUILD_TARGET DOCKER_GID DOCKER_HOST_IFACE DOCKER_HOST_INET DOCKER_IMAGE_CLI DOCKER_IMAGE_SSH DOCKER_IMAGE_TAG DOCKER_INFRA_SSH DOCKER_NETWORK DOCKER_REGISTRY DOCKER_REPO_APP DOCKER_REPO_INFRA DOCKER_SHELL
+DOCKER_VOLUME_SSH               ?= $(COMPOSE_PROJECT_NAME_INFRA)_ssh
+ENV_VARS                        += COMPOSE_PROJECT_NAME COMPOSE_SERVICE_NAME DOCKER_BUILD_TARGET DOCKER_GID DOCKER_HOST_IFACE DOCKER_HOST_INET DOCKER_IMAGE_TAG DOCKER_NETWORK DOCKER_REGISTRY DOCKER_REPOSITORY DOCKER_REPOSITORY_INFRA DOCKER_REPOSITORY_INFRA_NODE DOCKER_SHELL DOCKER_VOLUME_SSH
 S3FS_ACCESSKEY                  ?= $(shell $(call conf,$(HOME)/.aws/credentials,$(or $(AWS_PROFILE),default),aws_access_key_id))
 S3FS_OPTIONS                    ?= allow_other,nonempty,use_path_request_style,url=https://s3-eu-west-1.amazonaws.com
 S3FS_SECRETKEY                  ?= $(shell $(call conf,$(HOME)/.aws/credentials,$(or $(AWS_PROFILE),default),aws_secret_access_key))
@@ -55,7 +57,7 @@ endif
 
 ifeq ($(DOCKER), true)
 
-DOCKER_SSH_AUTH                 := -e SSH_AUTH_SOCK=/tmp/ssh-agent/socket -v $(DOCKER_INFRA_SSH):/tmp/ssh-agent:ro
+DOCKER_SSH_AUTH                 := -e SSH_AUTH_SOCK=/tmp/ssh-agent/socket -v $(DOCKER_VOLUME_SSH):/tmp/ssh-agent:ro
 
 ifeq ($(DRONE), true)
 DOCKER_RUN_OPTIONS              := --rm
@@ -126,34 +128,35 @@ endef
 
 define docker-build
 	$(eval path := $(1))
-	$(eval tag := $(or $(2),$(DOCKER_REPO_APP)/$(lastword $(subst /, ,$(1))):$(DOCKER_BUILD_TARGET)))
+	$(eval tag := $(or $(2),$(DOCKER_REPOSITORY)/$(lastword $(subst /, ,$(1))):$(DOCKER_IMAGE_TAG)))
 	$(eval target := $(subst ",,$(subst ',,$(or $(3),$(DOCKER_BUILD_TARGET)))))
-	$(eval image := $(shell docker images -q $(tag) 2>/dev/null))
-	$(eval build_image := $(or $(filter $(DOCKER_BUILD_CACHE),false),$(if $(image),,true)))
-	$(if $(build_image),$(ECHO) docker build $(DOCKER_BUILD_ARGS) --tag $(tag) $(if $(target),--target $(target)) $(path),$(if $(filter $(VERBOSE),true),echo "docker image $(tag) has id $(image)",true))
+	$(eval image_id := $(shell docker images -q $(tag) 2>/dev/null))
+	$(eval build_image := $(or $(filter $(DOCKER_BUILD_CACHE),false),$(if $(image_id),,true)))
+	$(if $(build_image),$(ECHO) docker build $(DOCKER_BUILD_ARGS) --tag $(tag) $(if $(target),--target $(target)) $(path),$(if $(filter $(VERBOSE),true),echo "docker image $(tag) has id $(image_id)",true))
 endef
 define docker-commit
 	$(eval service := $(or $(1),$(DOCKER_SERVICE)))
-	$(eval tag := $(or $(2),$(DOCKER_IMAGE_TAG)))
-	$(eval container := $(or $(3),$(COMPOSE_PROJECT_NAME)_$(service)_1))
-	$(eval repository := $(or $(4),$(DOCKER_REPO_APP)/$(service)))
+	$(eval container := $(or $(2),$(firstword $(shell $(call docker-compose,--log-level critical ps -q $(service))))))
+	$(eval repository := $(or $(3),$(DOCKER_REPOSITORY)/$(service)))
+	$(eval tag := $(or $(4),$(DOCKER_IMAGE_TAG)))
 	$(if $(filter $(VERBOSE),true),echo docker commit $(container) $(repository):$(tag))
 	$(ECHO) docker commit $(container) $(repository):$(tag)
 endef
 define docker-push
 	$(eval service := $(or $(1),$(DOCKER_SERVICE)))
-	$(eval tag := $(or $(2),$(DOCKER_IMAGE_TAG)))
-	$(eval name := $(or $(4),$(DOCKER_REGISTRY)/1001pharmacies/$(APP)/$(service)))
+	$(eval name := $(or $(2),$(DOCKER_REGISTRY_REPOSITORY)/$(service)))
+	$(eval tag := $(or $(3),$(DOCKER_IMAGE_TAG)))
 	$(if $(filter $(VERBOSE),true),echo docker push $(name):$(tag))
 	$(ECHO) docker push $(name):$(tag)
 endef
 define docker-tag
 	$(eval service := $(or $(1),$(DOCKER_SERVICE)))
-	$(eval tag := $(or $(2),$(DOCKER_IMAGE_TAG)))
-	$(eval source := $(or $(3),$(DOCKER_REPO_APP)/$(service)))
-	$(eval target := $(or $(4),$(DOCKER_REGISTRY)/1001pharmacies/$(APP)/$(service)))
-	$(if $(filter $(VERBOSE),true),echo docker tag $(source):$(tag) $(target):$(tag))
-	$(ECHO) docker tag $(source):$(tag) $(target):$(tag)
+	$(eval source := $(or $(2),$(DOCKER_REPOSITORY)/$(service)))
+	$(eval source_tag := $(or $(3),$(DOCKER_IMAGE_TAG)))
+	$(eval target := $(or $(4),$(DOCKER_REGISTRY_REPOSITORY)/$(service)))
+	$(eval target_tag := $(or $(5),$(source_tag)))
+	$(if $(filter $(VERBOSE),true),echo docker tag $(source):$(source_tag) $(target):$(target_tag))
+	$(ECHO) docker tag $(source):$(source_tag) $(target):$(target_tag)
 endef
 define docker-volume-copy
 	$(eval from:=$(1))

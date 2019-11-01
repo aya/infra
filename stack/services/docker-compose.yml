@@ -54,7 +54,7 @@ services:
     - 5601
     restart: always
   mailcatcher:
-    image: 1001pharmadev/mailcatcher
+    image: 1001pharmadev/mailcatcher:latest
     labels:
     - SERVICE_1025_CHECK_TCP=true
     - SERVICE_1025_NAME=${COMPOSE_SERVICE_NAME}-mailcatcher-1025
@@ -82,7 +82,7 @@ services:
     build:
       context: ../services
       dockerfile: docker/mysql/Dockerfile
-    image: ${DOCKER_REPO_INFRA}/mysql
+    image: ${DOCKER_REPOSITORY}/mysql:${DOCKER_IMAGE_TAG}
     environment:
     - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
     labels:
@@ -130,7 +130,7 @@ services:
     - redis:/data
     restart: always
   toggle-api:
-    image: 1001pharmadev/qandidate-toggle-api
+    image: 1001pharmadev/qandidate-toggle-api:latest
     depends_on:
     - redis
     environment:
@@ -146,7 +146,7 @@ services:
     - 80
     restart: always
   toggle-ui:
-    image: 1001pharmadev/qandidate-toggle-ui
+    image: 1001pharmadev/qandidate-toggle-ui:latest
     depends_on:
     - toggle-api
     environment:

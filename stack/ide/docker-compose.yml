@@ -1,7 +1,7 @@
 version: '3.6'
 
 services:
-  ide:
+  theia:
     build:
       args:
       - DOCKER_GID=${DOCKER_GID}
@@ -9,7 +9,7 @@ services:
       - GIT_AUTHOR_EMAIL=${GIT_AUTHOR_EMAIL}
       - UID=${UID}
       - USER=${USER}
-      context: ../ide/docker/ide
+      context: ../ide/docker/theia
       target: ${DOCKER_BUILD_TARGET}
     environment:
     - ENV=${ENV}
@@ -22,9 +22,9 @@ services:
     - SHELL=${DOCKER_SHELL}
     - SSH_AUTH_SOCK=/tmp/ssh-agent/socket
     - WORKSPACE_DIR=/Sources/${MONOREPO}
-    image: ${DOCKER_REPO_INFRA}/ide:${DOCKER_BUILD_TARGET}
+    image: ${DOCKER_REPOSITORY}/theia:${DOCKER_IMAGE_TAG}
     labels:
-    - SERVICE_3000_NAME=${COMPOSE_SERVICE_NAME}-ide-3000
+    - SERVICE_3000_NAME=${COMPOSE_SERVICE_NAME}-theia-3000
     - SERVICE_3000_CHECK_TCP=true
     - SERVICE_3000_CHECK_INITIAL_STATUS=passing
     - SERVICE_3000_TAGS=${SERVICE_IDE_SERVICE_3000_TAGS}
@@ -46,7 +46,7 @@ volumes:
       o: bind
   ssh-agent:
     external:
-      name: ${DOCKER_INFRA_SSH}
+      name: ${DOCKER_VOLUME_SSH}
 
 networks:
   private:

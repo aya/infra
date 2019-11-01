@@ -35,7 +35,7 @@ endif
 
 .PHONY: exec@%
 exec@%: ## Exec a command in docker $(SERVICE) with ssh on remote ENV $*
-	$(call make,exec-ssh APP=$(APP) DOCKER_REPO_APP=$(DOCKER_REPO_INFRA) ENV=$* ARGS='$(ARGS)' SERVICE=$(DOCKER_SERVICE),../infra)
+	$(call make,exec-ssh ENV=$* ARGS='$(ARGS)' SERVER_NAME=$(SERVER_NAME) SERVICE=$(DOCKER_SERVICE),../infra)
 
 .PHONY: logs
 logs: docker-compose-logs ## Display application dockers logs
@@ -64,12 +64,15 @@ restart: docker-compose-restart start-up ## Restart application
 run: ## Run a command on application servers
 ifneq (,$(filter $(ENV),prod preprod))
 	$(eval DRYRUN_IGNORE := true)
-	$(eval SERVER_LIST := $(shell $(call exec,ssh sshuser@52.50.10.235 make list-nodes |awk "\$$1 ~ /$(SERVER_NAME)/ {print \$$2}")))
+	$(eval SERVER_LIST := $(shell $(call exec,ssh sshuser@52.50.10.235 make list-nodes |awk "\$$1 ~ /$(OXA_SERVER_NAME)/ {print \$$2}")))
 	$(eval DRYRUN_IGNORE := false)
 	$(foreach server,$(SERVER_LIST),$(call exec,ssh -Aqtt sshuser@52.50.10.235 "ssh -q -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no sshuser@$(server) \"sudo -u deploy /bin/bash -c '\''"$(ARGS)"'\''\"" ) &&) true
 else
 	$(call make,exec -- $(ARGS))
 endif
+
+.PHONY: scale
+scale: docker-compose-scale ## Start application dockers
 
 .PHONY: start
 start: docker-compose-start ## Start application dockers

@@ -62,7 +62,7 @@ process_count () {
 
 # echo the "number of distinct logged in users"/"number of logged in users"/"number of distinct users running processes"
 user_count () {
-    ps ax -o user,tty,comm 2>/dev/null |awk '$2 !~ /^\?/ && $3 !~ /getty$/ {l_users++; d_users[$1]++}; {p_users[$1]++}; END {print length(user)-1"/"(l_users-1)/2"/"length(users)}'
+    ps ax -o user,tty,comm 2>/dev/null |awk '$2 !~ /^\?/ && $3 !~ /getty$/ {l_users[$2]++; d_users[$1]++}; {p_users[$1]++}; END {print length(d_users)-1"/"length(l_users)-1"/"length(p_users)-1}'
 }
 
 # echo the load average
