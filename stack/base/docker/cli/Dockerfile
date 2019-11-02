@@ -112,25 +112,3 @@ RUN mkdir -p ~/.ssh ~/.config/git \
 *.swp\n\
 Thumbs.db\n\
 " > ~/.config/git/ignore
-
-FROM local as tests
-
-USER root
-
-RUN mkdir -p ~/.ssh ~/.config/git \
- && ssh-keyscan -t rsa -H github.com >> ~/.ssh/known_hosts \
- && ssh-keyscan -t rsa -H 52.31.228.112 >> ~/.ssh/known_hosts \
- && ssh-keyscan -t rsa -H 52.50.10.235 >> ~/.ssh/known_hosts \
- && echo -e "\
-.DS_Store\n\
-.idea/\n\
-.nfs*\n\
-.theia/settings.json\n\
-*~\n\
-*.log\n\
-*.swp\n\
-Thumbs.db\n\
-" > ~/.config/git/ignore
-
-FROM tests as preprod
-FROM preprod as prod
