@@ -36,7 +36,7 @@ services:
     - consul:/consul/data
     - /var/run/docker.sock:/var/run/docker.sock
   fabio:
-    command: -registry.backend "consul" -registry.consul.addr "consul:8500" -registry.consul.token "$FABIO_CONSUL_HTTP_TOKEN" -proxy.addr ":80,:443;cs=local" -proxy.cs "cs=local;type=file;cert=/certs/${SSL_HOSTNAME}.crt;key=/certs/${SSL_HOSTNAME}.key"
+    command: -registry.backend "consul" -registry.consul.addr "consul:8500" -registry.consul.token "$FABIO_CONSUL_HTTP_TOKEN" -proxy.addr ":80,:443;cs=local" -proxy.cs "cs=local;type=file;cert=/certs/${SSL_HOSTNAME}.crt.pem;key=/certs/${SSL_HOSTNAME}.key.pem"
     depends_on:
     - consul
     extra_hosts:
