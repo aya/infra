@@ -57,6 +57,7 @@ fi
 lastrun_marker=compression_marker
 backup_extension=uncompressedbak
 convert_args="-sampling-factor 4:2:0 -strip -quality 85 -interlace JPEG -colorspace RGB"
+errorlog="error.log"
 
 RED="\033[31m"
 GREEN="\033[32m"
@@ -166,10 +167,13 @@ fi
 ### START ###
 #############
 
+if [ -f "$errorlog" ] ; then rm "$errorlog" ; fi
+
 # Stats : init total
 total_before=0
 total_after=0
-
+error_count=0
+subfolders_count=0
 
 ### SUBFOLDERS DISCOVERY ###
 
@@ -182,10 +186,11 @@ else # recursive enabled, get subfolders
     subfolders_list="$(find "$@" -type d)"
 fi
 
+subfolders_total=$(echo "$subfolders_list" | wc -l)
 
-# Display and confirm $subfolder_list
+# Display and confirm $subfolders_list
 echo "$subfolders_list"
-echo -e "${BLUE}Listing subfolders ${BRIGHTGREEN}OK${COLOR_RESET}"; echo
+echo -e "${BLUE}Listing $subfolders_total subfolders ${BRIGHTGREEN}OK${COLOR_RESET}"; echo
 
 user_confirmation
 
@@ -196,10 +201,11 @@ if [ $undo -eq 1 ] ; then # Restore available backups
     echo ; echo -e "${BLUE}Restoring available backups in target subfolders...${COLOR_RESET}"
 
     while IFS="" read -r folder ; do
+        subfolders_count=$(($subfolders_count+1))
         echo
         echo
         echo
-        echo -e "${BRIGHTBLUE}*** Entering folder ${COLOR_RESET}${YELLOW}$folder ${COLOR_RESET}"
+        echo -e "${BRIGHTBLUE}*** Entering folder ${COLOR_RESET}${YELLOW}$folder ${COLOR_RESET} ${BLUE}($subfolders_count / $subfolders_total)${COLOR_RESET}"
         echo
         echo -e "${BLUE}Restoring files...${COLOR_RESET}"
 
@@ -208,6 +214,7 @@ if [ $undo -eq 1 ] ; then # Restore available backups
                     echo -e "${BLUE}No new files to restore in this folder${COLOR_RESET}"
                 else
                     mv "$file" "${file%.$backup_extension}"
+                    [ "$verbose" -eq 1 ] && echo -ne "${BLUE}folder $subfolders_count/$subfolders_total${COLOR_RESET} "
                     [ "$verbose" -eq 1 ] && echo -e "File ${YELLOW}${file%.$backup_extension}${COLOR_RESET} ${BLUE}restored${COLOR_RESET}"
                 fi
             done <<< "$(find "$folder" -maxdepth 1 -type f -iname "*.$backup_extension")"
@@ -226,10 +233,11 @@ fi
 
 ### COMPRESSION ###
 while IFS="" read -r folder ; do
+    subfolders_count=$(($subfolders_count+1))
     echo
     echo
     echo
-    echo -e "${BRIGHTBLUE}*** Entering folder ${COLOR_RESET}${YELLOW}$folder ${COLOR_RESET}"
+    echo -e "${BRIGHTBLUE}*** Entering folder ${COLOR_RESET}${YELLOW}$folder${COLOR_RESET} ${BLUE}($subfolders_count / $subfolders_total)${COLOR_RESET}"
 
 
 
@@ -260,6 +268,9 @@ while IFS="" read -r folder ; do
         images_list="$(find "$folder" -maxdepth 1 -type f -newer "$folder/$lastrun_marker" -iname '*.jpg' -or -type f -newer "$folder/$lastrun_marker" -iname '*.jpeg')"
     fi
 
+    images_total=$(echo "$images_list" | wc -l)
+    images_count=0
+
 
 
 
@@ -277,6 +288,9 @@ while IFS="" read -r folder ; do
 
         while IFS="" read -r file ; do
 
+            images_count=$(($images_count+1))
+            curr_image_failure=0
+
             # Create backup
             if [ $backup -eq 1 ] ; then
                 cp -a "$file" "$file.$backup_extension"
@@ -284,29 +298,54 @@ while IFS="" read -r folder ; do
 
             # Stats before
             size_before=$(stat -c%s "$file")
-            folder_before=$(( $folder_before + $size_before ))
-            total_before=$(( $total_before + $size_before ))
+            if [ "$size_before" -eq 0 ] ; then curr_image_failure=1 ; echo "ERROR, file $file has a size of 0" >>$errorlog ; fi
 
-            $convert $convert_args "$file" "$file"
+            # Display count as output prefix
+            [ "$verbose" -eq 1 ] && echo -ne "${BLUE}folder $subfolders_count/$subfolders_total ; image $images_count/$images_total)${COLOR_RESET} "
 
-            # Stats after
-            size_after=$(stat -c%s "$file")
-            folder_after=$(( $folder_after + $size_after ))
-            total_after=$(( $total_after + $size_after ))
-            variation=$(awk -v after="$size_after" -v before="$size_before" 'BEGIN {print int(((after*100)/before)-100)}')
+            [ "$curr_image_failure" -eq 0 ] && $convert $convert_args "$file" "$file.compressed" 2>>$errorlog
 
-            # Output stats for file
-            if [ "$size_after" -gt "$size_before" ] ; then
-                [ "$verbose" -eq 1 ] && echo -e "File ${YELLOW}$file${COLOR_RESET} ${RED}increased${COLOR_RESET} from $size_before to $size_after, by ${RED}$variation %${COLOR_RESET}"
+            if [ ! $? -eq 0 ] || [ "$curr_image_failure" -eq 1 ] ; then # ERROR
+                error_count=$((error_count+1))
+                echo -e "${RED}Error${COLOR_RESET} on file ${YELLOW}$file${COLOR_RESET}, file is ${BLUE}not modified${COLOR_RESET}"
+                if [ -f "$file.compressed" ] ; then rm "$file.compressed" ; fi
+                if [ -f "$file.$backup_extension" ] ; then rm "$file.$backup_extension" ; fi
+
             else
-                [ "$verbose" -eq 1 ] && echo -e "File ${YELLOW}$file${COLOR_RESET} ${GREEN}decreased${COLOR_RESET} from $size_before to $size_after, by ${GREEN}$variation %${COLOR_RESET}"
+
+                # Stats
+                size_after=$(stat -c%s "$file.compressed")
+                variation=$(awk -v after="$size_after" -v before="$size_before" 'BEGIN {print int(((after*100)/before)-100)}')
+                folder_before=$(( $folder_before + $size_before ))
+                total_before=$(( $total_before + $size_before ))
+
+                if [ "$variation" -ge 0 ] ; then
+                    # No improvement, do not keep
+                    if [ -f "$file.compressed" ] ; then rm "$file.compressed" ; fi
+                    if [ -f "$file.$backup_extension" ] ; then rm "$file.$backup_extension" ; fi
+
+                    # Stats update
+                    folder_after=$(( $folder_after + $size_before ))
+                    total_after=$(( $total_after + $size_before ))
+
+                    [ "$verbose" -eq 1 ] && echo -e "File ${YELLOW}$file${COLOR_RESET} would increase by $variation %, file is ${BLUE}not modified${COLOR_RESET}"
+                else
+                    # Replace
+                    mv "$file.compressed" "$file"
+
+                    #  Stats update
+                    folder_after=$(( $folder_after + $size_after ))
+                    total_after=$(( $total_after + $size_after ))
+
+                    [ "$verbose" -eq 1 ] && echo -e "File ${YELLOW}$file${COLOR_RESET} ${GREEN}decreased${COLOR_RESET} from $size_before to $size_after, by ${GREEN}$variation %${COLOR_RESET}"
+                fi
             fi
         done <<< "$images_list"
 
         echo -e "${BLUE}Compression ${BRIGHTGREEN}OK${COLOR_RESET}"
 
         # Stats for this folder
-        echo 
+        echo
         [ "$verbose" -eq 1 ] && echo -e "${BLUE}Folder${COLOR_RESET} ${YELLOW}$folder ${BLUE}complete.${COLOR_RESET}"
         echo -e "${BLUE}Initial size${COLOR_RESET} :    $folder_before"
         echo -e "${BLUE}Compressed size${COLOR_RESET} : $folder_after"
@@ -340,4 +379,9 @@ else
             echo -e "${BLUE}Total compression gain :  ${GREEN}$total_variation %${COLOR_RESET}"
     fi
 fi
-echo ;
+echo
+
+if [ $error_count -gt 0 ] ; then
+    echo -e  "${BLUE}$error_count errors during execution, check $errorlog for details${COLOR_RESET}"
+fi
+echo
