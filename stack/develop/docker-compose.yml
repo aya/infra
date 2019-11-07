@@ -2,8 +2,7 @@ version: '3.6'
 
 services:
   redmine:
-    image: sameersbn/redmine:4.0.4
-    # command: /bin/sh -c "crontab -l |sed 's|@hourly|@hourly cd /home/redmine/data/files/1001Pharmacies \&\& git fetch -q --all -p \&\&|' |crontab"
+    image: sameersbn/redmine:4.0.5
     environment:
     - DB_ADAPTER=mysql2
     - DB_HOST=${REDMINE_DB_HOST}
@@ -30,7 +29,7 @@ services:
     volumes:
     - redmine:/home/redmine/data
   redmine3:
-    image: sameersbn/redmine:3.4.11
+    image: sameersbn/redmine:3.4.12
     # command: /bin/sh -c "crontab -l |sed 's|@hourly|@hourly cd /home/redmine/data/files/1001Pharmacies \&\& git fetch -q --all -p \&\&|' |crontab"
     environment:
     - DB_ADAPTER=mysql2
