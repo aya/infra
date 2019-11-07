@@ -109,7 +109,7 @@
 
 - name: aws - launch docker containers
   docker_container:
-      image: "{{docker_registry|default(ec2_tags.tags.user)}}/{{ec2_tags.tags.user}}/{{ec2_tags.tags.env}}/{% if ':' in item %}{{item}}{% else ‰}{{item}}:{{docker_image_tag|default('latest')}}"
+    image: "{{docker_registry|default(ec2_tags.tags.user)}}/{{ec2_tags.tags.user}}/{{ec2_tags.tags.env}}/{% if ':' in item %}{{item}}{% else %}{{item}}:{{docker_image_tag|default('latest')}}{% endif %}"
     name: "{{ec2_tags.tags.user}}_{{ec2_tags.tags.env}}_{{item|replace('/','_')}}"
     network_mode: host
     pull: yes
