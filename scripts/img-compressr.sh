@@ -55,9 +55,10 @@ if ! [ -x "$(command -v $convert)" ] ; then
 fi
 
 lastrun_marker=compression_marker
-backup_extension=uncompressedbak
-convert_args="-sampling-factor 4:2:0 -strip -quality 85 -interlace JPEG -colorspace RGB"
-errorlog="error.log"
+original_ext=uncompressedbak
+convert_args_jpg="-sampling-factor 4:2:0 -strip -quality 85 -interlace JPEG -colorspace RGB"
+convert_args_png="-strip -define png:compression-filter=0 -define png:compression-level=9 -define png:compression-strategy=1"
+errorlog="error_$(date +"%Y-%m-%d_%H-%M-%S").log"
 
 RED="\033[31m"
 GREEN="\033[32m"
@@ -71,7 +72,7 @@ COLOR_RESET="\033[0m"
 
 function show_help(){
     printf "Script usage :\n"
-    printf "\t-b          : Backup, copy original images as <imagename>.$backup_extension ;\n"
+    printf "\t-b          : Backup, copy original images as <imagename>.$original_ext ;\n"
     printf "\t-c          : Clean backups, backup copies will be removed ;\n"
     printf "\t-f          : Force, ignore last compression timestamp. Will also overwrite backups if combined with -b ;\n"
     printf "\t-r          : Recursive, convert images recursively in folder and subfolders ;\n"
@@ -106,12 +107,34 @@ user_confirmation
 echo ; echo -e "${BLUE}Cleaning backups...${COLOR_RESET}"
 
     for target_folder in "$@" ; do
-        find "$target_folder" -type f -iname '*.$backup_extension' -delete
+        find "$target_folder" -type f -iname '*.$original_ext' -delete
     done
 
 echo -e "${BLUE}Cleaning backups ${BRIGHTGREEN}OK${COLOR_RESET}"
 exit 0
 }
+
+
+function image_error() {
+    error_count=$((error_count+1))
+    echo -e "${RED}Error${COLOR_RESET} on file ${YELLOW}$file${COLOR_RESET}, file is ${BLUE}not modified${COLOR_RESET}"
+    echo "($1)"
+    echo "$1" >>$errorlog
+    rm -f "$file.compressed"
+    if [ $force -eq 0 ] ; then rm -f "$file.$original_ext" ; fi
+}
+
+bytes_to_human() {
+    b=${1:-0}; d=''; s=0; S=(Bytes {K,M,G,T,P,E,Z,Y}B)
+    while ((b > 1024)); do
+        d="$(printf ".%02d" $((b % 1024 * 100 / 1024)))"
+        b=$((b / 1024))
+        let s++
+    done
+    echo "$b$d ${S[$s]}"
+}
+
+
 
 
 ### Catching options ###
@@ -167,8 +190,6 @@ fi
 ### START ###
 #############
 
-if [ -f "$errorlog" ] ; then rm "$errorlog" ; fi
-
 # Stats : init total
 total_before=0
 total_after=0
@@ -213,11 +234,11 @@ if [ $undo -eq 1 ] ; then # Restore available backups
                 if [ -z "$file" ] ; then # list is empty
                     echo -e "${BLUE}No new files to restore in this folder${COLOR_RESET}"
                 else
-                    mv "$file" "${file%.$backup_extension}"
+                    mv "$file" "${file%.$original_ext}"
                     [ "$verbose" -eq 1 ] && echo -ne "${BLUE}folder $subfolders_count/$subfolders_total${COLOR_RESET} "
-                    [ "$verbose" -eq 1 ] && echo -e "File ${YELLOW}${file%.$backup_extension}${COLOR_RESET} ${BLUE}restored${COLOR_RESET}"
+                    [ "$verbose" -eq 1 ] && echo -e "File ${YELLOW}${file%.$original_ext}${COLOR_RESET} ${BLUE}restored${COLOR_RESET}"
                 fi
-            done <<< "$(find "$folder" -maxdepth 1 -type f -iname "*.$backup_extension")"
+            done <<< "$(find "$folder" -maxdepth 1 -type f -iname "*.$original_ext")"
 
         if [ -f "$folder/$lastrun_marker" ] ; then
             echo -e "${BLUE}Removing compression marker${COLOR_RESET}" ; rm "$folder/$lastrun_marker"
@@ -261,11 +282,13 @@ while IFS="" read -r folder ; do
     # (Duplicated command here, passing -newer with quotes would make find to not locate the marker)
     #
     if [ $use_marker -eq 0 ] ; then
-        [ "$verbose" -eq 1 ] && echo -e "${BLUE}command : ${GREEN}find \"$folder\" -maxdepth 1 -type f -iname '*.jpg' -or -iname '*.jpeg'${COLOR_RESET}"
-        images_list="$(find "$folder" -maxdepth 1 -type f -iname '*.jpg' -or -iname '*.jpeg')"
+        [ "$verbose" -eq 1 ] && echo -e "${BLUE}command : ${GREEN}find \"$folder\" -maxdepth 1 -type f -iregex \'.*\.\(jpe?g\|png\)\'${COLOR_RESET}"
+
+        images_list="$(find "$folder" -maxdepth 1 -type f -iregex '.*\.\(jpe?g\|png\)')"
+
     else
-        [ "$verbose" -eq 1 ] && echo -e "${BLUE}command : ${GREEN}find $folder -maxdepth 1 -type f \"-newer $folder/$lastrun_marker\" -iname '*.jpg' -or -type f \"-newer $folder/$lastrun_marker\" -iname '*.jpeg'${COLOR_RESET}"
-        images_list="$(find "$folder" -maxdepth 1 -type f -newer "$folder/$lastrun_marker" -iname '*.jpg' -or -type f -newer "$folder/$lastrun_marker" -iname '*.jpeg')"
+        [ "$verbose" -eq 1 ] && echo -e "${BLUE}command : ${GREEN}find $folder -maxdepth 1 -type f \"-newer $folder/$lastrun_marker\" -iregex \'.*\.\(jpe?g\|png\)\'${COLOR_RESET}"
+        images_list="$(find "$folder" -maxdepth 1 -type f -newer "$folder/$lastrun_marker" -iregex '.*\.\(jpe?g\|png\)')"
     fi
 
     images_total=$(echo "$images_list" | wc -l)
@@ -289,28 +312,32 @@ while IFS="" read -r folder ; do
         while IFS="" read -r file ; do
 
             images_count=$(($images_count+1))
-            curr_image_failure=0
 
-            # Create backup
-            if [ $backup -eq 1 ] ; then
-                cp -a "$file" "$file.$backup_extension"
-            fi
 
             # Stats before
             size_before=$(stat -c%s "$file")
-            if [ "$size_before" -eq 0 ] ; then curr_image_failure=1 ; echo "ERROR, file $file has a size of 0" >>$errorlog ; fi
+            if [ "$size_before" -eq 0 ] ; then
+                image_error "File $file has a size of 0" ; continue
+            fi
 
             # Display count as output prefix
             [ "$verbose" -eq 1 ] && echo -ne "${BLUE}folder $subfolders_count/$subfolders_total ; image $images_count/$images_total)${COLOR_RESET} "
 
-            [ "$curr_image_failure" -eq 0 ] && $convert $convert_args "$file" "$file.compressed" 2>>$errorlog
+            file_type="$(file -b "$file" | awk '{print $1}')"
 
-            if [ ! $? -eq 0 ] || [ "$curr_image_failure" -eq 1 ] ; then # ERROR
-                error_count=$((error_count+1))
-                echo -e "${RED}Error${COLOR_RESET} on file ${YELLOW}$file${COLOR_RESET}, file is ${BLUE}not modified${COLOR_RESET}"
-                if [ -f "$file.compressed" ] ; then rm "$file.compressed" ; fi
-                if [ -f "$file.$backup_extension" ] ; then rm "$file.$backup_extension" ; fi
+            case $file_type in
+                [jJ][pP][gG] | [jJ][pP][eE][gG])
+                    convert_args="$convert_args_jpg"  ;;
+                [pP][nN][gG])
+                    convert_args="$convert_args_png" ;;
+                 *)
+                    image_error "File $file has an unexpected filetype : $file_type" ; continue ;;
+            esac
 
+            $convert $convert_args "$file" "$file.compressed" 2>>$errorlog 
+
+            if [ ! $? -eq 0 ] ; then
+                image_error "Compression failed for $file" ; continue
             else
 
                 # Stats
@@ -320,9 +347,9 @@ while IFS="" read -r folder ; do
                 total_before=$(( $total_before + $size_before ))
 
                 if [ "$variation" -ge 0 ] ; then
-                    # No improvement, do not keep
-                    if [ -f "$file.compressed" ] ; then rm "$file.compressed" ; fi
-                    if [ -f "$file.$backup_extension" ] ; then rm "$file.$backup_extension" ; fi
+                    # No improvement, do not keep.
+                    rm -f "$file.compressed"
+                    if [ $force -eq 0 ] ; then rm -f "$file.$original_ext" ; fi
 
                     # Stats update
                     folder_after=$(( $folder_after + $size_before ))
@@ -330,6 +357,14 @@ while IFS="" read -r folder ; do
 
                     [ "$verbose" -eq 1 ] && echo -e "File ${YELLOW}$file${COLOR_RESET} would increase by $variation %, file is ${BLUE}not modified${COLOR_RESET}"
                 else
+
+                    # Create / overwrite backup (unless force used && backup already present)
+                    if [ $backup -eq 1 ] ; then
+                        if [ $force -eq 0 ] || [[ $force -eq 1 && ! -f "$file.$original_ext" ]] ; then
+                            cp -a "$file" "$file.$original_ext"
+                        fi
+                    fi
+
                     # Replace
                     mv "$file.compressed" "$file"
 
@@ -337,7 +372,7 @@ while IFS="" read -r folder ; do
                     folder_after=$(( $folder_after + $size_after ))
                     total_after=$(( $total_after + $size_after ))
 
-                    [ "$verbose" -eq 1 ] && echo -e "File ${YELLOW}$file${COLOR_RESET} ${GREEN}decreased${COLOR_RESET} from $size_before to $size_after, by ${GREEN}$variation %${COLOR_RESET}"
+                    [ "$verbose" -eq 1 ] && echo -e "File ${YELLOW}$file${COLOR_RESET} ${GREEN}decreased${COLOR_RESET} from $(bytes_to_human $size_before) to $(bytes_to_human $size_after), by ${GREEN}$variation %${COLOR_RESET}"
                 fi
             fi
         done <<< "$images_list"
@@ -347,8 +382,8 @@ while IFS="" read -r folder ; do
         # Stats for this folder
         echo
         [ "$verbose" -eq 1 ] && echo -e "${BLUE}Folder${COLOR_RESET} ${YELLOW}$folder ${BLUE}complete.${COLOR_RESET}"
-        echo -e "${BLUE}Initial size${COLOR_RESET} :    $folder_before"
-        echo -e "${BLUE}Compressed size${COLOR_RESET} : $folder_after"
+        echo -e "${BLUE}Initial size${COLOR_RESET} :    $(bytes_to_human $folder_before)"
+        echo -e "${BLUE}Compressed size${COLOR_RESET} : $(bytes_to_human $folder_after)"
         folder_variation=$(awk -v after="$folder_after" -v before="$folder_before" 'BEGIN {print int(((after*100)/before)-100)}')
         if [ $folder_after -gt $folder_before ] ; then
                 echo -e "${BLUE}Folder compression gain :  ${RED}$folder_variation %${COLOR_RESET}"
@@ -370,8 +405,8 @@ echo ; echo ; echo ; echo -e "${BRIGHTBLUE}*** Compression complete ! ***${COLOR
 if [ $total_before -eq 0 ] ; then
     echo -e "${BLUE}No file were modified.${COLOR_RESET}"
 else
-    echo -e "${BLUE}Total initial size :${COLOR_RESET}    $total_before"
-    echo -e "${BLUE}Total compressed size :${COLOR_RESET} $total_after"
+    echo -e "${BLUE}Total initial size :${COLOR_RESET}    $(bytes_to_human $total_before)"
+    echo -e "${BLUE}Total compressed size :${COLOR_RESET} $(bytes_to_human $total_after)"
     total_variation=$(awk -v after="$total_after" -v before="$total_before" 'BEGIN {print int(((after*100)/before)-100)}')
     if [ $total_after -gt $total_before ] ; then
              echo -e "${BLUE}Total compression gain :  ${RED}$total_variation %${COLOR_RESET}"
