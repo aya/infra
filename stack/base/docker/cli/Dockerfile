@@ -27,7 +27,7 @@ RUN git clone https://github.com/ingydotnet/git-subrepo \
  && git fetch origin +refs/heads/release/0.4.0: \
  && git checkout release/0.4.0 \
  && git fetch origin pull/314/head \
- && git rebase a53e7a7c7ac429ec8a448f0cca4d113c14c123fd \
+ && git rebase 9cbe7ba2f61552ce97fb312c8133813f970ab4a5 \
  && sed -i 's/install -C/install/' Makefile \
  && make install \
  && cd .. \
