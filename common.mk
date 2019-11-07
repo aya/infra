@@ -35,6 +35,7 @@ endif
 
 .PHONY: exec@%
 exec@%: ## Exec a command in docker $(SERVICE) with ssh on remote ENV $*
+	$(eval ENV=$*)
 	$(call make,exec-ssh ENV=$* ARGS='$(ARGS)' SERVER_NAME=$(SERVER_NAME) SERVICE=$(DOCKER_SERVICE),../infra)
 
 .PHONY: logs
