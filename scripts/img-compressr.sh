@@ -49,16 +49,13 @@ PATH=${PATH:-/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/bin}
 # imagemagick convert binary
 convert=convert
 
-if ! [ -x "$(command -v $convert)" ] ; then
-    echo "Imagemagick convert ($convert) is required to execute this script"
-    exit 1
-fi
 
 lastrun_marker=compression_marker
 original_ext=uncompressedbak
 convert_args_jpg="-sampling-factor 4:2:0 -strip -quality 85 -interlace JPEG -colorspace RGB"
 convert_args_png="-strip -define png:compression-filter=0 -define png:compression-level=9 -define png:compression-strategy=1"
-errorlog="error_$(date +"%Y-%m-%d_%H-%M-%S").log"
+errorlog="compression_error_$(date +"%Y-%m-%d_%H-%M-%S").log"
+report="compression_report_$(date +"%Y-%m-%d_%H-%M-%S").log"
 
 RED="\033[31m"
 GREEN="\033[32m"
@@ -68,7 +65,11 @@ BRIGHTGREEN="\033[32m\033[1m"
 BRIGHTBLUE="\033[36m\033[1m"
 COLOR_RESET="\033[0m"
 
-
+echo "Script started" >> $report
+if ! [ -x "$(command -v $convert)" ] ; then
+    echo "Imagemagick convert ($convert) is required to execute this script" >> $report
+    exit 1
+fi
 
 function show_help(){
     printf "Script usage :\n"
@@ -190,6 +191,10 @@ fi
 ### START ###
 #############
 
+[ "$verbose" -eq 1 ] && echo && echo -e "${BLUE}Script started at : $(date)${COLOR_RESET}"
+echo "Script started at : $(date)" >> $report
+echo
+
 # Stats : init total
 total_before=0
 total_after=0
@@ -282,14 +287,16 @@ while IFS="" read -r folder ; do
     # (Duplicated command here, passing -newer with quotes would make find to not locate the marker)
     #
     if [ $use_marker -eq 0 ] ; then
-        [ "$verbose" -eq 1 ] && echo -e "${BLUE}command : ${GREEN}find \"$folder\" -maxdepth 1 -type f -iregex \'.*\.\(jpe?g\|png\)\'${COLOR_RESET}"
-
-        images_list="$(find "$folder" -maxdepth 1 -type f -iregex '.*\.\(jpe?g\|png\)')"
-
+        newer_opt=""
+        newer_marker=""
     else
-        [ "$verbose" -eq 1 ] && echo -e "${BLUE}command : ${GREEN}find $folder -maxdepth 1 -type f \"-newer $folder/$lastrun_marker\" -iregex \'.*\.\(jpe?g\|png\)\'${COLOR_RESET}"
-        images_list="$(find "$folder" -maxdepth 1 -type f -newer "$folder/$lastrun_marker" -iregex '.*\.\(jpe?g\|png\)')"
+        newer_opt="-newer"
+        newer_marker="$folder/$lastrun_marker"
     fi
+
+    [ "$verbose" -eq 1 ] && echo -e "${BLUE}command : ${GREEN}find $folder -maxdepth 1 -type f $newer_opt $newer_marker\" -iregex \'.*\.\(jpe?g\|png\)\'${COLOR_RESET}"
+    images_list="$(find "$folder" -maxdepth 1 -type f $newer_opt $newer_marker -iregex '.*\.\(jpe?g\|png\)')"
+
 
     images_total=$(echo "$images_list" | wc -l)
     images_count=0
@@ -404,19 +411,29 @@ echo ; echo ; echo ; echo -e "${BRIGHTBLUE}*** Compression complete ! ***${COLOR
 
 if [ $total_before -eq 0 ] ; then
     echo -e "${BLUE}No file were modified.${COLOR_RESET}"
+    echo -e "${BLUE}No file were modified.${COLOR_RESET}" >> $report
 else
     echo -e "${BLUE}Total initial size :${COLOR_RESET}    $(bytes_to_human $total_before)"
+    echo "$Total initial size :    $(bytes_to_human $total_before)" >> $report
     echo -e "${BLUE}Total compressed size :${COLOR_RESET} $(bytes_to_human $total_after)"
+    echo "Total compressed size :  $(bytes_to_human $total_after)" >> $report
     total_variation=$(awk -v after="$total_after" -v before="$total_before" 'BEGIN {print int(((after*100)/before)-100)}')
     if [ $total_after -gt $total_before ] ; then
              echo -e "${BLUE}Total compression gain :  ${RED}$total_variation %${COLOR_RESET}"
+             echo "Total compression gain :  $total_variation %${COLOR_RESET}" >> $report
         else
             echo -e "${BLUE}Total compression gain :  ${GREEN}$total_variation %${COLOR_RESET}"
+            echo "Total compression gain :  $total_variation %" >> $report
     fi
 fi
+
+echo
+echo -e "${BLUE}Script ended at : $(date)${COLOR_RESET}"
+echo "Script ended at : $(date)" >> $report
 echo
 
 if [ $error_count -gt 0 ] ; then
-    echo -e  "${BLUE}$error_count errors during execution, check $errorlog for details${COLOR_RESET}"
+    echo -e "${BLUE}$error_count errors during execution, check $errorlog for details${COLOR_RESET}"
+    echo "$error_count errors during execution, check $errorlog for details" >> $report
 fi
 echo
