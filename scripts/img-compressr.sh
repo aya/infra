@@ -44,6 +44,7 @@
 #
 #
 
+
 PATH=${PATH:-/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/bin}
 
 # imagemagick convert binary
@@ -65,7 +66,7 @@ BRIGHTGREEN="\033[32m\033[1m"
 BRIGHTBLUE="\033[36m\033[1m"
 COLOR_RESET="\033[0m"
 
-echo "Script started" >> $report
+
 if ! [ -x "$(command -v $convert)" ] ; then
     echo "Imagemagick convert ($convert) is required to execute this script" >> $report
     exit 1
@@ -137,6 +138,9 @@ bytes_to_human() {
 
 
 
+echo "Script started at : $(date)" > $report
+echo "script options : $@" >> $report
+
 
 ### Catching options ###
 
@@ -192,8 +196,6 @@ fi
 #############
 
 [ "$verbose" -eq 1 ] && echo && echo -e "${BLUE}Script started at : $(date)${COLOR_RESET}"
-echo "Script started at : $(date)" >> $report
-echo
 
 # Stats : init total
 total_before=0
