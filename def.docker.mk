@@ -67,6 +67,7 @@ HOSTNAME                        := $(word 1,$(subst ., ,$(DRONE_RUNNER_HOSTNAME)
 ifneq ($(APP), infra)
 COMPOSE_PROJECT_NAME            := $(USER)_$(ENV)$(ENV_SUFFIX)_$(APP)
 COMPOSE_SERVICE_NAME            := $(subst _,-,$(COMPOSE_PROJECT_NAME))
+DOCKER_REPOSITORY               := $(USER)/$(ENV)/$(APP)
 endif
 else
 DOCKER_RUN_VOLUME               := -v /var/run/docker.sock:/var/run/docker.sock -v $(MONOREPO_DIR):$(or $(WORKSPACE_DIR),$(MONOREPO_DIR))
