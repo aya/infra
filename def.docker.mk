@@ -60,7 +60,7 @@ ifeq ($(DOCKER), true)
 DOCKER_SSH_AUTH                 := -e SSH_AUTH_SOCK=/tmp/ssh-agent/socket -v $(DOCKER_VOLUME_SSH):/tmp/ssh-agent:ro
 
 ifeq ($(DRONE), true)
-DOCKER_RUN_OPTIONS              := --rm
+DOCKER_RUN_OPTIONS              := --rm --network $(DOCKER_NETWORK)
 DOCKER_RUN_VOLUME               := -v /var/run/docker.sock:/var/run/docker.sock -v $$(docker inspect $$(basename $$(cat /proc/1/cpuset)) 2>/dev/null |awk 'BEGIN {FS=":"} $$0 ~ /[[a-z0-9]]*:\/drone/ {gsub(/^[ \t\r\n]*"/,"",$$1); print $$1; exit}'):/drone
 ENV_SUFFIX                      := $(DRONE_BUILD_NUMBER)
 HOSTNAME                        := $(word 1,$(subst ., ,$(DRONE_RUNNER_HOSTNAME)))
