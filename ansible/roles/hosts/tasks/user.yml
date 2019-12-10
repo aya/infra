@@ -39,6 +39,7 @@
 
 - name: user - update ~/.profile
   with_items:
+  - alias ctop='docker run --rm -ti --volume /var/run/docker.sock:/var/run/docker.sock:ro quay.io/vektorlab/ctop:latest'
   - alias vi='vim'
   - export EDITOR='vim'
   - export PAGER='less'
