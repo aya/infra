@@ -90,9 +90,9 @@ aws-ec2-describe-instance-PrivateIpAddress-%: docker-build-aws
 
 .PHONY: aws-ec2-get-PrivateIpAddress
 aws-ec2-get-PrivateIpAddress: docker-build-aws
-	$(eval DRYRUN := true)
+	$(eval ECHO := printf "${COLOR_BROWN}$(APP)${COLOR_RESET}[${COLOR_GREEN}$(MAKELEVEL)${COLOR_RESET}] ${COLOR_BLUE}$@${COLOR_RESET}:${COLOR_RESET} "; echo)
 	$(call aws,ec2 describe-instances --no-paginate --query 'Reservations[*].Instances[*].[Tags[?Key==`Name`].Value$(comma)PrivateIpAddress]' --output text))
-	$(eval DRYRUN := false)
+	$(eval ECHO := "")
 	$(eval DRYRUN_IGNORE := true)
 	$(eval AWS_INSTANCE_IP := $(shell $(call aws,ec2 describe-instances --no-paginate --query 'Reservations[*].Instances[*].[Tags[?Key==`Name`].Value$(comma)PrivateIpAddress]' --output text) |sed $$'$$!N;s/\r\\n/ /' |awk '$$1 != "None" {print $$1}' 2>/dev/null))
 	$(eval DRYRUN_IGNORE := false)
