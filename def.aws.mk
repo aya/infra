@@ -14,6 +14,7 @@ ENV_VARS                        += AWS_ACCESS_KEY_ID AWS_AMI_DESCRIPTION AWS_AMI
 ifeq ($(DOCKER), true)
 define aws
 	$(call run,$(DOCKER_SSH_AUTH) -v $$HOME/.aws:/root/.aws:ro anigeo/awscli:latest $(1))
+	$(shell echo $(call run,$(DOCKER_SSH_AUTH) -v $$HOME/.aws:/root/.aws:ro anigeo/awscli:latest $(1)))
 endef
 else
 define aws
