@@ -91,23 +91,16 @@ aws-ec2-describe-instance-PrivateIpAddress-%: docker-build-aws
 .PHONY: aws-ec2-get-PrivateIpAddress
 aws-ec2-get-PrivateIpAddress: docker-build-aws
 	$(eval DRYRUN_IGNORE := true)
-	$(eval AWS_INSTANCE_IP := $(shell $(call aws,ec2 describe-instances --no-paginate --query 'Reservations[*].Instances[*].[Tags[?Key==`Name`].Value$(comma)PrivateIpAddress]' --output text) |sed $$'$$!N;s/\r\\n/ /' |awk '$$1 != "None" {print $$1}' 2>/dev/null))
+	$(eval AWS_INSTANCE_IP := $(shell $(call aws,ec2 describe-instances --no-paginate --query 'Reservations[*].Instances[*].PrivateIpAddress' --output text) 2>/dev/null))
 	$(eval DRYRUN_IGNORE := false)
 	echo PrivateIpAddress: $(AWS_INSTANCE_IP)
 
 .PHONY: aws-ec2-get-PrivateIpAddress-%
 aws-ec2-get-PrivateIpAddress-%: docker-build-aws
-	echo "-------------------------------------"
-	$(call aws,ec2 describe-instances --no-paginate --query 'Reservations[*].Instances[*].[Tags[?Key==`Name`].Value$(comma)PrivateIpAddress]' --output text)
-	echo "-------------------------------------"
-	$(call aws,ec2 describe-instances --no-paginate --query 'Reservations[*].Instances[*].[Tags[?Key==`Name`].Value$(comma)PrivateIpAddress]' --output text |sed $$'$$!N;s/\r\\n/ /')
-	echo "-------------------------------------"
-	$(call aws,ec2 describe-instances --no-paginate --filter 'Name=tag:Name$(comma)Values=$*' --query 'Reservations[*].Instances[*].PrivateIpAddress' --output text)
-	echo "-------------------------------------"
 	$(eval DRYRUN_IGNORE := true)
 	$(eval AWS_INSTANCE_IP := $(shell $(call aws,ec2 describe-instances --no-paginate --filter 'Name=tag:Name$(comma)Values=$*' --query 'Reservations[*].Instances[*].PrivateIpAddress' --output text) 2>/dev/null))
 	$(eval DRYRUN_IGNORE := false)
-	echo coucou PrivateIpAddress: $(AWS_INSTANCE_IP)
+	echo PrivateIpAddress: $(AWS_INSTANCE_IP)
 
 .PHONY: aws-ec2-get-snap-id-import-snapshot-task
 aws-ec2-get-snap-id-import-snapshot-task: aws-ec2-get-snap-id-import-snapshot-task-$(AWS_TASK_ID)
