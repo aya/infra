@@ -97,7 +97,13 @@ aws-ec2-get-PrivateIpAddress: docker-build-aws
 
 .PHONY: aws-ec2-get-PrivateIpAddress-%
 aws-ec2-get-PrivateIpAddress-%: docker-build-aws
+	echo "-------------------------------------"
 	$(call aws,ec2 describe-instances --no-paginate --query 'Reservations[*].Instances[*].[Tags[?Key==`Name`].Value$(comma)PrivateIpAddress]' --output text)
+	echo "-------------------------------------"
+	$(call aws,ec2 describe-instances --no-paginate --query 'Reservations[*].Instances[*].[Tags[?Key==`Name`].Value$(comma)PrivateIpAddress]' --output text |sed $$'$$!N;s/\r\\n/ /')
+	echo "-------------------------------------"
+	$(call aws,ec2 describe-instances --no-paginate --query 'Reservations[*].Instances[*].[Tags[?Key==`Name`].Value$(comma)PrivateIpAddress]' --output text |sed $$'$$!N;s/\r\\n/ /' |awk '$$1 != "None" && $$2 ~ /$*/ {print $$1}')
+	echo "-------------------------------------"
 	$(eval DRYRUN_IGNORE := true)
 	$(eval AWS_INSTANCE_IP := $(shell $(call aws,ec2 describe-instances --no-paginate --query 'Reservations[*].Instances[*].[Tags[?Key==`Name`].Value$(comma)PrivateIpAddress]' --output text) |sed $$'$$!N;s/\r\\n/ /' |awk '$$1 != "None" && $$2 ~ /$*/ {print $$1}' 2>/dev/null))
 	$(eval DRYRUN_IGNORE := false)
