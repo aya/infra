@@ -3,6 +3,7 @@ AWS_AMI_NAME                    ?= $(USER)/$(ENV)/$(APP)/ami/$(VERSION)/$(shell 
 AWS_DEFAULT_REGION              ?= eu-west-1
 AWS_DEFAULT_OUTPUT              ?= text
 AWS_INSTANCE_ID                 ?= $(shell timeout 0.1 curl -s http://169.254.169.254/latest/meta-data/instance-id 2>/dev/null)
+AWS_PROFILE                     ?= default
 AWS_VM_IMPORT_ROLE_NAME         ?= vmimport
 AWS_S3_BUCKET                   ?= enova-aws-config
 AWS_S3_KEY                      ?= $(PACKER_ISO_FILE)
