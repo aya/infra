@@ -5,9 +5,9 @@
 .PHONY: deploy-%
 deploy-%: docker-login
 	$(eval ENV:=$*)
-	$(call make,docker-tag docker-tag-latest ENV=$*)
-	$(call make,docker-push docker-push-latest ENV=$*)
+	$(call make,docker-tag docker-push ENV=$*)
 	$(call make,ansible-pull@$* ANSIBLE_DOCKER_IMAGE_TAG=$(VERSION) ANSIBLE_TAGS=aws SERVER_NAME=$(SERVER_NAME) ENV=$*,../infra,AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY)
+	$(call make,docker-tag-latest docker-push-latest ENV=$*)
 
 .PHONY: deploy-assets-install
 deploy-assets-install:
