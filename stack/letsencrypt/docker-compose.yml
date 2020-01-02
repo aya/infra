@@ -1,0 +1,31 @@
+version: '3.6'
+
+services:
+  nginx:
+    image: nginx:alpine
+    labels:
+    - SERVICE_80_NAME=${COMPOSE_SERVICE_NAME}-nginx-80
+    - SERVICE_80_CHECK_TCP=true
+    - SERVICE_80_CHECK_INITIAL_STATUS=passing
+    - SERVICE_80_TAGS=${NGINX_SERVICE_80_TAGS}
+    networks:
+      - private
+      - public
+    ports:
+      - 80
+    volumes:
+      - ../letsencrypt/nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - letsencrypt-public:/usr/share/nginx/html
+
+networks:
+  private:
+    external: true
+    name: ${DOCKER_NETWORK}
+  public:
+    external: true
+    name: node
+
+volumes:
+  letsencrypt-data:
+  letsencrypt-logs:
+  letsencrypt-public:
