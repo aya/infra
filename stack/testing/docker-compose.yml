@@ -1,21 +1,20 @@
 version: '3.6'
 
 services:
-  drone-agent:
-    image: drone/agent:1.5.1
+  drone-runner-docker:
+    image: drone/drone-runner-docker:1.1.0
     depends_on:
-    - drone-server
+    - drone
     environment:
-    # - DRONE_LOGS_DEBUG=true
-    - DRONE_LOGS_NOCOLOR=false
-    - DRONE_LOGS_PRETTY=true
-    # - DRONE_LOGS_TRACE=true
+    # - DRONE_DEBUG=true
+    # - DRONE_TRACE=true
     - DRONE_RPC_SECRET=${DRONE_RPC_SECRET}
-    - DRONE_RPC_SERVER=http://drone-server
+    - DRONE_RPC_HOST=drone
+    - DRONE_RPC_PROTO=http
     - DRONE_RUNNER_CAPACITY=${DRONE_RUNNER_CAPACITY}
     - DRONE_RUNNER_NAME=${HOSTNAME}
     labels:
-    - SERVICE_80_IGNORE=true
+    - SERVICE_3000_IGNORE=true
     networks:
     - private
     restart: always
@@ -34,10 +33,9 @@ services:
     restart: always
     volumes:
     - /var/run/docker.sock:/var/run/docker.sock
-  drone-server:
-    image: drone/drone:1.5.1
+  drone:
+    image: drone/drone:1.6.4
     environment:
-    - DRONE_AGENTS_ENABLED=true
     - DRONE_GIT_ALWAYS_AUTH=false
     - DRONE_GITHUB_SERVER=https://github.com
     - DRONE_GITHUB_CLIENT_ID=${DRONE_GITHUB_CLIENT_ID}
@@ -46,6 +44,7 @@ services:
     # - DRONE_LOGS_DEBUG=true
     - DRONE_LOGS_PRETTY=true
     # - DRONE_LOGS_TRACE=true
+    - DRONE_PROMETHEUS_ANONYMOUS_ACCESS=true
     - DRONE_RPC_SECRET=${DRONE_RPC_SECRET}
     - DRONE_SERVER_HOST=${DRONE_SERVER_HOST}
     - DRONE_SERVER_PROTO=${DRONE_SERVER_PROTO}
@@ -53,7 +52,7 @@ services:
     - DRONE_USER_CREATE=${DRONE_USER_CREATE}
     - DRONE_USER_FILTER=${DRONE_USER_FILTER}
     labels:
-    - SERVICE_80_NAME=${COMPOSE_SERVICE_NAME}-drone-server-80
+    - SERVICE_80_NAME=${COMPOSE_SERVICE_NAME}-drone-80
     - SERVICE_80_CHECK_TCP=true
     - SERVICE_80_CHECK_INITIAL_STATUS=passing
     - SERVICE_80_TAGS=${DRONE_SERVER_SERVICE_80_TAGS}

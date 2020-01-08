@@ -98,10 +98,12 @@
   tags: 'aws'
   when: ec2_tags.tags is defined
 
-- name: aws - prune docker objects
+- name: aws - prune docker objects (including non-dangling images)
   docker_prune:
     containers: yes
     images: yes
+    images_filters:
+      dangling: false
     networks: yes
     volumes: yes
     builder_cache: yes

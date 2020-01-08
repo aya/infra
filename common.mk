@@ -22,6 +22,11 @@ config: docker-compose-config ## View docker compose file
 .PHONY: connect
 connect: docker-compose-connect ## Connect to docker $(SERVICE)
 
+.PHONY: connect@%
+connect@%: ## Connect to docker $(SERVICE) with ssh on remote ENV $*
+	$(eval ENV=$*)
+	$(call make,ssh-connect ENV=$* SERVER_NAME=$(SERVER_NAME) SERVICE=$(DOCKER_SERVICE),../infra)
+
 .PHONY: down
 down: docker-compose-down ## Remove application dockers
 
@@ -36,7 +41,7 @@ endif
 .PHONY: exec@%
 exec@%: ## Exec a command in docker $(SERVICE) with ssh on remote ENV $*
 	$(eval ENV=$*)
-	$(call make,exec-ssh ENV=$* ARGS='$(ARGS)' SERVER_NAME=$(SERVER_NAME) SERVICE=$(DOCKER_SERVICE),../infra)
+	$(call make,ssh-exec ENV=$* ARGS='$(ARGS)' SERVER_NAME=$(SERVER_NAME) SERVICE=$(DOCKER_SERVICE),../infra)
 
 .PHONY: logs
 logs: docker-compose-logs ## Display application dockers logs
@@ -62,7 +67,7 @@ reinstall: clean ## Reinstall application
 restart: docker-compose-restart start-up ## Restart application
 
 .PHONY: run
-run: ## Run a command on application servers
+run: ## Run a command on old production servers
 ifneq (,$(filter $(ENV),prod preprod))
 	$(eval DRYRUN_IGNORE := true)
 	$(eval SERVER_LIST := $(shell $(call exec,ssh sshuser@52.50.10.235 make list-nodes |awk "\$$1 ~ /$(OXA_SERVER_NAME)/ {print \$$2}")))
@@ -74,6 +79,11 @@ endif
 
 .PHONY: scale
 scale: docker-compose-scale ## Start application dockers
+
+.PHONY: ssh@%
+ssh@%: ## Connect to remote $* server with ssh
+	$(eval ENV=$*)
+	$(call make,ssh ENV=$* SERVER_NAME=$(SERVER_NAME),../infra)
 
 .PHONY: start
 start: docker-compose-start ## Start application dockers

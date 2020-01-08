@@ -9,6 +9,7 @@ DOCKER_BUILD_CACHE              ?= true
 DOCKER_BUILD_TARGET             ?= $(if $(filter-out $(APP),infra),$(if $(filter $(ENV),local tests preprod prod),$(ENV),local),local)
 DOCKER_BUILD_VARS               ?= APP BRANCH DOCKER_GID DOCKER_REPOSITORY GID GIT_AUTHOR_EMAIL GIT_AUTHOR_NAME TARGET UID USER VERSION
 DOCKER_COMPOSE_DOWN_OPTIONS     ?=
+DOCKER_EXEC_OPTIONS             ?=
 DOCKER_GID                      ?= $(call getent-group,docker)
 DOCKER_IMAGE                    ?= $(DOCKER_IMAGE_CLI)
 DOCKER_IMAGE_CLI                ?= $(DOCKER_REPOSITORY_INFRA)/cli
@@ -29,7 +30,9 @@ DOCKER_REGISTRY_REPOSITORY      ?= $(addsuffix /,$(DOCKER_REGISTRY))$(subst $(US
 DOCKER_REPOSITORY               ?= $(subst _,/,$(COMPOSE_PROJECT_NAME))
 DOCKER_REPOSITORY_INFRA         ?= $(subst _,/,$(COMPOSE_PROJECT_NAME_INFRA))
 DOCKER_REPOSITORY_INFRA_NODE    ?= $(subst _,/,$(COMPOSE_PROJECT_NAME_INFRA_NODE))
+# DOCKER_RUN_OPTIONS: default options to `docker run` command
 DOCKER_RUN_OPTIONS              ?= --rm -it
+# DOCKER_RUN_VOLUME: options to `docker run` command to mount additionnal volumes
 DOCKER_RUN_VOLUME               ?= -v $$PWD:$$PWD
 DOCKER_RUN_WORKDIR              ?= -w $$PWD
 DOCKER_SERVICES_INFRA_BASE      ?= cli ssh
@@ -61,7 +64,10 @@ DOCKER_SSH_AUTH                 := -e SSH_AUTH_SOCK=/tmp/ssh-agent/socket -v $(D
 
 ifeq ($(DRONE), true)
 DOCKER_RUN_OPTIONS              := --rm --network $(DOCKER_NETWORK)
-DOCKER_RUN_VOLUME               := -v /var/run/docker.sock:/var/run/docker.sock -v $$(docker inspect $$(basename $$(cat /proc/1/cpuset)) 2>/dev/null |awk 'BEGIN {FS=":"} $$0 ~ /[[a-z0-9]]*:\/drone/ {gsub(/^[ \t\r\n]*"/,"",$$1); print $$1; exit}'):/drone
+# When running docker command in drone, we are already inside a docker (dind).
+# Whe need to find the volume mounted in the current docker (runned by drone) to mount it in our docker command.
+# If we do not mount the volume in our docker, we wont be able to access the files in this volume as the /drone/src directory would be empty.
+DOCKER_RUN_VOLUME               := -v /var/run/docker.sock:/var/run/docker.sock -v $$(docker inspect $$(basename $$(cat /proc/1/cpuset)) 2>/dev/null |awk 'BEGIN {FS=":"} $$0 ~ /"drone-[a-zA-Z0-9]*:\/drone"$$/ {gsub(/^[ \t\r\n]*"/,"",$$1); print $$1; exit}'):/drone
 ENV_SUFFIX                      := $(DRONE_BUILD_NUMBER)
 HOSTNAME                        := $(word 1,$(subst ., ,$(DRONE_RUNNER_HOSTNAME)))
 ifneq ($(APP), infra)
@@ -88,7 +94,7 @@ define exec
 endef
 else
 define exec
-	$(ECHO) docker exec $(ENV_ARGS) $(DOCKER_RUN_WORKDIR) $(DOCKER_NAME) sh -c '$(1)'
+	$(ECHO) docker exec $(ENV_ARGS) $(DOCKER_EXEC_OPTIONS) $(DOCKER_RUN_WORKDIR) $(DOCKER_NAME) sh -c '$(1)'
 endef
 endif
 define run
@@ -115,17 +121,6 @@ define run
 endef
 
 endif
-
-define exec-ssh
-	$(eval hosts := $(1))
-	$(eval command := $(2))
-	$(eval user := $(or $(3),root))
-	$(foreach host,$(hosts),$(call exec,ssh $(user)@$(host) "$(command)") &&) true
-endef
-
-define force
-	while true; do [ $$(ps x |awk 'BEGIN {nargs=split("'"$$*"'",args)} $$field == args[1] { matched=1; for (i=1;i<=NF-field;i++) { if ($$(i+field) == args[i+1]) {matched++} } if (matched == nargs) {found++} } END {print found+0}' field=4) -eq 0 ] && $(ECHO) $(1) || sleep 1; done
-endef
 
 define docker-build
 	$(eval path := $(1))

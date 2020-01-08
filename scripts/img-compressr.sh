@@ -55,13 +55,14 @@ lastrun_marker=compression_marker
 original_ext=uncompressedbak
 convert_args_jpg="-sampling-factor 4:2:0 -strip -quality 85 -interlace JPEG -colorspace RGB"
 convert_args_png="-strip -define png:compression-filter=0 -define png:compression-level=9 -define png:compression-strategy=1"
-errorlog="compression_error_$(date +"%Y-%m-%d_%H-%M-%S").log"
-report="compression_report_$(date +"%Y-%m-%d_%H-%M-%S").log"
+
+errorlog="/tmp/compression_error_$(date +"%Y-%m-%d_%H-%M-%S").log"
+report="/tmp/compression_report_$(date +"%Y-%m-%d_%H-%M-%S").log"
 
 RED="\033[31m"
 GREEN="\033[32m"
-BLUE="\033[36m"
-YELLOW="\033[33m"
+BLUE="\033[96m"
+YELLOW="\033[93m"
 BRIGHTGREEN="\033[32m\033[1m"
 BRIGHTBLUE="\033[36m\033[1m"
 COLOR_RESET="\033[0m"
@@ -289,15 +290,18 @@ while IFS="" read -r folder ; do
     # (Duplicated command here, passing -newer with quotes would make find to not locate the marker)
     #
     if [ $use_marker -eq 0 ] ; then
-        newer_opt=""
-        newer_marker=""
+#        newer_opt=""
+#        newer_marker=""
+        images_list="$(find "$folder" -maxdepth 1 -type f -iregex '.*\.\(jpe?g\|png\)')"
+
     else
-        newer_opt="-newer"
-        newer_marker="$folder/$lastrun_marker"
+#        newer_opt="-newer"
+#        newer_marker="\"$folder/$lastrun_marker\""
+        images_list="$(find "$folder" -maxdepth 1 -type f -newer "$folder/$lastrun_marker" -iregex '.*\.\(jpe?g\|png\)')"
     fi
 
-    [ "$verbose" -eq 1 ] && echo -e "${BLUE}command : ${GREEN}find $folder -maxdepth 1 -type f $newer_opt $newer_marker\" -iregex \'.*\.\(jpe?g\|png\)\'${COLOR_RESET}"
-    images_list="$(find "$folder" -maxdepth 1 -type f $newer_opt $newer_marker -iregex '.*\.\(jpe?g\|png\)')"
+    [ "$verbose" -eq 1 ] && echo -e "${BLUE}command : ${GREEN}find $folder -maxdepth 1 -type f $newer_opt $newer_marker -iregex \'.*\.\(jpe?g\|png\)\'${COLOR_RESET}"
+#    images_list="$(find "$folder" -maxdepth 1 -type f $newer_opt $newer_marker -iregex '.*\.\(jpe?g\|png\)')"
 
 
     images_total=$(echo "$images_list" | wc -l)
