@@ -23,7 +23,7 @@
 
 - set_fact:
     disks_additional_disks: "{{ disks_additional_disks|defaut([]) + __disks_ebs_config['ansible_facts']['config'] }}"
-  when: __disks_ebs_config is defined and __disks_ebs_config | success and 'ansible_facts' in __disks_ebs_config
+  when: __disks_ebs_config is defined and 'ansible_facts' in __disks_ebs_config
 
 - name: "Install parted"
   package:
