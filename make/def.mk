@@ -39,17 +39,6 @@ else
 ENV_ARGS                         = $(foreach var,$(ENV_VARS),$(if $($(var)),$(var)='$($(var))')) $(shell printenv |awk -F '=' 'NR == FNR { if($$1 !~ /^(\#|$$)/) { A[$$1]; next } } ($$1 in A)' .env.dist - 2>/dev/null)
 endif
 
-ifeq ($(APP),)
-INCLUDE_SUBDIRS                 := monorepo
-else ifeq ($(APP), infra)
-INCLUDE_SUBDIRS                 := subrepo infra
-else
-INCLUDE_SUBDIRS                 := subrepo app
-endif
-
-include $(wildcard $(INCLUDE_DIR)/def.*.mk)
-include $(foreach subdir,$(INCLUDE_SUBDIRS),$(wildcard $(INCLUDE_DIR)/$(subdir)/def.*.mk))
-
 # Guess OS
 ifeq ($(OSTYPE),cygwin)
 HOST_SYSTEM                     := CYGWIN
@@ -63,16 +52,6 @@ endif
 ifeq ($(UNAME_S),Darwin)
 HOST_SYSTEM                     := DARWIN
 endif
-endif
-
-# Accept arguments for CMDS targets
-ifneq ($(filter $(CMDS),$(firstword $(MAKECMDGOALS))),)
-# set $ARGS with following arguments
-ARGS                            := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
-ARGS                            := $(subst :,\:,$(ARGS))
-ARGS                            := $(subst &,\&,$(ARGS))
-# ...and turn them into do-nothing targets
-$(eval $(ARGS):;@:)
 endif
 
 ifneq ($(DEBUG), true)
@@ -139,3 +118,24 @@ define make
 	$(ECHO) $(MAKE_ARGS) $(MAKE) $(MAKE_DIR) $(patsubst %,-o %,$(MAKE_OLDFILE)) $(cmd) MAKE_OLDFILE="$(MAKE_OLDFILE)"
 	$(if $(filter $(DRYRUN_RECURSIVE),true),$(MAKE_ARGS) $(MAKE) $(MAKE_DIR) $(patsubst %,-o %,$(MAKE_OLDFILE)) $(cmd) MAKE_OLDFILE="$(MAKE_OLDFILE)" DRYRUN=$(DRYRUN) RECURSIVE=$(RECURSIVE))
 endef
+
+ifeq ($(APP),)
+INCLUDE_SUBDIRS                 := monorepo
+else ifeq ($(APP), infra)
+INCLUDE_SUBDIRS                 := subrepo infra
+else
+INCLUDE_SUBDIRS                 := subrepo app
+endif
+
+include $(wildcard $(INCLUDE_DIR)/def.*.mk)
+include $(foreach subdir,$(INCLUDE_SUBDIRS),$(wildcard $(INCLUDE_DIR)/$(subdir)/def.*.mk))
+
+# Accept arguments for CMDS targets
+ifneq ($(filter $(CMDS),$(firstword $(MAKECMDGOALS))),)
+# set $ARGS with following arguments
+ARGS                            := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
+ARGS                            := $(subst :,\:,$(ARGS))
+ARGS                            := $(subst &,\&,$(ARGS))
+# ...and turn them into do-nothing targets
+$(eval $(ARGS):;@:)
+endif
