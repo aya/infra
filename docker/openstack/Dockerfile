@@ -1,4 +1,5 @@
 FROM alpine:latest as dist
+ARG DOCKER_BUILD_DIR
 
 RUN apk --no-cache add libffi openssl python py-pip py-netifaces
 
@@ -17,6 +18,7 @@ ENTRYPOINT ["/usr/bin/openstack"]
 CMD ["help"]
 
 FROM dist as local
+ARG DOCKER_BUILD_DIR
 ARG UID
 ARG USER
 ENV UID=${UID}

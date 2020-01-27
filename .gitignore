@@ -1,4 +1,2 @@
-.env
-build
-cache
-iso
+/.env
+/build

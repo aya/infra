@@ -1,8 +1,10 @@
 FROM hashicorp/terraform:light as dist
+ARG DOCKER_BUILD_DIR
 
 RUN apk --no-cache upgrade
 
 FROM dist as local
+ARG DOCKER_BUILD_DIR
 ARG UID
 ARG USER
 ENV UID=${UID}

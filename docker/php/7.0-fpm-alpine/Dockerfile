@@ -1,10 +1,11 @@
 FROM php:7.0-fpm-alpine as dist
 LABEL maintainer 1001Pharmacies <technique+docker@1001pharmacies.com>
+ARG DOCKER_BUILD_DIR
 
 ARG AMQP_VERSION=stable
 ARG AST_VERSION=stable
 ARG APCU_VERSION=stable
-ARG BLACKFIRE_VERSION=1.24.4
+ARG BLACKFIRE_VERSION=1.30.0
 ARG CACHETOOL_VERSION=4.0.1
 ARG DS_VERSION=stable
 ARG EVENT_VERSION=stable
@@ -16,13 +17,13 @@ ARG MCRYPT_VERSION=stable
 ARG MEMCACHE_VERSION=4.0.1-php73
 ARG MEMCACHED_VERSION=stable
 ARG MONGODB_VERSION=stable
-ARG NEWRELIC_VERSION=9.1.0.246
+ARG NEWRELIC_VERSION=9.6.0.255
 ARG OAUTH_VERSION=stable
 ARG RAR_VERSION=stable
 ARG REDIS_VERSION=stable
 ARG SNUFFLEUPAGUS_VERSION=0.4.1
 ARG UUID_VERSION=stable
-ARG XDEBUG_VERSION=stable
+ARG XDEBUG_VERSION=2.7.2
 ARG XHPROF_VERSION=2.0.5
 ARG YAML_VERSION=stable
 
@@ -199,8 +200,8 @@ ARG PHP_EXT_ENABLE="amqp apcu bcmath bz2 calendar gd geoip imagick intl mcrypt m
 RUN docker-php-ext-enable ${PHP_EXT_ENABLE}
 
 # copy *.ini
-COPY *.ini /usr/local/etc/php/conf.d/
-COPY php-fpm-*.conf /usr/local/etc/php-fpm.d/
+COPY ${DOCKER_BUILD_DIR}/*.ini /usr/local/etc/php/conf.d/
+COPY ${DOCKER_BUILD_DIR}/php-fpm-*.conf /usr/local/etc/php-fpm.d/
 
 # custom php config
 ARG PHP_INI_CONFIG

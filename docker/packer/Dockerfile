@@ -1,5 +1,6 @@
 FROM alpine:latest as dist
 LABEL maintainer 1001Pharmacies <technique+docker@1001pharmacies.com>
+ARG DOCKER_BUILD_DIR
 
 ENV PACKER_VERSION=1.4.4
 ENV PACKER_SHA256SUM=b4dc37877a0fd00fc72ebda98977c2133be9ba6b26bcdd13b1b14a369e508948
@@ -26,6 +27,7 @@ RUN rm -f packer_${PACKER_VERSION}_linux_amd64.zip
 ENTRYPOINT ["/bin/packer"]
 
 FROM dist as local
+ARG DOCKER_BUILD_DIR
 ARG UID
 ARG USER
 ENV UID=${UID}

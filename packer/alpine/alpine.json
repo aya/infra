@@ -11,7 +11,7 @@
         "hostname": "alpine",
         "iso_size": "1024",
         "iso_name": "alpine-3.10.2-x86_64",
-        "output": "iso",
+        "output": "build/iso",
         "password": "alpine",
         "qemuargs": "",
         "ssh_port_min": "2222",

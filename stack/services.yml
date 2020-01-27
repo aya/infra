@@ -1,0 +1,189 @@
+version: '3.6'
+
+services:
+  sysctl:
+    command: sh -c 'sysctl -q -w ${SETUP_SYSCTL_CONFIG} ||:'
+    image: alpine:latest
+    networks:
+    - private
+    privileged: true
+  elasticsearch:
+    depends_on:
+    - sysctl
+    image: docker.elastic.co/elasticsearch/elasticsearch:5.3.3
+    environment:
+    - ES_JAVA_OPTS=-Xmx1024m -Xms1024m
+    - xpack.security.enabled=false
+    - xpack.monitoring.enabled=false
+    - xpack.graph.enabled=false
+    - xpack.watcher.enabled=false
+    - cluster.name=elasticsearch-${ENV}
+    - network.host=0.0.0.0
+    - discovery.zen.minimum_master_nodes=1
+    - http.cors.enabled=true
+    - http.cors.allow-credentials=true
+    - http.cors.allow-methods=OPTIONS,HEAD,GET,POST,PUT,DELETE
+    - http.cors.max-age=0
+    - http.cors.allow-origin="*"
+    - http.cors.allow-headers=X-Requested-With,X-Auth-Token,Content-Type,Content-Length
+    labels:
+    - SERVICE_9200_CHECK_HTTP=/
+    - SERVICE_9200_NAME=${COMPOSE_SERVICE_NAME}-elasticsearch-9200
+    - SERVICE_9200_TAGS=${ELASTICSEARCH_SERVICE_9200_TAGS}
+    - SERVICE_9300_CHECK_TCP=true
+    - SERVICE_9300_NAME=${COMPOSE_SERVICE_NAME}-elasticsearch-9300
+    networks:
+    - private
+    - public
+    ports:
+    - 9200
+    - 9300
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+    volumes:
+    - elasticsearch:/usr/share/elasticsearch/data
+    restart: always
+  kibana:
+    image: docker.elastic.co/kibana/kibana:5.3.3
+    depends_on:
+    - elasticsearch
+    environment:
+    - ELASTICSEARCH_URL="http://elasticsearch:9200"
+    labels:
+    - SERVICE_5601_CHECK_HTTP=/app/kibana
+    - SERVICE_5601_NAME=${COMPOSE_SERVICE_NAME}-kibana-5601
+    - SERVICE_5601_TAGS=${KIBANA_SERVICE_5601_TAGS}
+    networks:
+    - private
+    - public
+    ports:
+    - 5601
+    restart: always
+  mailcatcher:
+    image: 1001pharmadev/mailcatcher:latest
+    labels:
+    - SERVICE_1025_CHECK_TCP=true
+    - SERVICE_1025_NAME=${COMPOSE_SERVICE_NAME}-mailcatcher-1025
+    - SERVICE_1080_CHECK_HTTP=/
+    - SERVICE_1080_NAME=${COMPOSE_SERVICE_NAME}-mailcatcher-1080
+    - SERVICE_1080_TAGS=${MAILCATCHER_SERVICE_1080_TAGS}
+    networks:
+    - private
+    - public
+    ports:
+    - 1025
+    - 1080
+    restart: always
+  memcached:
+    image: memcached:alpine
+    labels:
+    - SERVICE_11211_CHECK_TCP=true
+    - SERVICE_11211_NAME=${COMPOSE_SERVICE_NAME}-memcached-11211
+    networks:
+    - private
+    ports:
+    - 11211
+    restart: always
+  mysql:
+    build:
+      args:
+      - DOCKER_BUILD_DIR=docker/mysql
+      context: ..
+      dockerfile: docker/mysql/Dockerfile
+    image: ${DOCKER_REPOSITORY}/mysql:${DOCKER_IMAGE_TAG}
+    environment:
+    - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+    labels:
+    - SERVICE_CHECK_SCRIPT=container-check-status $$SERVICE_IP
+    - SERVICE_3306_NAME=${COMPOSE_SERVICE_NAME}-mysql-3306
+    networks:
+    - private
+    ports:
+    - 3306
+    volumes:
+    - mysql:/var/lib/mysql
+    restart: always
+  rabbitmq:
+    image: rabbitmq:management-alpine
+    labels:
+    - SERVICE_4369_IGNORE=true
+    - SERVICE_5671_IGNORE=true
+    - SERVICE_5672_CHECK_TCP=true
+    - SERVICE_5672_NAME=${COMPOSE_SERVICE_NAME}-rabbitmq-5672
+    - SERVICE_15671_IGNORE=true
+    - SERVICE_15672_CHECK_HTTP=/
+    - SERVICE_15672_NAME=${COMPOSE_SERVICE_NAME}-rabbitmq-15672
+    - SERVICE_15672_TAGS=${RABBITMQ_SERVICE_15672_TAGS}
+    - SERVICE_25672_IGNORE=true
+    networks:
+    - private
+    - public
+    ports:
+    - 5672
+    - 15672
+    volumes:
+    - rabbitmq:/var/lib/rabbitmq
+    restart: always
+  redis:
+    depends_on:
+    - sysctl
+    image: redis:alpine
+    command: redis-server --appendonly yes
+    labels:
+    - SERVICE_6379_CHECK_TCP=true
+    - SERVICE_6379_NAME=${COMPOSE_SERVICE_NAME}-redis-6379
+    networks:
+    - private
+    ports:
+    - 6379
+    volumes:
+    - redis:/data
+    restart: always
+  toggle-api:
+    image: 1001pharmadev/qandidate-toggle-api:latest
+    depends_on:
+    - redis
+    environment:
+    - TOGGLE__REDIS_DSN=tcp://redis:6379
+    labels:
+    - SERVICE_80_CHECK_HTTP=/toggles
+    - SERVICE_80_NAME=${COMPOSE_SERVICE_NAME}-toggle-api-80
+    - SERVICE_80_TAGS=${TOGGLE_API_SERVICE_80_TAGS}
+    networks:
+    - private
+    - public
+    ports:
+    - 80
+    restart: always
+  toggle-ui:
+    image: 1001pharmadev/qandidate-toggle-ui:latest
+    depends_on:
+    - toggle-api
+    environment:
+    - TOGGLE__API_BASE_URL=${TOGGLE__API_BASE_URL}
+    labels:
+    - SERVICE_80_CHECK_HTTP=/
+    - SERVICE_80_NAME=${COMPOSE_SERVICE_NAME}-toggle-ui-80
+    - SERVICE_80_TAGS=${TOGGLE_UI_SERVICE_80_TAGS}
+    networks:
+    - private
+    - public
+    ports:
+    - 80
+    restart: always
+
+volumes:
+  elasticsearch:
+  mysql:
+  rabbitmq:
+  redis:
+
+networks:
+  private:
+    external: true
+    name: ${DOCKER_NETWORK}
+  public:
+    external: true
+    name: node

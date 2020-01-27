@@ -1,5 +1,6 @@
 FROM httpd:alpine as dist
 LABEL maintainer 1001Pharmacies <technique+docker@1001pharmacies.com>
+ARG DOCKER_BUILD_DIR
 
 ARG HTTPD_LOAD_MODULE="env expires headers lbmethod_bybusyness lbmethod_byrequests proxy proxy_balancer proxy_fcgi proxy_http setenvif slotmem_shm reqtimeout rewrite"
 ARG HTTPD_CONF_EXTRA="default info mpm vhosts"
@@ -9,8 +10,8 @@ RUN sed -E -i \
         -e 's!^#?\s*(Include conf/extra/httpd-('${HTTPD_CONF_EXTRA// /|}').conf)\s*!\1!g' \
         "$HTTPD_PREFIX/conf/httpd.conf"; 
 
-COPY docker-entrypoint.sh /
-COPY httpd-vhosts.ctmpl /usr/local/apache2/conf/extra/
+COPY ${DOCKER_BUILD_DIR}/docker-entrypoint.sh /
+COPY ${DOCKER_BUILD_DIR}/httpd-vhosts.ctmpl /usr/local/apache2/conf/extra/
 COPY --from=hashicorp/consul-template:alpine /bin/consul-template /usr/local/bin/
 
 ENTRYPOINT ["/docker-entrypoint.sh"]

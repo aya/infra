@@ -1,4 +1,5 @@
 FROM alpine:latest as dist
+ARG DOCKER_BUILD_DIR
 
 RUN apk --no-cache add \
         ansible
@@ -9,6 +10,7 @@ ENTRYPOINT ["/usr/bin/ansible"]
 CMD ["--help"]
 
 FROM dist as local
+ARG DOCKER_BUILD_DIR
 ARG UID
 ARG USER
 ENV UID=${UID}
