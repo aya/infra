@@ -36,11 +36,10 @@
 #
 ### TODO
 #
-#  - Clean debug & unused comments
 #  - Catch and manage error codes
 #  - Set customizable (maxdepth) recursivity
+#  - Log path as a variable
 #
-#  - Run extensive tests (homepage OK) <P1>
 #
 #
 
@@ -56,8 +55,8 @@ original_ext=uncompressedbak
 convert_args_jpg="-sampling-factor 4:2:0 -strip -quality 85 -interlace JPEG -colorspace RGB"
 convert_args_png="-strip -define png:compression-filter=0 -define png:compression-level=9 -define png:compression-strategy=1"
 
-errorlog="/tmp/compression_error_$(date +"%Y-%m-%d_%H-%M-%S").log"
-report="/tmp/compression_report_$(date +"%Y-%m-%d_%H-%M-%S").log"
+report="/tmp/img_compression_report.log"
+current_time="$(date +"%Y-%m-%d_%H-%M-%S")"
 
 RED="\033[31m"
 GREEN="\033[32m"
@@ -122,12 +121,18 @@ function image_error() {
     error_count=$((error_count+1))
     echo -e "${RED}Error${COLOR_RESET} on file ${YELLOW}$file${COLOR_RESET}, file is ${BLUE}not modified${COLOR_RESET}"
     echo "($1)"
-    echo "$1" >>$errorlog
+    log_message "error" "$1"
     rm -f "$file.compressed"
     if [ $force -eq 0 ] ; then rm -f "$file.$original_ext" ; fi
 }
 
-bytes_to_human() {
+
+function log_message() {
+    echo "[$(date +"%Y/%m/%d-%H:%M:%S")] event=\"$1\" message=\"$2\"" >> $report    ### :
+}
+
+
+function bytes_to_human() {
     b=${1:-0}; d=''; s=0; S=(Bytes {K,M,G,T,P,E,Z,Y}B)
     while ((b > 1024)); do
         d="$(printf ".%02d" $((b % 1024 * 100 / 1024)))"
@@ -139,12 +144,9 @@ bytes_to_human() {
 
 
 
-echo "Script started at : $(date)" > $report
-echo "script options : $@" >> $report
-
-
 ### Catching options ###
 
+script_options="$@" # For logs
 backup=0
 do_clean_backups=0
 force=0
@@ -196,6 +198,17 @@ fi
 ### START ###
 #############
 
+
+# Report definition
+start_time="$current_time"
+
+#echo "[$(date +"%Y-%m-%d_%H-%M-%S")] Script started. Options: $script_options" >> $report
+echo >> $report
+echo >> $report
+echo >> $report
+#echo "[$current_time] event=\"info\" message=\"Script started. Options: $script_options\"" >> $report
+log_message "info" "Script started."
+log_message "info" "Script options : $script_options"
 [ "$verbose" -eq 1 ] && echo && echo -e "${BLUE}Script started at : $(date)${COLOR_RESET}"
 
 # Stats : init total
@@ -227,6 +240,7 @@ user_confirmation
 
 ### BACKUP RESTORATION ###
 if [ $undo -eq 1 ] ; then # Restore available backups
+	restored_count=0
     echo ; echo -e "${BLUE}Restoring available backups in target subfolders...${COLOR_RESET}"
 
     while IFS="" read -r folder ; do
@@ -245,6 +259,7 @@ if [ $undo -eq 1 ] ; then # Restore available backups
                     mv "$file" "${file%.$original_ext}"
                     [ "$verbose" -eq 1 ] && echo -ne "${BLUE}folder $subfolders_count/$subfolders_total${COLOR_RESET} "
                     [ "$verbose" -eq 1 ] && echo -e "File ${YELLOW}${file%.$original_ext}${COLOR_RESET} ${BLUE}restored${COLOR_RESET}"
+                    restored_count=$(($restored_count+1))
                 fi
             done <<< "$(find "$folder" -maxdepth 1 -type f -iname "*.$original_ext")"
 
@@ -253,7 +268,10 @@ if [ $undo -eq 1 ] ; then # Restore available backups
         fi
     done <<< "$subfolders_list"
 
-    echo ; echo -e "${BLUE}Cleaning backups ${BRIGHTGREEN}OK${COLOR_RESET}" ; echo
+    echo ; echo -e "${BLUE}Cleaning backups ${BRIGHTGREEN}OK${COLOR_RESET}"
+    echo -e "${BLUE}$restored_count files restored${COLOR_RESET}" ; echo
+    log_message "info" "$restored_count files restored"
+    log_message "info" "Script ended."
     exit 0
 fi
 
@@ -337,6 +355,7 @@ while IFS="" read -r folder ; do
             [ "$verbose" -eq 1 ] && echo -ne "${BLUE}folder $subfolders_count/$subfolders_total ; image $images_count/$images_total)${COLOR_RESET} "
 
             file_type="$(file -b "$file" | awk '{print $1}')"
+            if [ $file_type == "very" ] ; then file_type="very small or empty" ; fi
 
             case $file_type in
                 [jJ][pP][gG] | [jJ][pP][eE][gG])
@@ -347,7 +366,7 @@ while IFS="" read -r folder ; do
                     image_error "File $file has an unexpected filetype : $file_type" ; continue ;;
             esac
 
-            $convert $convert_args "$file" "$file.compressed" 2>>$errorlog 
+            $convert $convert_args "$file" "$file.compressed" 2>>$report
 
             if [ ! $? -eq 0 ] ; then
                 image_error "Compression failed for $file" ; continue
@@ -417,29 +436,29 @@ echo ; echo ; echo ; echo -e "${BRIGHTBLUE}*** Compression complete ! ***${COLOR
 
 if [ $total_before -eq 0 ] ; then
     echo -e "${BLUE}No file were modified.${COLOR_RESET}"
-    echo -e "${BLUE}No file were modified.${COLOR_RESET}" >> $report
+    log_message "info" "No file were modified."
 else
     echo -e "${BLUE}Total initial size :${COLOR_RESET}    $(bytes_to_human $total_before)"
-    echo "$Total initial size :    $(bytes_to_human $total_before)" >> $report
+    log_message "info" "Total initial size :     $(bytes_to_human $total_before)"
     echo -e "${BLUE}Total compressed size :${COLOR_RESET} $(bytes_to_human $total_after)"
-    echo "Total compressed size :  $(bytes_to_human $total_after)" >> $report
+    log_message "info" "Total compressed size :  $(bytes_to_human $total_after)"
     total_variation=$(awk -v after="$total_after" -v before="$total_before" 'BEGIN {print int(((after*100)/before)-100)}')
     if [ $total_after -gt $total_before ] ; then
              echo -e "${BLUE}Total compression gain :  ${RED}$total_variation %${COLOR_RESET}"
-             echo "Total compression gain :  $total_variation %${COLOR_RESET}" >> $report
         else
             echo -e "${BLUE}Total compression gain :  ${GREEN}$total_variation %${COLOR_RESET}"
-            echo "Total compression gain :  $total_variation %" >> $report
     fi
+    log_message "info" "Total compression gain :  $total_variation %"
 fi
+
+if [ $error_count -gt 0 ] ; then
+    echo -e "${BLUE}$error_count errors during execution, check $report for details${COLOR_RESET}"
+    log_message "info" "$error_count errors during execution, check $report for details"
+fi
+echo
 
 echo
 echo -e "${BLUE}Script ended at : $(date)${COLOR_RESET}"
-echo "Script ended at : $(date)" >> $report
+log_message "info" "Script ended."
 echo
 
-if [ $error_count -gt 0 ] ; then
-    echo -e "${BLUE}$error_count errors during execution, check $errorlog for details${COLOR_RESET}"
-    echo "$error_count errors during execution, check $errorlog for details" >> $report
-fi
-echo
