@@ -11,7 +11,7 @@ cache-clear-%: bootstrap ## Clear symfony cache
 
 .PHONY: cache-rm
 cache-rm: bootstrap
-	$(call docker-compose-exec,$(DOCKER_SERVICE),rm -Rf app/cache/*)
+	$(call docker-compose-exec,$(DOCKER_SERVICE),rm -Rf app/cache/* app/logs/*)
 	$(if $(filter $(ENV),preprod prod),$(call docker-compose-exec,$(DOCKER_SERVICE),chown www-data app/cache/ app/logs/))
 
 .PHONY: cache-warmup
