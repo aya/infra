@@ -12,17 +12,17 @@ letsencrypt-certonly:
 		-v aya_prod_infra_letsencrypt-public:/var/www \
 		certbot/certbot \
 		certonly --webroot --webroot-path=/var/www \
-		--email hostmaster@autissier.net --agree-tos \
-		-d autissier.net \
-		-d cloud.autissier.net
+		--email hostmaster@1001pharmacies.net --agree-tos \
+		-d 1001pharmacies.net \
+		-d *.1001pharmacies.net
 
 letsencrypt-staging-certonly:
 	docker run -it --rm \
 		-v aya_prod_infra_letsencrypt-data:/etc/letsencrypt \
 		-v aya_prod_infra_letsencrypt-public:/var/www \
 		certbot/certbot \
-		certonly --webroot --webroot=/var/www \
+		certonly --webroot --webroot-path=/var/www \
 		--register-unsafely-without-email --agree-tos \
 		--staging \
-		-d autissier.net \
-		-d cloud.autissier.net
+		-d 1001pharmacies.net \
+		-d *.1001pharmacies.net
