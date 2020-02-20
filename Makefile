@@ -9,7 +9,10 @@ all: install ## Build and deploy infra
 .PHONY: build-%
 build-%: build-rm
 	$(eval ENV:=$*)
-	$(call make,up docker-commit ENV=$*)
+	$(call make,docker-compose-build DOCKER_BUILD_TARGET=$* ENV=$*)
+	$(call make,up ENV=$*)
+	$(call make,docker-compose-exec ARGS='rm -Rf /root/.npm /log-buffer/*' ENV=$* SERVICE=logagent)
+	$(call make,docker-commit ENV=$*)
 
 ##
 # CLEAN
