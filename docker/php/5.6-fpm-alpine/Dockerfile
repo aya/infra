@@ -62,6 +62,15 @@ RUN apk --no-cache upgrade \
  && rm /tmp/suhosin-${SUHOSIN_VERSION}.tar.gz \
  && cd /tmp/suhosin-${SUHOSIN_VERSION} \
  && sed -i '1i#include <sys/file.h>' log.c \
+# && echo --------------------TEST-02 \
+# && curl -o /tmp/memcache-${MEMCACHE_VERSION}.tgz http://pecl.php.net/get/memcache-${MEMCACHE_VERSION}.tgz \
+# && mkdir -p /tmp/memcache-${MEMCACHE_VERSION} \
+# && tar -xzvf /tmp/memcache-${MEMCACHE_VERSION}.tgz -C /tmp/memcache-${MEMCACHE_VERSION} --strip-components=1 \
+# && rm /tmp/memcache-${MEMCACHE_VERSION}.tgz \
+# && curl -o /tmp/memcache-${MEMCACHE_VERSION}/memcache-faulty-inline.patch https://gitlab.alpinelinux.org/alpine/aports/raw/2be177666eb1958255ddc91babdb0cb0add9a280/main/php-memcache/memcache-faulty-inline.patch \
+# && cd /tmp/memcache-${MEMCACHE_VERSION} \
+# && patch -p1 -i memcache-faulty-inline.patch \
+# && echo --------------------TEST-03 \
  && wget https://github.com/twigphp/Twig/archive/v${TWIG_VERSION}.tar.gz -O /tmp/twig-${TWIG_VERSION}.tar.gz \
  && mkdir -p /tmp/twig-${TWIG_VERSION} \
  && tar xzf /tmp/twig-${TWIG_VERSION}.tar.gz -C /tmp/twig-${TWIG_VERSION} --strip-components=1 \
@@ -74,6 +83,7 @@ RUN apk --no-cache upgrade \
  && docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ --with-png-dir=/usr/include/ \
  && docker-php-ext-install -j$(nproc) \
         /tmp/suhosin-${SUHOSIN_VERSION} \
+ #       /tmp/memcache-${MEMCACHE_VERSION} \
         /tmp/twig-${TWIG_VERSION}/ext/twig \
         /tmp/xcache-${XCACHE_VERSION} \
         bcmath \
@@ -109,13 +119,14 @@ RUN apk --no-cache upgrade \
  && rm /usr/local/etc/php/conf.d/docker-php-ext-* \
  && rm -rf /tmp/newrelic-* \
  && rm -rf /tmp/suhosin-* \
+# && rm -rf /tmp/memcache-* \
  && rm -rf /tmp/twig-* \
  && rm -rf /tmp/xcache-* \
  && pecl install amqp-${AMQP_VERSION} \
  && pecl install apcu-${APCU_VERSION} \
  && pecl install geoip-${GEOIP_VERSION} \
  && pecl install imagick-${IMAGICK_VERSION} \
- && pecl install memcache-${MEMCACHE_VERSION} \
+# && pecl install memcache-${MEMCACHE_VERSION} \
  && pecl install memcached-${MEMCACHED_VERSION} \
  && pecl install mongodb-${MONGODB_VERSION} \
  && pecl install rar-${RAR_VERSION} \
@@ -165,7 +176,8 @@ ENV LD_PRELOAD=/usr/lib/preloadable_libiconv.so
 
 # enable php modules
 # available modules : amqp apcu bcmath blackfire bz2 calendar curl dba exif gettext gd geoip gmp imap imagick intl json ldap mbstring mcrypt memcache memcached mongodb mysql mysqli newrelic opcache pcntl pdo_mysql pdo_pgsql pgsql pspell rar redis shmop simplexml snmp soap sockets suhosin sysvmsg sysvsem sysvshm tokenizer twig uuid xcache xdebug xmlrpc xsl zip
-ARG PHP_EXT_ENABLE="amqp apcu bcmath blackfire bz2 calendar gd geoip imagick intl mcrypt memcache memcached mysql mysqli opcache pdo_mysql redis soap sockets twig uuid zip"
+# fix: disabled memcache to avoid relocation errors
+ARG PHP_EXT_ENABLE="amqp apcu bcmath blackfire bz2 calendar gd geoip imagick intl mcrypt memcached mysql mysqli opcache pdo_mysql redis soap sockets twig uuid zip"
 RUN docker-php-ext-enable ${PHP_EXT_ENABLE}
 
 # copy *.ini
