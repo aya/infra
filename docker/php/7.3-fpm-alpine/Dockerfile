@@ -216,7 +216,7 @@ RUN echo "FromLineOverride=YES" >> /etc/ssmtp/ssmtp.conf
 # default www-data homedir to /var/www for crontabs
 RUN sed -i 's|/home/www-data|/var/www|' /etc/passwd
 WORKDIR /var/www
-CMD [ "sh", "-c", "(IFS=$'\n'; env $(cat .env 2>/dev/null) php-fpm)" ]
+CMD [ "sh", "-c", "(IFS=$'\n'; exec env $(cat .env 2>/dev/null) php-fpm)" ]
 
 FROM dist as local
 ARG UID

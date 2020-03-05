@@ -115,6 +115,7 @@ RUN apk --no-cache upgrade \
  && pecl install apcu-${APCU_VERSION} \
  && pecl install geoip-${GEOIP_VERSION} \
  && pecl install imagick-${IMAGICK_VERSION} \
+ && pecl install memcache-${MEMCACHE_VERSION} \
  && pecl install memcached-${MEMCACHED_VERSION} \
  && pecl install mongodb-${MONGODB_VERSION} \
  && pecl install rar-${RAR_VERSION} \
