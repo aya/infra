@@ -73,9 +73,9 @@ groups:
       instance: "Hourly GMV"
     annotations:
       summary: "{{ $labels.instance }} GMV alert"
-      description: '`Hourly GMV` has been *Lower than 250€*, for more than 1 hour.
+      description: "`Hourly GMV` has been *Lower than 250€*, for more than 1 hour.
         \n
-        \n> Current value is *{{ .Value | printf "%.2f" }}* (over the last hour)'
+        \n> Current value is *{{ .Value }}* (over the last hour)"
 
   # Alert for GMV  too low (under static 50€) over night 10PM to 8AM
   - alert: "GMV nightly below lower threshold"
@@ -88,11 +88,11 @@ groups:
       instance: "Hourly GMV"
     annotations:
       summary: "{{ $labels.instance }} GMV alert"
-      description: '`Hourly GMV` (night) has been *Lower than 50€*, for more than 4 hour.
+      description: "`Hourly GMV` (night) has been *Lower than 50€*, for more than 4 hour.
         \n
-        \n> Current value is *{{ .Value | printf "%.2f" }}* (over the last hour)
+        \n> Current value is *{{ .Value }}* (over the last hour)
         \n
-        \nGMV is usually very low between 23:30 and 05:00, but this still may require attention'
+        \nGMV is usually very low between 23:30 and 05:00, but this still may require attention"
 
   # Alert for GMV significantly lower (<33%) than mean value over last 4 weeks from 8AM to 10PM on weekdays
   - alert: "GMV less than 33% compared to last 4 weeks"
@@ -105,10 +105,10 @@ groups:
       instance: "Hourly GMV"
     annotations:
       summary: "{{ $labels.instance }} GMV alert"
-      description: '`Hourly GMV` has been *significantly lower than usual*, for more than 1 hour.
+      description: "`Hourly GMV` has been *significantly lower than usual*, for more than 1 hour.
         \n
-        \n> Current value is *{{ .Value | printf "%.2f" }}* (over the last hour)'
-      query: '>Mean value observed this month is {{ range query "((gmv_hourly_oneweekago_return_value + gmv_hourly_twoweeksago_return_value + gmv_hourly_threeweeksago_return_value + gmv_hourly_fourweeksago_return_value ) * .25)" }}*{{ .Value | printf "%.2f" }}*{{ end }} (same day of the week, same hour)'
+        \n> Current value is *{{ .Value }}* (over the last hour)"
+      query: '>Mean value observed this month is {{ range query "((gmv_hourly_oneweekago_return_value + gmv_hourly_twoweeksago_return_value + gmv_hourly_threeweeksago_return_value + gmv_hourly_fourweeksago_return_value ) * .25)" }}*{{ .Value }}*{{ end }} (same day of the week, same hour)'
 
   # Alert for GMV critically lower (<20%) than mean value over last 4 weeks from 8AM to 10PM on weekdays
   - alert: "GMV less than 20% compared to last 4 weeks"
@@ -121,12 +121,12 @@ groups:
       instance: "Hourly GMV"
     annotations:
       summary: "{{ $labels.instance }} GMV alert"
-      description: '`Hourly GMV` has been *critically lower than usual*, for more than 1 hour.
+      description: "`Hourly GMV` has been *critically lower than usual*, for more than 1 hour.
         \n
-        \n> Current value is *{{ .Value | printf "%.2f" }}* (over the last hour)'
-      query: '>Mean value observed this month is {{ range query "((gmv_hourly_oneweekago_return_value + gmv_hourly_twoweeksago_return_value + gmv_hourly_threeweeksago_return_value + gmv_hourly_fourweeksago_return_value ) * .25)" }}*{{ .Value | printf "%.2f" }}*{{ end }} (same day of the week, same hour)'
+        \n> Current value is *{{ .Value }}* (over the last hour)"
+      query: '>Mean value observed this month is {{ range query "((gmv_hourly_oneweekago_return_value + gmv_hourly_twoweeksago_return_value + gmv_hourly_threeweeksago_return_value + gmv_hourly_fourweeksago_return_value ) * .25)" }}*{{ .Value }}*{{ end }} (same day of the week, same hour)'
 
-  # Alert for GMV suspiciously higher (>500%) than mean value over last 4 weeks from 8AM to 10PM on weekdays
+  # Alert for GMV suspiciously higher (>400%) than mean value over last 4 weeks from 8AM to 10PM on weekdays
   - alert: "GMV more than 500% compared to last 4 weeks"
     # Prometheus time is GMT
     expr: gmv_hourly_return_value > 5 * ( gmv_hourly_oneweekago_return_value + gmv_hourly_twoweeksago_return_value + gmv_hourly_threeweeksago_return_value + gmv_hourly_fourweeksago_return_value ) * .25 and ON() hour(european_french_time) > 8 < 22
@@ -137,11 +137,11 @@ groups:
       instance: "Hourly GMV"
     annotations:
       summary: "{{ $labels.instance }} GMV alert"
-      description: '`Hourly GMV` has been *much higher than usual*, for more than 1 hour.
-        \n(If there is an ongoing sale, it is most probably ok)
+      description: "`Hourly GMV` has been *much higher than usual*, for more than 1 hour.
+        \n(If there is an ongoing sale, it's most probably ok)
         \n
-        \n> Current value is *{{ .Value | printf "%.2f" }}* (over the last hour)'
-      query: '>Mean value observed this month is {{ range query "((gmv_hourly_oneweekago_return_value + gmv_hourly_twoweeksago_return_value + gmv_hourly_threeweeksago_return_value + gmv_hourly_fourweeksago_return_value ) * .25)" }}*{{ .Value | printf "%.2f" }}*{{ end }} (same day of the week, same hour)'
+        \n> Current value is *{{ .Value }}* (over the last hour)"
+      query: '>Mean value observed this month is {{ range query "((gmv_hourly_oneweekago_return_value + gmv_hourly_twoweeksago_return_value + gmv_hourly_threeweeksago_return_value + gmv_hourly_fourweeksago_return_value ) * .25)" }}*{{ .Value }}*{{ end }} (same day of the week, same hour)'
 
 
 
