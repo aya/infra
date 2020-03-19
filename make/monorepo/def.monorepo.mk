@@ -11,7 +11,7 @@ SUBREPOS                        ?= $(filter subrepo/%, $(shell git remote))
 ifneq (,$(filter true,$(DRONE)))
 CONTEXT                         += DRONE_BRANCH DRONE_BUILD_EVENT DRONE_BUILD_NUMBER DRONE_COMMIT_AUTHOR DRONE_COMMIT_REF DRONE_COMMIT_SHA DRONE_TAG
 # APPS impacted by PR only
-ifneq (,$(filter pull_request,$(DRONE_BUILD_EVENT)))
+ifneq (,$(filter $(DRONE_BUILD_EVENT),pull_request push))
 # prevent make tests down-rm to get through infra and tests folders
 APPS                            := $(filter-out $(DIRS), $(shell git diff --name-only origin/$(DRONE_BRANCH) $(DRONE_COMMIT) 2>/dev/null |awk -F '/' 'NF>1 && !seen[$$1]++ {print $$1}'))
 endif
