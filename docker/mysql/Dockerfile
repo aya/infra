@@ -1,4 +1,4 @@
-FROM mariadb:10.4.8-bionic as dist
+FROM mysql:5.6.44 as dist
 ARG DOCKER_BUILD_DIR
 
 LABEL maintainer 1001Pharmacies <technique+docker@1001pharmacies.com>
