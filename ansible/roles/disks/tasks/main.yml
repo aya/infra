@@ -165,3 +165,5 @@
   with_items: '{{ disks_additional_disks }}'
   when: item.user is defined or item.group is defined
   tags: ['disk']
+
+- meta: flush_handlers

@@ -1,4 +1,4 @@
-INCLUDE_DIR                     := make
-INCLUDE_FILES                   := env.mk def.mk help.mk
-include $(patsubst %,$(INCLUDE_DIR)/%,$(INCLUDE_FILES))
-include $(foreach subdir,$(INCLUDE_SUBDIRS),$(filter-out $(wildcard $(INCLUDE_DIR)/$(subdir)/def.*.mk),$(wildcard $(INCLUDE_DIR)/$(subdir)/*.mk)))
+MAKE_DIR                        := make
+MAKE_FILES                      := env.mk def.mk help.mk
+include $(patsubst %,$(MAKE_DIR)/%,$(MAKE_FILES))
+include $(foreach subdir,$(MAKE_SUBDIRS),$(filter-out $(wildcard $(MAKE_DIR)/$(subdir)/def.*.mk),$(wildcard $(MAKE_DIR)/$(subdir)/*.mk)))

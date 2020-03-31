@@ -1,6 +1,5 @@
-.PHONY: clean-%
-clean-%:
-	$(call make,docker-compose-down DOCKER_COMPOSE_DOWN_OPTIONS="--rmi all -v" ENV=$*)
+##
+# CLEAN
 
 .PHONY: clean-app
 clean-app: bootstrap
@@ -11,15 +10,3 @@ clean-app: bootstrap
 	$(call docker-compose-exec,$(DOCKER_SERVICE),rm -rf var/logs/*)
 	$(call docker-compose-exec,$(DOCKER_SERVICE),rm -rf vendor/*)
 	$(call docker-compose-exec,$(DOCKER_SERVICE),rm -rf node_modules/*)
-
-.PHONY: clean-assets-deps
-clean-assets-deps: bootstrap
-	$(call docker-compose-exec,$(DOCKER_SERVICE),rm -Rf node_modules/*)
-
-.PHONY: clean-env
-clean-env:
-	rm -i .env || true
-
-.PHONY: clean-reports
-clean-reports: bootstrap
-	$(call docker-compose-exec,$(DOCKER_SERVICE),rm -Rf reports/*)

@@ -4,7 +4,6 @@ CONTEXT                         += APPS ENV RELEASE_INSTALL
 DIRS                            ?= infra make parameters shared
 RELEASE_UPGRADE                 ?= $(filter v3.%, $(shell git tag -l |awk '/$(RELEASE_INSTALL)/,0' |sed '$$d'))
 RELEASE_VERSION                 ?= $(firstword $(subst -, ,$(VERSION)))
-REMOTE                          ?= ssh://git@github.com/1001Pharmacies/1001Pharmacies
 SUBREPOS                        ?= $(filter subrepo/%, $(shell git remote))
 
 # CI/CD

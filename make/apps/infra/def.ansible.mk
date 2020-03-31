@@ -9,9 +9,9 @@ ANSIBLE_DISKS_NFS_PATH          ?= $(MOUNT_NFS_PATH)
 ANSIBLE_DOCKER_IMAGE_TAG        ?= latest
 ANSIBLE_DOCKER_REGISTRY         ?= $(DOCKER_REGISTRY)
 ANSIBLE_EXTRA_VARS              ?= target=localhost
-ANSIBLE_GIT_DIRECTORY           ?= /src/$(APP)
+ANSIBLE_GIT_DIRECTORY           ?= /src/$(subst git@,,$(subst ssh://,,$(GIT_REPOSITORY)))
 ANSIBLE_GIT_KEY_FILE            ?= ~$(ANSIBLE_USERNAME)/.ssh/$(notdir $(ANSIBLE_SSH_PRIVATE_KEY))
-ANSIBLE_GIT_REPOSITORY          ?= $(REMOTE)
+ANSIBLE_GIT_REPOSITORY          ?= $(GIT_REPOSITORY)
 ANSIBLE_GIT_VERSION             ?= $(BRANCH)
 ANSIBLE_INVENTORY               ?= ansible/inventories
 ANSIBLE_PLAYBOOK                ?= ansible/playbook.yml

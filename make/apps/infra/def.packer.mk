@@ -113,6 +113,7 @@ define packer-build
 	echo 'link: s3://$(AWS_S3_BUCKET)/$(AWS_S3_KEY)'            >> $(PACKER_ISO_INFO)
 	echo 'name: $(iso_name)'                                    >> $(PACKER_ISO_INFO)
 	echo 'nfs_disk: $(ANSIBLE_DISKS_NFS_DISK)'                  >> $(PACKER_ISO_INFO)
+	echo 'nfs_path: $(ANSIBLE_DISKS_NFS_PATH)'                  >> $(PACKER_ISO_INFO)
 	echo 'pass: $(password)'                                    >> $(PACKER_ISO_INFO)
 	echo 'size: $(iso_size)'                                    >> $(PACKER_ISO_INFO)
 	echo 'ssh_key: $(ANSIBLE_SSH_PRIVATE_KEY)'                  >> $(PACKER_ISO_INFO)

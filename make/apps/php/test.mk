@@ -5,10 +5,6 @@
 .PHONY: test
 test: test-unit ## Run unit tests
 
-.PHONY: test-assets
-test-assets: bootstrap
-	$(call docker-compose-exec,$(DOCKER_SERVICE),yarn test)
-
 ## Run codeception tests
 .PHONY: test-codeception-%
 test-codeception-%: bootstrap install-codecept ## Run codeception tests
@@ -28,17 +24,6 @@ test-coverage-codeception-%: bootstrap install-codecept ## Run codeception tests
 .PHONY: test-func
 test-func: bootstrap install-phpunit ## Run functional tests
 	$(call docker-compose-exec,$(DOCKER_SERVICE),bin/phpunit --testsuite functional)
-
-## Run functional tests (make test-func TEST="S01-U1-find-product")
-.PHONY: test-func-js
-test-func-js: bootstrap ## Run functional tests (js)
-ifdef TEST
-	$(call docker-compose-exec,$(DOCKER_SERVICE),yarn test:func -- --test tests/Functional/specs/$(TEST).js --env $(TESTENV))
-else ifdef TESTSUITE
-	$(call docker-compose-exec,$(DOCKER_SERVICE),yarn test:func -- --tag $(TESTSUITE) --env $(TESTENV))
-else
-	$(call docker-compose-exec,$(DOCKER_SERVICE),yarn test:func -- --env $(TESTENV))
-endif
 
 ## Loop unit tests
 .PHONY: test-loop

@@ -8,10 +8,6 @@ ifneq ($(wildcard ../infra),)
 	$(call make,aws-codedeploy,../infra,ENV CODEDEPLOY_APP_NAME CODEDEPLOY_DEPLOYMENT_CONFIG CODEDEPLOY_DEPLOYMENT_GROUP CODEDEPLOY_DESCRIPTION CODEDEPLOY_GITHUB_REPO CODEDEPLOY_GITHUB_COMMIT_ID)
 endif
 
-.PHONY: deploy-old-v2-%
-deploy-old-v2-%:
-	$(call exec,ssh sshuser@52.50.10.235 "cd /space/capistrano/config/deploy && cap -S vcs_source=$(BRANCH) 1001pharmaciesV2\@$*.rb deploy")
-
 .PHONY: deploy-old-%
 deploy-old-%:
 	$(call exec,git fetch subrepo/$(SUBREPO))

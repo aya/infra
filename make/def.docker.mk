@@ -24,8 +24,8 @@ DOCKER_PLUGIN                   ?= rexray/s3fs:latest
 DOCKER_PLUGIN_ARGS              ?= $(foreach var,$(DOCKER_PLUGIN_VARS),$(if $($(var)),$(var)='$($(var))'))
 DOCKER_PLUGIN_OPTIONS           ?= --grant-all-permissions
 DOCKER_PLUGIN_VARS              ?= S3FS_ACCESSKEY S3FS_OPTIONS S3FS_SECRETKEY S3FS_REGION
-DOCKER_REGISTRY                 ?= 261323802359.dkr.ecr.eu-west-1.amazonaws.com
-DOCKER_REGISTRY_USERNAME        ?= 1001pharmacies
+DOCKER_REGISTRY                 ?= registry
+DOCKER_REGISTRY_USERNAME        ?= $(USER)
 DOCKER_REGISTRY_REPOSITORY      ?= $(addsuffix /,$(DOCKER_REGISTRY))$(subst $(USER),$(DOCKER_REGISTRY_USERNAME),$(DOCKER_REPOSITORY))
 DOCKER_REPOSITORY               ?= $(subst _,/,$(COMPOSE_PROJECT_NAME))
 DOCKER_REPOSITORY_INFRA         ?= $(subst _,/,$(COMPOSE_PROJECT_NAME_INFRA))
@@ -67,7 +67,7 @@ DOCKER_RUN_OPTIONS              := --rm --network $(DOCKER_NETWORK)
 # When running docker command in drone, we are already inside a docker (dind).
 # Whe need to find the volume mounted in the current docker (runned by drone) to mount it in our docker command.
 # If we do not mount the volume in our docker, we wont be able to access the files in this volume as the /drone/src directory would be empty.
-DOCKER_RUN_VOLUME               := -v /var/run/docker.sock:/var/run/docker.sock -v $$(docker inspect $$(basename $$(cat /proc/1/cpuset)) 2>/dev/null |awk 'BEGIN {FS=":"} $$0 ~ /"drone-[a-zA-Z0-9]*:\/drone"$$/ {gsub(/^[ \t\r\n]*"/,"",$$1); print $$1; exit}'):/drone
+DOCKER_RUN_VOLUME               := -v /var/run/docker.sock:/var/run/docker.sock -v $$(docker inspect $$(basename $$(cat /proc/1/cpuset)) 2>/dev/null |awk 'BEGIN {FS=":"} $$0 ~ /"drone-[a-zA-Z0-9]*:\/drone"$$/ {gsub(/^[ \t\r\n]*"/,"",$$1); print $$1; exit}'):/drone $(if $(wildcard /root/.netrc),-v /root/.netrc:/root/.netrc)
 ENV_SUFFIX                      := $(DRONE_BUILD_NUMBER)
 ifneq ($(APP), infra)
 COMPOSE_PROJECT_NAME            := $(USER)_$(ENV)$(ENV_SUFFIX)_$(APP)
@@ -75,7 +75,7 @@ COMPOSE_SERVICE_NAME            := $(subst _,-,$(COMPOSE_PROJECT_NAME))
 DOCKER_REPOSITORY               := $(USER)/$(ENV)/$(APP)
 endif
 else
-DOCKER_RUN_VOLUME               := -v /var/run/docker.sock:/var/run/docker.sock -v $(MONOREPO_DIR):$(or $(WORKSPACE_DIR),$(MONOREPO_DIR))
+DOCKER_RUN_VOLUME               := -v /var/run/docker.sock:/var/run/docker.sock -v $(APP_DIR):$(or $(WORKSPACE_DIR),$(APP_DIR))
 endif
 
 define docker-compose

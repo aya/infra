@@ -1,3 +1,4 @@
+BUILD_APP_VARS                  ?= APP BRANCH COMMIT DEPLOY_SLACK_HOOK ENV SYMFONY_ENV TAG VERSION
 CONTEXT                         += COMPOSER_ARGS COMPOSE_PROJECT_NAME DOCKER_SERVICE
 COMPOSE_IGNORE_ORPHANS          ?= false
 COMPOSER_ARGS                   ?= --optimize-autoloader
@@ -6,7 +7,6 @@ DOCKER_SERVICE                  ?= php
 ENV_VARS                        += CONSUL_HTTP_TOKEN MOUNT_NFS_CONFIG
 MOUNT_NFS                       ?= false
 MOUNT_SSH                       ?= true
-REMOTE                          ?= ssh://git@github.com/1001Pharmacies/$(SUBREPO)
 
 ifeq ($(MOUNT_NFS),true)
 MOUNT_NFS_CONFIG                ?= addr=$(MOUNT_NFS_HOST),actimeo=3,intr,noacl,noatime,nocto,nodiratime,nolock,soft,rsize=32768,wsize=32768,tcp,rw,vers=3
@@ -40,12 +40,4 @@ define composer-require-vendor-binary
 	$(call docker-compose-exec,$(DOCKER_SERVICE),[ -f vendor/$(vendor)/$(binary) ]) || \
 	$(ECHO) $(call docker-compose-exec,$(DOCKER_SERVICE),mkdir -p vendor/$(vendor) && cd /tmp && COMPOSER_MEMORY_LIMIT=$(COMPOSER_MEMORY_LIMIT) SYMFONY_ENV=$(SYMFONY_ENV) composer require "$(vendor)$(version)" --prefer-source --no-interaction --dev && cd - && ln -s /tmp/vendor/$(vendor)/$(binary) vendor/$(vendor)/$(binary))
 	$(eval DRYRUN_IGNORE := false)
-endef
-
-define install-parameters
-	$(eval path:=$(or $(1),$(APP)))
-	$(eval file:=$(or $(2),$(DOCKER_SERVICE)/parameters.yml))
-	$(eval dest:=$(or $(3),app/config))
-	$(eval env:=$(or $(4),$(ENV)))
-	$(if $(wildcard $(dest)/$(file)),,$(if $(wildcard ../parameters/$(env)/$(path)/$(file)),$(ECHO) cp -a ../parameters/$(env)/$(path)/$(file) $(dest)))
 endef

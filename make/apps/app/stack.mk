@@ -15,3 +15,8 @@ endif
 ifeq ($(MOUNT_TMPFS),true)
 	$(if $(wildcard docker/docker-compose.tmpfs.yml),$(eval COMPOSE_FILE:=$(COMPOSE_FILE) docker/docker-compose.tmpfs.yml))
 endif
+ifeq ($(SUBREPO),)
+	$(if $(wildcard docker/docker-compose.app.yml),$(eval COMPOSE_FILE:=$(COMPOSE_FILE) docker/docker-compose.app.yml))
+else
+	$(if $(wildcard docker/docker-compose.subrepo.yml),$(eval COMPOSE_FILE:=$(COMPOSE_FILE) docker/docker-compose.subrepo.yml))
+endif

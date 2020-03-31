@@ -12,3 +12,7 @@ ssh-connect: aws-ec2-get-PrivateIpAddress-$(SERVER_NAME)
 .PHONY: ssh-exec
 ssh-exec: aws-ec2-get-PrivateIpAddress-$(SERVER_NAME)
 	$(call ssh-exec,$(AWS_INSTANCE_IP),make exec SERVICE=$(SERVICE) ARGS='\''"$(ARGS)"'\'')
+
+.PHONY: ssh-run
+ssh-run: aws-ec2-get-PrivateIpAddress-$(SERVER_NAME)
+	$(call ssh-exec,$(AWS_INSTANCE_IP),$(ARGS))

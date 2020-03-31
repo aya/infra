@@ -5,7 +5,7 @@ services:
     image: sematext/logagent:latest
     environment:
     - LOGAGENT_ARGS=-u 514 --docker /tmp/docker.sock --dockerEvents
-    - LOGS_RECEIVER_URL=http://${ELASTICSEARCH_HOST}:${ELASTICSEARCH_PORT}
+    - LOGS_RECEIVER_URL=${ELASTICSEARCH_PROTOCOL}://${ELASTICSEARCH_HOST}:${ELASTICSEARCH_PORT}
     - LOGS_TOKEN=logs
     networks:
     - private
