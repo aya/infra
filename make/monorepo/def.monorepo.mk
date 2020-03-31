@@ -10,14 +10,22 @@ SUBREPOS                        ?= $(filter subrepo/%, $(shell git remote))
 # CI/CD
 ifneq (,$(filter true,$(DRONE)))
 CONTEXT                         += DRONE_BRANCH DRONE_BUILD_EVENT DRONE_BUILD_NUMBER DRONE_COMMIT_AUTHOR DRONE_COMMIT_REF DRONE_COMMIT_SHA DRONE_TAG
-# APPS impacted by PR only
+# limit APPS to those impacted by the PR
 ifneq (,$(filter $(DRONE_BUILD_EVENT),pull_request))
 # filter-out to prevent make targets to get through DIRS folders
 APPS                            := $(filter-out $(DIRS), $(shell git diff --name-only origin/$(DRONE_BRANCH) $(DRONE_COMMIT_SHA) 2>/dev/null |awk -F '/' 'NF>1 && !seen[$$1]++ {print $$1}'))
 endif
-# APPS impacted by merge only
+# limit APPS to those impacted by the merge
 ifneq (,$(filter $(DRONE_BUILD_EVENT),push))
 # filter-out to prevent make targets to get through DIRS folders
 APPS                            := $(filter-out $(DIRS), $(shell git diff --name-only origin/$(DRONE_BRANCH) $(DRONE_COMMIT_SHA)^^ 2>/dev/null |awk -F '/' 'NF>1 && !seen[$$1]++ {print $$1}'))
+endif
+# limit APPS to those impacted by the tag
+ifneq (,$(filter $(DRONE_BUILD_EVENT),tag))
+# for hotfix only
+ifneq (0,$(lastword $(subst ., ,$(DRONE_TAG))))
+# filter-out to prevent make targets to get through DIRS folders
+APPS                            := $(filter-out $(DIRS), $(shell git diff --name-only origin/$(DRONE_BRANCH) $(shell git describe --abbrev=0 --tags $(DRONE_TAG)^) 2>/dev/null |awk -F '/' 'NF>1 && !seen[$$1]++ {print $$1}'))
+endif
 endif
 endif
