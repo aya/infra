@@ -54,7 +54,7 @@ docker-compose-connect: stack docker-compose-up
 
 .PHONY: docker-compose-down
 docker-compose-down: stack
-	$(call docker-compose,down $(DOCKER_COMPOSE_DOWN_OPTIONS))
+	$(if $(SERVICE),$(call docker-compose,rm -fs $(SERVICE)),$(call docker-compose,down $(DOCKER_COMPOSE_DOWN_OPTIONS)))
 
 .PHONY: docker-compose-exec
 docker-compose-exec: SERVICE ?= $(DOCKER_SERVICE)
@@ -92,7 +92,7 @@ docker-compose-rm: stack
 .PHONY: docker-compose-scale
 docker-compose-scale: SERVICE ?= $(DOCKER_SERVICE)
 docker-compose-scale: stack
-	$(call docker-compose,up -d --scale $(SERVICE)=$(NUM))
+	$(call docker-compose,up $(DOCKER_COMPOSE_UP_OPTIONS) --scale $(SERVICE)=$(NUM))
 
 .PHONY: docker-compose-start
 docker-compose-start: stack
@@ -104,7 +104,7 @@ docker-compose-stop: stack
 
 .PHONY: docker-compose-up
 docker-compose-up: stack
-	$(call docker-compose,up -d $(SERVICE))
+	$(call docker-compose,up $(DOCKER_COMPOSE_UP_OPTIONS) $(SERVICE))
 
 .PHONY: docker-infra-base
 docker-infra-base: bootstrap-infra

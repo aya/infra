@@ -9,6 +9,7 @@ DOCKER_BUILD_CACHE              ?= true
 DOCKER_BUILD_TARGET             ?= $(if $(filter-out $(APP),infra),$(if $(filter $(ENV),local tests preprod prod),$(ENV),local),local)
 DOCKER_BUILD_VARS               ?= APP BRANCH DOCKER_GID DOCKER_REPOSITORY GID GIT_AUTHOR_EMAIL GIT_AUTHOR_NAME TARGET UID USER VERSION
 DOCKER_COMPOSE_DOWN_OPTIONS     ?=
+DOCKER_COMPOSE_UP_OPTIONS       ?= -d
 DOCKER_EXEC_OPTIONS             ?=
 DOCKER_GID                      ?= $(call getent-group,docker)
 DOCKER_IMAGE                    ?= $(DOCKER_IMAGE_CLI)
@@ -63,6 +64,9 @@ ifeq ($(DOCKER), true)
 DOCKER_SSH_AUTH                 := -e SSH_AUTH_SOCK=/tmp/ssh-agent/socket -v $(DOCKER_VOLUME_SSH):/tmp/ssh-agent:ro
 
 ifeq ($(DRONE), true)
+DOCKER_COMPOSE_DOWN_OPTIONS     := --rmi all -v
+DOCKER_COMPOSE_UP_OPTIONS       := -d --build
+DOCKER_BUILD_CACHE              := false
 DOCKER_RUN_OPTIONS              := --rm --network $(DOCKER_NETWORK)
 # When running docker command in drone, we are already inside a docker (dind).
 # Whe need to find the volume mounted in the current docker (runned by drone) to mount it in our docker command.
