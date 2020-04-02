@@ -17,7 +17,7 @@ deploy-old-%:
 deploy-%: docker-login
 	$(eval ENV:=$*)
 	$(call make,docker-tag docker-push)
-	$(call make,ansible-pull@$* ANSIBLE_DOCKER_IMAGE_TAG=$(VERSION) ANSIBLE_TAGS=aws,../infra,APP AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY)
+	$(call make,ansible-pull@$* ANSIBLE_DOCKER_IMAGE_TAG=$(VERSION) ANSIBLE_TAGS=aws DOCKER_BUILD_TARGET=local,../infra,APP AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY)
 	$(call make,docker-tag-latest docker-push-latest)
 
 .PHONY: deploy-assets-install
