@@ -21,7 +21,7 @@ endif
 .PHONY: release-create
 release-create: bootstrap-infra release-check git-stash ## Create release [version]
 	$(call make,branch-create-upstream-develop BRANCH=$(RELEASE_BRANCH))
-	$(call make,git-unstash STATUS=$(STATUS))
+	$(call make,git-unstash,,STATUS)
 
 .PHONY: release-finish
 release-finish: bootstrap-infra release-check git-stash ## Finish release [version]
@@ -32,4 +32,4 @@ release-finish: bootstrap-infra release-check git-stash ## Finish release [versi
 	$(call make,tag-merge-upstream-develop TAG=$(RELEASE_VERSION))
 	$(call make,branch-delete BRANCH=$(RELEASE_BRANCH))
 	$(call make,subrepos-branch-delete BRANCH=$(RELEASE_BRANCH))
-	$(call make,git-unstash STATUS=$(STATUS))
+	$(call make,git-unstash,,STATUS)

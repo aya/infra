@@ -144,7 +144,7 @@ define make
 endef
 
 ifneq ($(MONOREPO),)
-ifneq ($(SUBREPO),)
+ifneq ($(wildcard .gitrepo),)
 MAKE_SUBDIRS                    := subrepo
 else
 MAKE_SUBDIRS                    := monorepo

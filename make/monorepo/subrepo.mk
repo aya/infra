@@ -32,8 +32,8 @@ subrepo-push: bootstrap-infra subrepo-check git-fetch-subrepo git-diff-subrepo
 ifeq ($(BRANCH),master)
 	$(eval UPDATE_SUBREPO_OPTIONS += -u)
 endif
-# if release|develop|story|hotfix branch, delete remote branch before push
-ifneq ($(findstring $(firstword $(subst /, ,$(BRANCH))),release develop story hotfix),)
+# if release|story|hotfix branch, delete remote branch before push and recreate it from master
+ifneq ($(findstring $(firstword $(subst /, ,$(BRANCH))),release story hotfix),)
 	$(eval DRYRUN_IGNORE := true)
 	$(eval DELETE = $(shell $(call exec,git ls-remote --heads $(REMOTE) $(BRANCH) |wc -l)) )
 	$(eval DRYRUN_IGNORE := false)
@@ -43,10 +43,11 @@ endif
 	if [ $(DIFF) -eq 0 ]; then \
 		echo subrepo $(SUBREPO) already up to date.; \
 	else \
+		$(call exec,git subrepo fetch $(SUBREPO)); \
 		if [ $(DELETE) -eq 1 ]; then \
 			$(call exec,git push $(REMOTE) :$(BRANCH)); \
+			$(call exec,git push $(REMOTE) refs/remotes/$(REMOTE)/master:refs/heads/$(BRANCH)); \
 		fi; \
-		$(call exec,git subrepo fetch $(SUBREPO)); \
 		$(call exec,git subrepo push $(SUBREPO) -b $(BRANCH) $(UPDATE_SUBREPO_OPTIONS)); \
 		$(call exec,git subrepo clean $(SUBREPO)); \
 	fi
