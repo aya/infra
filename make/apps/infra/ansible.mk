@@ -17,7 +17,7 @@ ansible-pull:
 .PHONY: ansible-pull@%
 ansible-pull@%: aws-ec2-get-PrivateIpAddress-$(SERVER_NAME)
 	$(eval ENV:=$*)
-	$(call ssh-exec,$(AWS_INSTANCE_IP),make ansible-pull ANSIBLE_DOCKER_IMAGE_TAG=$(ANSIBLE_DOCKER_IMAGE_TAG) ANSIBLE_TAGS=$(ANSIBLE_TAGS))
+	$(call ssh-exec,$(AWS_INSTANCE_IP),make ansible-pull ANSIBLE_DOCKER_IMAGE_TAG=$(ANSIBLE_DOCKER_IMAGE_TAG) ANSIBLE_TAGS=$(ANSIBLE_TAGS) FORCE=$(FORCE))
 
 .PHONY: ansible-run
 ansible-run: base-ssh-add docker-build-ansible ansible-run-localhost

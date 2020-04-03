@@ -99,6 +99,8 @@
   tags: ['disks']
 
 - name: "Disable periodic fsck and reserved space on ext3 or ext4 formatted disks"
+  environment:
+    PATH: "{{ ansible_env.PATH }}:/usr/sbin:/sbin"
   shell: tune2fs -c0 -i0 -m0 {{ item.0.part | default(item.0.disk + "1") }}
   with_together:
     - '{{ disks_additional_disks }}'
@@ -114,6 +116,8 @@
   tags: ['disks']
 
 - name: "Get UUID for partition"
+  environment:
+    PATH: "{{ ansible_env.PATH }}:/usr/sbin:/sbin"
   command: blkid -s UUID -o value {{ item.0.part | default(item.0.disk + "1") }}
   check_mode: no
   register: disks_blkid
