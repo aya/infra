@@ -2,6 +2,8 @@
 # file: handlers/main.yml
 
 - name: update boot config
+  environment:
+    PATH: "{{ ansible_env.PATH }}:/usr/sbin:/sbin"
   with_together:
   - '{{ boot_config }}'
   - '{{ boot_config_handler_notify.results }}'
