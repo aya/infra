@@ -11,7 +11,7 @@ build-%: $(APPS) ; ## Build applications for (environment)
 clean: $(APPS) ## Clean applications
 
 .PHONY: clean-%
-clean-%: $(APPS) ## Clean applications for (environment)
+clean-%: $(APPS) ; ## Clean applications for (environment)
 
 .PHONY: config
 config: $(APPS)
