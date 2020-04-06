@@ -79,7 +79,7 @@ COMPOSE_SERVICE_NAME            := $(subst _,-,$(COMPOSE_PROJECT_NAME))
 DOCKER_REPOSITORY               := $(USER)/$(ENV)/$(APP)
 endif
 else
-DOCKER_RUN_VOLUME               := -v /var/run/docker.sock:/var/run/docker.sock -v $(APP_DIR):$(or $(WORKSPACE_DIR),$(APP_DIR))
+DOCKER_RUN_VOLUME               := -v /var/run/docker.sock:/var/run/docker.sock -v $(or $(MONOREPO_DIR),$(APP_DIR)):$(or $(WORKSPACE_DIR),$(MONOREPO_DIR),$(APP_DIR))
 endif
 
 define docker-compose

@@ -56,4 +56,4 @@ RUN let $UID >/dev/null 2>&1 \
  && chown $UID:$GID /home/$USER \
  || true
 
-# USER $USER
+USER $USER

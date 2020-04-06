@@ -151,7 +151,7 @@ MAKE_SUBDIRS                    := monorepo
 endif
 endif
 
-ifneq ($(APP_TYPE),)
+ifneq ($(APP),)
 MAKE_SUBDIRS                    += apps $(foreach type,$(APP_TYPE),$(if $(wildcard $(MAKE_DIR)/apps/$(type)),apps/$(type)))
 endif
 

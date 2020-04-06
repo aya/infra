@@ -12,7 +12,6 @@ clean: $(APPS) ## Clean applications
 
 .PHONY: clean-%
 clean-%: $(APPS) ## Clean applications for (environment)
-	$(call make,clean-docker-$* clean-images-$*,infra)
 
 .PHONY: config
 config: $(APPS)

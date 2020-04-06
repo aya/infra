@@ -22,7 +22,7 @@ PACKER_QEMU_ARGS                ?= -machine type=pc,accel=$(PACKER_QEMU_ACCELERA
 PACKER_RELEASE                  ?= $(PACKER_ALPINE_RELEASE)
 PACKER_SSH_ADDRESS              ?= $(if $(ssh_bind_address),$(ssh_bind_address),0.0.0.0)
 PACKER_SSH_PORT                 ?= $(if $(ssh_port_max),$(ssh_port_max),2222)
-PACKER_SSH_WAIT_TIMEOUT         ?= 16s
+PACKER_SSH_WAIT_TIMEOUT         ?= 32s
 PACKER_TEMPLATES                ?= $(wildcard packer/*/*.json)
 PACKER_TEMPLATE                 ?= alpine
 PACKER_USERNAME                 ?= root
