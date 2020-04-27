@@ -9,7 +9,7 @@
         SetHandler  "proxy:balancer://php/"
     </FilesMatch>
     <Proxy "balancer://php/">
-{{ range service $serviceName }}        BalancerMember "fcgi://{{ .Address }}:{{ .Port }}/" disablereuse=On timeout=300
+{{ range service $serviceName }}        BalancerMember "fcgi://{{ .Address }}:{{ .Port }}/" disablereuse=On timeout=900
 {{ end }}        ProxySet lbmethod=bybusyness
     </Proxy>
     <Directory /var/www/web>
