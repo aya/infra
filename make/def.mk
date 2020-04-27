@@ -5,9 +5,9 @@ quote                           ?= '
 APP                             ?= $(if $(wildcard .git),$(if $(wildcard */.gitrepo),,$(notdir $(CURDIR))),$(notdir $(CURDIR)))
 APP_DIR                         ?= $(if $(APP),$(CURDIR))
 BRANCH                          ?= $(shell git rev-parse --abbrev-ref HEAD)
-CMDS                            ?= copy exec exec@% run run@%
+CMDS                            ?= exec exec@% run run@%
 COMMIT                          ?= $(shell git rev-parse $(BRANCH) 2>/dev/null)
-CONTEXT                         ?= $(shell awk 'BEGIN {FS="="}; $$1 !~ /^(\#|$$)/ {print $$1}' .env.dist 2>/dev/null) BRANCH UID USER VERSION
+CONTEXT                         ?= $(shell awk 'BEGIN {FS="="}; $$1 !~ /^(\#|$$)/ {print $$1}' .env.dist 2>/dev/null) BRANCH ENV_FILE UID USER VERSION
 DEBUG                           ?= false
 DOCKER                          ?= true
 DRONE                           ?= false
@@ -15,7 +15,7 @@ DRYRUN                          ?= false
 DRYRUN_IGNORE                   ?= false
 DRYRUN_RECURSIVE                ?= false
 ENV                             ?= local
-ENV_FILE                        ?= .env $(wildcard ../parameters/$(ENV)/$(APP)/.env)
+ENV_FILE                        ?= .env $(wildcard ../$(PARAMETERS)/$(ENV)/$(APP)/.env)
 ENV_RESET                       ?= false
 ENV_VARS                        ?= APP APP_DIR BRANCH ENV HOSTNAME GID MONOREPO MONOREPO_DIR TAG UID USER VERSION
 GID                             ?= $(shell id -g)
@@ -25,8 +25,12 @@ GIT_UPSTREAM_USER               ?= $(MONOREPO)
 HOSTNAME                        ?= $(shell hostname |sed 's/\..*//')
 MAKE_ARGS                       ?= $(foreach var,$(MAKE_VARS),$(if $($(var)),$(var)='$($(var))'))
 MAKE_VARS                       ?= ENV
+MAKECMDVARS                     ?= $(strip $(foreach var, $(filter-out .VARIABLES,$(.VARIABLES)), $(if $(filter command\ line,$(origin $(var))),$(var))))
+MAKECMDARGS                     ?= $(foreach var,$(MAKECMDVARS),$(var)='$($(var))')
+MAKETARGETS                     ?= $(filter-out $(.VARIABLES),$(shell $(MAKE) -qp |awk -F':' '/^[a-zA-Z0-9][^$$\#\/\t=]*:([^=]|$$)/ {print $$1}' |sort -u))
 MONOREPO                        ?= $(if $(wildcard .git),$(if $(wildcard */.gitrepo),$(notdir $(CURDIR))),$(if $(SUBREPO),$(notdir $(realpath $(CURDIR)/..))))
 MONOREPO_DIR                    ?= $(if $(wildcard .git),$(if $(wildcard */.gitrepo),$(CURDIR)),$(if $(SUBREPO),$(realpath $(CURDIR)/..)))
+PARAMETERS                      ?= parameters
 RECURSIVE                       ?= true
 SUBREPO                         ?= $(if $(wildcard .gitrepo),$(notdir $(CURDIR)))
 SUBREPO_DIR                     ?= $(if $(SUBREPO),$(CURDIR))
@@ -155,8 +159,8 @@ ifneq ($(APP),)
 MAKE_SUBDIRS                    += apps $(foreach type,$(APP_TYPE),$(if $(wildcard $(MAKE_DIR)/apps/$(type)),apps/$(type)))
 endif
 
-# include additional .env files
-include $(foreach env_file,$(filter-out .env,$(ENV_FILE)),$(wildcard $(env_file)))
+# include .env files
+include $(wildcard $(ENV_FILE))
 # include variables definitions
 include $(wildcard $(MAKE_DIR)/def.*.mk)
 include $(foreach subdir,$(MAKE_SUBDIRS),$(wildcard $(MAKE_DIR)/$(subdir)/def.*.mk))
@@ -170,6 +174,3 @@ ARGS                            := $(subst &,\&,$(ARGS))
 # ...and turn them into do-nothing targets
 $(eval $(ARGS):;@:)
 endif
-
-MAKECMDVARS                     := $(strip $(foreach var, $(filter-out .VARIABLES,$(.VARIABLES)), $(if $(filter command\ line,$(origin $(var))),$(var))))
-MAKECMDARGS                     := $(foreach var,$(MAKECMDVARS),$(var)='$($(var))')

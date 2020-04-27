@@ -1,7 +1,8 @@
-COLOR_RESET    := \033[0m
-COLOR_GREEN    := \033[32m
-COLOR_BROWN    := \033[33m
-COLOR_BLUE     := \033[36m
+.DEFAULT_GOAL                   := help
+COLOR_RESET                     ?= \033[0m
+COLOR_GREEN                     ?= \033[32m
+COLOR_BROWN                     ?= \033[33m
+COLOR_BLUE                      ?= \033[36m
 
 ##
 # HELP
@@ -35,7 +36,7 @@ context-list: $(CONTEXT)
 
 .PHONY: $(CONTEXT)
 $(CONTEXT):
-	$(MAKE) print-$@
+	@printf "${COLOR_BLUE}%-30s${COLOR_RESET} ${COLOR_GREEN}%s${COLOR_RESET}\n" $@ "$($@)"
 
 .PHONY: print-%
 print-%: ; @printf "${COLOR_BLUE}%-30s${COLOR_RESET} ${COLOR_GREEN}%s${COLOR_RESET}\n" $* "$($*)"

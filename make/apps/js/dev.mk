@@ -3,7 +3,7 @@
 
 ## Build assets
 .PHONY: dev-assets
-dev-assets: stack ## Build assets
+dev-assets: ## Build assets
 	$(call docker-compose-exec,$(DOCKER_SERVICE),yarn build:dev:watch)
 
 .PHONY: dev-outdated

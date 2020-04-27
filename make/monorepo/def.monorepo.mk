@@ -1,9 +1,9 @@
 APPS                            ?= $(sort $(filter-out $(DIRS), $(patsubst %/,%,$(wildcard */)) ))
-APPS_NAME                       ?= $(foreach app,$(APPS),$(or $(shell awk -F '=' '$$1 == "APP" {print $$2}' $(or $(wildcard $(app)/.env),$(wildcard $(app)/.env.$(ENV))) 2>/dev/null),$(app)))
-CMDS                            += master-tag release release-check release-create release-finish subrepo-push update-subrepo
+APPS_NAME                       ?= $(foreach app,$(APPS),$(or $(shell awk -F '=' '$$1 == "APP" {print $$2}' $(or $(wildcard $(app)/.env),$(wildcard $(app)/.env.$(ENV)),$(app)/.env.dist) 2>/dev/null),$(app)))
+CMDS                            += copy master-tag release release-check release-create release-finish subrepo-push update-subrepo
 CONTEXT                         += APPS APPS_NAME ENV RELEASE_INSTALL
-DIRS                            ?= infra make parameters shared
-RELEASE_UPGRADE                 ?= $(filter v3.%, $(shell git tag -l |awk '/$(RELEASE_INSTALL)/,0' |sed '$$d'))
+DIRS                            ?= infra $(MAKE_DIR) $(PARAMETERS) shared
+RELEASE_UPGRADE                 ?= $(filter v%, $(shell git tag -l |awk '/$(RELEASE_INSTALL)/,0' |sed '$$d'))
 RELEASE_VERSION                 ?= $(firstword $(subst -, ,$(VERSION)))
 SUBREPOS                        ?= $(filter subrepo/%, $(shell git remote))
 

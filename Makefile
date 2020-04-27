@@ -1,7 +1,3 @@
-##
-# APP
-
-APP_TYPE := infra
 include make/include.mk
 
 .PHONY: all

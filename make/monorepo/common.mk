@@ -16,6 +16,10 @@ clean-%: $(APPS) ; ## Clean applications for (environment)
 .PHONY: config
 config: $(APPS)
 
+.PHONY: copy
+copy:
+	$(foreach app,$(APPS) infra,$(foreach file,$(ARGS),$(if $(wildcard $(file)),$(ECHO) $(if $(filter LINUX,$(HOST_SYSTEM)),cp -a --parents $(file) $(app)/,rsync -a $(file) $(app)/$(file)) &&)) true &&) true
+
 .PHONY: deploy
 deploy: $(APPS) ## Deploy applications
 
@@ -54,7 +58,7 @@ up: $(APPS) ## Create application dockers
 
 .PHONY: $(APPS)
 $(APPS): bootstrap-infra docker-infra-base docker-infra-node docker-infra-services
-	$(call make,$(patsubst apps-%,%,$(MAKECMDGOALS)) STATUS=0,$(patsubst %/,%,$@),ENV ENV_SUFFIX)
+	$(call make,$(patsubst apps-%,%,$(MAKECMDGOALS)) STATUS=0,$(patsubst %/,%,$@),ENV_SUFFIX)
 
 # run targets in $(APPS)
 .PHONY: apps-%

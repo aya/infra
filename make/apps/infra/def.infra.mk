@@ -1,6 +1,6 @@
 CMDS                            += base-exec node-exec openstack terraform
 COMPOSE_IGNORE_ORPHANS          ?= true
-CONTEXT                         += COMPOSE_PROJECT_NAME GIT_AUTHOR_EMAIL GIT_AUTHOR_NAME
+CONTEXT                         += GIT_AUTHOR_EMAIL GIT_AUTHOR_NAME
 DOCKER_SERVICE                  ?= mysql
 ELASTICSEARCH_HOST              ?= elasticsearch
 ELASTICSEARCH_PORT              ?= 9200
