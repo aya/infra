@@ -108,7 +108,7 @@ define conf
 			fi \
 			;; \
 		esac \
-	done < "$(file)" || echo "Unable to read $(file)" >&2
+	done < "$(file)"
 endef
 
 define force
