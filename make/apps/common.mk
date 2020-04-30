@@ -114,8 +114,7 @@ up: docker-compose-up start-up ## Create application dockers
 # this target is fired everytime make is runned, to hydrate the COMPOSE_FILE
 # variable with all the .yml files of the current project stack
 .PHONY: FORCE
-%: FORCE stack %-rule-exists
-	$(eval MAKE_OLDFILE := $(MAKE_OLDFILE) $(filter-out $(MAKE_OLDFILE), stack))
+%: FORCE stack %-rule-exists ;
 
 ##
 # %-rule-exists target

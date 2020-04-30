@@ -107,7 +107,7 @@ docker-compose-up: docker-infra
 	$(call docker-compose,up $(DOCKER_COMPOSE_UP_OPTIONS) $(SERVICE))
 
 .PHONY: docker-infra
-docker-infra: docker-infra-base docker-infra-images docker-infra-node docker-infra-services
+docker-infra: docker-infra-base docker-infra-images
 
 .PHONY: docker-infra-base
 docker-infra-base: bootstrap-infra

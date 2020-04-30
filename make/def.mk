@@ -130,7 +130,6 @@ endef
 	# add list of arguments from file to MAKE_ARGS
 	# eval MAKE_DIR option to -C $(2) if $(2) given
 	# add current target to MAKE_OLDFILE (list of already fired targets)
-	# if make is called in another directory, we need to fire the stack rule again
 	# print command that will be run if VERBOSE mode
 	# actually run make command
 	# if DRYRUN_RECURSIVE mode, run make command in DRYRUN mode
@@ -142,8 +141,7 @@ define make
 	$(if $(vars),$(eval MAKE_ARGS += $(foreach var,$(vars),$(if $($(var)),$(var)='$($(var))'))))
 	$(if $(wildcard $(file)),$(eval MAKE_ARGS += $(shell cat $(file) |sed '/^$$/d; /^#/d; /=/!d; s/^[[:blank:]]*//; s/[[:blank:]]*=[[:blank:]]*/=/;' |awk -F '=' '{print $$1"='\''"$$2"'\''"}')))
 	$(eval MAKE_DIR := $(if $(dir),-C $(dir)))
-	$(eval MAKE_OLDFILE := $(MAKE_OLDFILE) $(filter-out $(MAKE_OLDFILE), $^))
-	$(if $(dir),$(eval MAKE_OLDFILE := $(filter-out stack,$(MAKE_OLDFILES))))
+	$(eval MAKE_OLDFILE += $(filter-out $(MAKE_OLDFILE), $^))
 	$(if $(filter $(VERBOSE),true),printf '${COLOR_GREEN}Running${COLOR_RESET} "'"make $(MAKE_ARGS) $(cmd)"'" $(if $(dir),${COLOR_BLUE}in folder${COLOR_RESET} $(dir) )\n')
 	$(ECHO) $(MAKE) $(MAKE_DIR) $(patsubst %,-o %,$(MAKE_OLDFILE)) MAKE_OLDFILE="$(MAKE_OLDFILE)" $(MAKE_ARGS) $(cmd)
 	$(if $(filter $(DRYRUN_RECURSIVE),true),$(MAKE) $(MAKE_DIR) $(patsubst %,-o %,$(MAKE_OLDFILE)) MAKE_OLDFILE="$(MAKE_OLDFILE)" DRYRUN=$(DRYRUN) RECURSIVE=$(RECURSIVE) $(MAKE_ARGS) $(cmd))

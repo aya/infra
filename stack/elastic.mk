@@ -1,2 +1,1 @@
-elastic                         ?= elastic/elasticsearch elastic/kibana
-dependencies                    += alpine/sysctl
+elastic                         ?= elastic/elasticsearch elastic/kibana alpine/sysctl
