@@ -5,9 +5,9 @@ services:
     build:
       args:
       - DOCKER_BUILD_DIR=docker/es-exporter
-      context: ..
+      context: ../..
       dockerfile: docker/es-exporter/Dockerfile
-    command: -e 52.48.69.60:9200
+    command: -e ${ES_EXPORTER_ELASTICSEARCH_URL}
     image: ${DOCKER_REPOSITORY}/es-exporter:${DOCKER_IMAGE_TAG}
     labels:
     - SERVICE_9206_NAME=${COMPOSE_SERVICE_NAME}-es-exporter-9206

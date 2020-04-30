@@ -5,7 +5,7 @@ services:
     build:
       args:
       - DOCKER_BUILD_DIR=docker/blackbox
-      context: ..
+      context: ../..
       dockerfile: docker/blackbox/Dockerfile
     image: ${DOCKER_REPOSITORY}/blackbox:${DOCKER_IMAGE_TAG}
     labels:

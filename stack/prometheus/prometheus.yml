@@ -7,7 +7,7 @@ services:
       - DOCKER_BUILD_DIR=docker/prometheus
       - MONITORING_PRIMARY_TARGETS_BLACKBOX=${PROMETHEUS_MONITORING_PRIMARY_TARGETS_BLACKBOX}
       - MONITORING_SECONDARY_TARGETS_BLACKBOX=${PROMETHEUS_MONITORING_SECONDARY_TARGETS_BLACKBOX}
-      context: ..
+      context: ../..
       dockerfile: docker/prometheus/Dockerfile
     image: ${DOCKER_REPOSITORY}/prometheus:${DOCKER_IMAGE_TAG}
     labels:

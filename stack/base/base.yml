@@ -9,7 +9,7 @@ services:
       - GIT_AUTHOR_EMAIL=${GIT_AUTHOR_EMAIL}
       - UID=${UID}
       - USER=${USER}
-      context: ..
+      context: ../..
       dockerfile: docker/cli/Dockerfile
       target: ${DOCKER_BUILD_TARGET}
     command: tail -f /dev/null
@@ -32,7 +32,7 @@ services:
       - DOCKER_BUILD_DIR=docker/ssh
       - UID=${UID}
       - USER=${USER}
-      context: ..
+      context: ../..
       dockerfile: docker/ssh/Dockerfile
       target: ${DOCKER_BUILD_TARGET}
     container_name: ${DOCKER_NAME_SSH}

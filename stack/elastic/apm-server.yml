@@ -5,7 +5,7 @@ services:
     build:
       args:
       - DOCKER_BUILD_DIR=docker/apm-server
-      context: ..
+  context: ../..
       dockerfile: docker/apm-server/Dockerfile
     image: docker.elastic.co/apm/apm-server-oss:7.4.2
     command: -c apm-server.yml --strict.perms=false -e -E output.elasticsearch.hosts=["${ELASTICSEARCH_HOST}:${ELASTICSEARCH_PORT}"] -E output.elasticsearch.protocol=${ELASTICSEARCH_PROTOCOL} -E output.elasticsearch.username=${ELASTICSEARCH_USERNAME} -E output.elasticsearch.password=${ELASTICSEARCH_PASSWORD} -E apm-server.register.ingest.pipeline.enabled=false

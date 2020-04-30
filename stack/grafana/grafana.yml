@@ -10,7 +10,7 @@ services:
       - MYSQL_GRAFANA_DB=${GRAFANA_MYSQL_DB}
       - MYSQL_GRAFANA_PASSWORD=${GRAFANA_MYSQL_PASSWORD}
       - MYSQL_GRAFANA_USER=${GRAFANA_MYSQL_USER}
-      context:  ..
+      context:  ../..
       dockerfile: docker/grafana/Dockerfile
     environment:
     - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource
