@@ -1,36 +1,14 @@
-CMDS                            += docker-compose-exec
-COMPOSE_FILE                    ?= $(wildcard docker/docker-compose.yml docker/docker-compose.$(ENV).yml $(foreach file,app nfs ssh subrepo tmpfs,$(if $(filter true,$(MOUNT_$(call UPPERCASE,$(file)))),docker/docker-compose.$(file).yml)))
-COMPOSE_PROJECT_NAME            ?= $(USER)_$(ENV)_$(APP)
+COMPOSE_VERSION                 ?= 1.24.1
 COMPOSE_PROJECT_NAME_INFRA      ?= $(USER)_$(ENV)_infra
 COMPOSE_PROJECT_NAME_INFRA_NODE ?= node_infra
-COMPOSE_SERVICE_NAME            ?= $(subst _,-,$(COMPOSE_PROJECT_NAME))
-COMPOSE_VERSION                 ?= 1.24.1
-CONTEXT                         += COMPOSE_FILE COMPOSE_PROJECT_NAME DOCKER_SERVICE
-DOCKER_BUILD_ARGS               ?= $(foreach var,$(DOCKER_BUILD_VARS),$(if $($(var)),--build-arg $(var)='$($(var))'))
-DOCKER_BUILD_CACHE              ?= true
-DOCKER_BUILD_TARGET             ?= $(if $(filter-out $(APP),infra),$(if $(filter $(ENV),local tests preprod prod),$(ENV),local),local)
-DOCKER_BUILD_VARS               ?= APP BRANCH DOCKER_GID DOCKER_REPOSITORY GID GIT_AUTHOR_EMAIL GIT_AUTHOR_NAME TARGET UID USER VERSION
-DOCKER_COMPOSE_DOWN_OPTIONS     ?=
-DOCKER_COMPOSE_UP_OPTIONS       ?= -d
 DOCKER_EXEC_OPTIONS             ?=
-DOCKER_GID                      ?= $(call getent-group,docker)
 DOCKER_IMAGE                    ?= $(DOCKER_IMAGE_CLI)
 DOCKER_IMAGE_CLI                ?= $(DOCKER_REPOSITORY_INFRA)/cli
 DOCKER_IMAGE_SSH                ?= $(DOCKER_REPOSITORY_INFRA)/ssh
-DOCKER_IMAGE_TAG                ?= $(if $(filter-out $(APP),infra),$(if $(filter $(ENV),preprod prod),$(VERSION),$(if $(DRONE_BUILD_NUMBER),$(DRONE_BUILD_NUMBER),latest)),latest)
-DOCKER_IMAGES                   ?= $(dir $(wildcard docker/*/Dockerfile))
 DOCKER_NAME                     ?= $(DOCKER_NAME_CLI)
 DOCKER_NAME_CLI                 ?= $(COMPOSE_PROJECT_NAME_INFRA)_cli
 DOCKER_NAME_SSH                 ?= $(COMPOSE_PROJECT_NAME_INFRA)_ssh
 DOCKER_NETWORK                  ?= $(ENV)
-DOCKER_PLUGIN                   ?= rexray/s3fs:latest
-DOCKER_PLUGIN_ARGS              ?= $(foreach var,$(DOCKER_PLUGIN_VARS),$(if $($(var)),$(var)='$($(var))'))
-DOCKER_PLUGIN_OPTIONS           ?= --grant-all-permissions
-DOCKER_PLUGIN_VARS              ?= S3FS_ACCESSKEY S3FS_OPTIONS S3FS_SECRETKEY S3FS_REGION
-DOCKER_REGISTRY                 ?= registry
-DOCKER_REGISTRY_USERNAME        ?= $(USER)
-DOCKER_REGISTRY_REPOSITORY      ?= $(addsuffix /,$(DOCKER_REGISTRY))$(subst $(USER),$(DOCKER_REGISTRY_USERNAME),$(DOCKER_REPOSITORY))
-DOCKER_REPOSITORY               ?= $(subst _,/,$(COMPOSE_PROJECT_NAME))
 DOCKER_REPOSITORY_INFRA         ?= $(subst _,/,$(COMPOSE_PROJECT_NAME_INFRA))
 DOCKER_REPOSITORY_INFRA_NODE    ?= $(subst _,/,$(COMPOSE_PROJECT_NAME_INFRA_NODE))
 # DOCKER_RUN_OPTIONS: default options to `docker run` command
@@ -38,58 +16,23 @@ DOCKER_RUN_OPTIONS              ?= --rm -it
 # DOCKER_RUN_VOLUME: options to `docker run` command to mount additionnal volumes
 DOCKER_RUN_VOLUME               ?= -v $$PWD:$$PWD
 DOCKER_RUN_WORKDIR              ?= -w $$PWD
-DOCKER_SERVICES_INFRA_BASE      ?= cli ssh
-DOCKER_SERVICES_INFRA_NODE      ?= consul fabio registrator
-DOCKER_SHELL                    ?= $(SHELL)
 DOCKER_VOLUME_SSH               ?= $(COMPOSE_PROJECT_NAME_INFRA)_ssh
-ENV_VARS                        += COMPOSE_PROJECT_NAME COMPOSE_SERVICE_NAME DOCKER_BUILD_TARGET DOCKER_GID DOCKER_HOST_IFACE DOCKER_HOST_INET DOCKER_IMAGE_TAG DOCKER_NETWORK DOCKER_REGISTRY DOCKER_REPOSITORY DOCKER_REPOSITORY_INFRA DOCKER_REPOSITORY_INFRA_NODE DOCKER_SHELL DOCKER_VOLUME_SSH
-S3FS_ACCESSKEY                  ?= $(shell $(call conf,$(HOME)/.aws/credentials,$(or $(AWS_PROFILE),default),aws_access_key_id))
-S3FS_OPTIONS                    ?= allow_other,nonempty,use_path_request_style,url=https://s3-eu-west-1.amazonaws.com
-S3FS_SECRETKEY                  ?= $(shell $(call conf,$(HOME)/.aws/credentials,$(or $(AWS_PROFILE),default),aws_secret_access_key))
-S3FS_REGION                     ?= eu-west-1
+ENV_VARS                        += DOCKER_NETWORK DOCKER_REPOSITORY_INFRA DOCKER_REPOSITORY_INFRA_NODE DOCKER_VOLUME_SSH
 
-# https://github.com/docker/libnetwork/pull/2348
-ifeq ($(HOST_SYSTEM), DARWIN)
-DOCKER_HOST_IFACE               ?= $(shell docker run --rm -it --net=host alpine /sbin/ip -4 route list match 0/0 2>/dev/null |awk '{print $$5}' |awk '!seen[$$0]++' |head -1)
-DOCKER_HOST_INET                ?= $(shell docker run --rm -it --net=host alpine /sbin/ip -4 addr show $(DOCKER_HOST_IFACE) 2>/dev/null |awk '$$1 == "inet" {sub(/\/.*/,"",$$2); print $$2}')
-DOCKER_INTERNAL_DOCKER_GATEWAY  ?= $(shell docker run --rm -it alpine getent hosts gateway.docker.internal |awk '{print $$1}' |head -1)
-DOCKER_INTERNAL_DOCKER_HOST     ?= $(shell docker run --rm -it alpine getent hosts host.docker.internal |awk '{print $$1}' |head -1)
+ifeq ($(DRONE), true)
+DOCKER_RUN_OPTIONS              := --rm --network $(DOCKER_NETWORK)
+# When running docker command in drone, we are already in a docker (dind).
+# Whe need to find the volume mounted in the current docker (runned by drone) to mount it in our docker command.
+# If we do not mount the volume in our docker, we wont be able to access the files in this volume as the /drone/src directory would be empty.
+DOCKER_RUN_VOLUME               := -v /var/run/docker.sock:/var/run/docker.sock -v $$(docker inspect $$(basename $$(cat /proc/1/cpuset)) 2>/dev/null |awk 'BEGIN {FS=":"} $$0 ~ /"drone-[a-zA-Z0-9]*:\/drone"$$/ {gsub(/^[ \t\r\n]*"/,"",$$1); print $$1; exit}'):/drone $(if $(wildcard /root/.netrc),-v /root/.netrc:/root/.netrc)
 else
-DOCKER_HOST_IFACE               ?= $(shell /sbin/ip -4 route list match 0/0 2>/dev/null |awk '{print $$5}' |awk '!seen[$$0]++' |head -1)
-DOCKER_HOST_INET                ?= $(shell /sbin/ip -4 addr show $(DOCKER_HOST_IFACE) 2>/dev/null |awk '$$1 == "inet" {sub(/\/.*/,"",$$2); print $$2}')
-DOCKER_INTERNAL_DOCKER_GATEWAY  ?= $(shell /sbin/ip -4 route list match 0/0 2>/dev/null |awk '{print $$3}' |awk '!seen[$$0]++' |head -1)
-DOCKER_INTERNAL_DOCKER_HOST     ?= $(shell /sbin/ip addr show docker0 2>/dev/null |awk '$$1 == "inet" {sub(/\/.*/,"",$$2); print $$2}')
+DOCKER_RUN_VOLUME               := -v /var/run/docker.sock:/var/run/docker.sock -v $(or $(MONOREPO_DIR),$(APP_DIR)):$(or $(WORKSPACE_DIR),$(MONOREPO_DIR),$(APP_DIR))
 endif
 
 ifeq ($(DOCKER), true)
 
 DOCKER_SSH_AUTH                 := -e SSH_AUTH_SOCK=/tmp/ssh-agent/socket -v $(DOCKER_VOLUME_SSH):/tmp/ssh-agent:ro
 
-ifeq ($(DRONE), true)
-DOCKER_COMPOSE_DOWN_OPTIONS     := --rmi all -v
-DOCKER_COMPOSE_UP_OPTIONS       := -d --build
-DOCKER_BUILD_CACHE              := false
-DOCKER_RUN_OPTIONS              := --rm --network $(DOCKER_NETWORK)
-# When running docker command in drone, we are already inside a docker (dind).
-# Whe need to find the volume mounted in the current docker (runned by drone) to mount it in our docker command.
-# If we do not mount the volume in our docker, we wont be able to access the files in this volume as the /drone/src directory would be empty.
-DOCKER_RUN_VOLUME               := -v /var/run/docker.sock:/var/run/docker.sock -v $$(docker inspect $$(basename $$(cat /proc/1/cpuset)) 2>/dev/null |awk 'BEGIN {FS=":"} $$0 ~ /"drone-[a-zA-Z0-9]*:\/drone"$$/ {gsub(/^[ \t\r\n]*"/,"",$$1); print $$1; exit}'):/drone $(if $(wildcard /root/.netrc),-v /root/.netrc:/root/.netrc)
-ENV_SUFFIX                      := $(DRONE_BUILD_NUMBER)
-ifneq ($(APP), infra)
-COMPOSE_PROJECT_NAME            := $(USER)_$(ENV)$(ENV_SUFFIX)_$(APP)
-COMPOSE_SERVICE_NAME            := $(subst _,-,$(COMPOSE_PROJECT_NAME))
-DOCKER_REPOSITORY               := $(USER)/$(ENV)/$(APP)
-endif
-else
-DOCKER_RUN_VOLUME               := -v /var/run/docker.sock:/var/run/docker.sock -v $(or $(MONOREPO_DIR),$(APP_DIR)):$(or $(WORKSPACE_DIR),$(MONOREPO_DIR),$(APP_DIR))
-endif
-
-define docker-compose
-	$(call run,docker/compose:$(COMPOSE_VERSION) $(patsubst %,-f %,$(COMPOSE_FILE)) -p $(COMPOSE_PROJECT_NAME) $(1))
-endef
-define docker-compose-exec
-	$(call run,docker/compose:$(COMPOSE_VERSION) $(patsubst %,-f %,$(COMPOSE_FILE)) -p $(COMPOSE_PROJECT_NAME) exec -T $(1) sh -c '$(2)')
-endef
 define docker-run
 	$(call run,$(1) $(2))
 endef
@@ -109,12 +52,6 @@ endef
 else
 
 SHELL                           := /bin/bash
-define docker-compose
-	$(call run,docker-compose $(patsubst %,-f %,$(COMPOSE_FILE)) -p $(COMPOSE_PROJECT_NAME) $(1))
-endef
-define docker-compose-exec
-	$(call run,docker-compose $(patsubst %,-f %,$(COMPOSE_FILE)) -p $(COMPOSE_PROJECT_NAME) exec -T $(1) sh -c '$(2)')
-endef
 define docker-run
 	$(ECHO) docker run $(DOCKER_RUN_OPTIONS) $(patsubst %,--env-file %,$(ENV_FILE)) $(foreach var,$(ENV_VARS),$(if $($(var)),-e $(var)='$($(var))')) $(shell printenv |awk -F '=' 'NR == FNR { if($$1 !~ /^(\#|$$)/) { A[$$1]; next } } ($$1 in A) {print "-e "$$0}' .env.dist - 2>/dev/null) $(DOCKER_RUN_VOLUME) $(DOCKER_RUN_WORKDIR) $(1) $(2)
 endef
@@ -127,68 +64,6 @@ endef
 
 endif
 
-define docker-build
-	$(eval path            := $(patsubst %/,%,$(1)))
-	$(eval tag             := $(or $(2),$(DOCKER_REPOSITORY)/$(lastword $(subst /, ,$(path))):$(DOCKER_IMAGE_TAG)))
-	$(eval target          := $(subst ",,$(subst ',,$(or $(3),$(DOCKER_BUILD_TARGET)))))
-	$(eval image_id        := $(shell docker images -q $(tag) 2>/dev/null))
-	$(eval build_image     := $(or $(filter $(DOCKER_BUILD_CACHE),false),$(if $(image_id),,true)))
-	$(if $(build_image),$(ECHO) docker build $(DOCKER_BUILD_ARGS) --build-arg DOCKER_BUILD_DIR="$(path)" --tag $(tag) $(if $(target),--target $(target)) -f $(path)/Dockerfile .,$(if $(filter $(VERBOSE),true),echo "docker image $(tag) has id $(image_id)",true))
-endef
-define docker-commit
-	$(eval service         := $(or $(1),$(DOCKER_SERVICE)))
-	$(eval container       := $(or $(2),$(firstword $(shell $(call docker-compose,--log-level critical ps -q $(service))))))
-	$(eval repository      := $(or $(3),$(DOCKER_REPOSITORY)/$(service)))
-	$(eval tag             := $(or $(4),$(DOCKER_IMAGE_TAG)))
-	$(if $(filter $(VERBOSE),true),echo docker commit $(container) $(repository):$(tag))
-	$(ECHO) docker commit $(container) $(repository):$(tag)
-endef
-define docker-push
-	$(eval service         := $(or $(1),$(DOCKER_SERVICE)))
-	$(eval name            := $(or $(2),$(DOCKER_REGISTRY_REPOSITORY)/$(service)))
-	$(eval tag             := $(or $(3),$(DOCKER_IMAGE_TAG)))
-	$(if $(filter $(VERBOSE),true),echo docker push $(name):$(tag))
-	$(ECHO) docker push $(name):$(tag)
-endef
-##
-# docker-stack
-# docker-stack: if 1st arg is a variable and can be expand to values, it calls
-# itself again, once whith each value, else calls docker-stack-update function
-	# 1st arg: stacks, extract it from stack_names:stack_versions
-	# 2nd arg: versions, extract it from stack_names:stack_versions or 2nd arg
-define docker-stack
-	$(eval stacks          := $(firstword $(subst :, ,$(1))))
-	$(eval versions        := $(or $(if $(findstring :,$(1)),$(lastword $(subst :, ,$(1)))),$(2)))
-	$(if $($(stacks)),$(foreach substack,$($(stacks)),$(call docker-stack,$(substack),$(if $(findstring :,$(1)),$(versions)))),$(call docker-stack-update,$(stacks),$(versions)))
-endef
-##
-# docker-stack-update
-# docker-stack-update: adds all .yml files of the stack to COMPOSE_FILE variable
-# and update the .env file with the .env.dist files of the stack
-	# 1st arg: stack_path/stack_name:stack_version
-	# stack: get stack_name:stack_version from 1st arg
-	# name: get stack name from $(stack)
-	# 2nd arg: stack version, or extract it from $(stack), default to latest
-	# 3rd arg: stack path, or extract it from $(stack), default to stack/$(name)
-	# add $(path)/$(name).yml, $(path)/$(name).$(ENV).yml and $(path)/$(name).$(version).yml to COMPOSE_FILE variable
-	# if $(path)/.env.dist file exists, update .env file
-define docker-stack-update
-	$(eval stack           := $(patsubst %.yml,%,$(notdir $(1))))
-	$(eval name            := $(firstword $(subst :, ,$(stack))))
-	$(eval version         := $(or $(2),$(if $(findstring :,$(stack)),$(lastword $(subst :, ,$(stack))),latest)))
-	$(eval path            := $(patsubst %/,%,$(or $(3),$(if $(findstring /,$(1)),$(if $(wildcard stack/$(1) stack/$(1).yml),stack/$(if $(findstring .yml,$(1)),$(dir $(1)),$(if $(wildcard stack/$(1).yml),$(dir $(1)),$(1))),$(dir $(1)))),stack/$(name))))
-	$(eval COMPOSE_FILE    += $(wildcard $(path)/$(name).yml $(path)/$(name).$(ENV).yml $(path)/$(name).$(version).yml))
-	$(if $(wildcard $(path)/.env.dist),$(call .env,,$(path)/.env.dist,$(wildcard ../$(PARAMETERS)/$(ENV)/$(APP)/.env $(path)/.env.$(ENV) .env)))
-endef
-define docker-tag
-	$(eval service         := $(or $(1),$(DOCKER_SERVICE)))
-	$(eval source          := $(or $(2),$(DOCKER_REPOSITORY)/$(service)))
-	$(eval source_tag      := $(or $(3),$(DOCKER_IMAGE_TAG)))
-	$(eval target          := $(or $(4),$(DOCKER_REGISTRY_REPOSITORY)/$(service)))
-	$(eval target_tag      := $(or $(5),$(source_tag)))
-	$(if $(filter $(VERBOSE),true),echo docker tag $(source):$(source_tag) $(target):$(target_tag))
-	$(ECHO) docker tag $(source):$(source_tag) $(target):$(target_tag)
-endef
 define docker-volume-copy
 	$(eval from            := $(1))
 	$(eval to              := $(2))
