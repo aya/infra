@@ -19,8 +19,9 @@ ENV_FILE                        ?= .env $(wildcard ../$(PARAMETERS)/$(ENV)/$(APP
 ENV_RESET                       ?= false
 ENV_VARS                        ?= APP APP_DIR BRANCH ENV HOSTNAME GID MONOREPO MONOREPO_DIR TAG UID USER VERSION
 GID                             ?= $(shell id -g)
+GIT_PARAMETERS_REPOSITORY       ?= $(call pop,$(GIT_UPSTREAM_REPOSITORY))/$(PARAMETERS)
 GIT_REPOSITORY                  ?= $(if $(SUBREPO),$(shell awk -F ' = ' '$$1 ~ /^[[:blank:]]*remote$$/ {print $$2}' .gitrepo),$(shell git config --get remote.origin.url))
-GIT_UPSTREAM_REPOSITORY         ?= $(subst $(word $(words $(subst /, ,$(GIT_REPOSITORY))),$(words $(subst /, ,$(GIT_REPOSITORY))),prev $(subst /, ,$(GIT_REPOSITORY))),$(GIT_UPSTREAM_USER),$(GIT_REPOSITORY))
+GIT_UPSTREAM_REPOSITORY         ?= $(call pop,$(call pop,$(GIT_REPOSITORY)))/$(GIT_UPSTREAM_USER)/$(lastword $(subst /, ,$(GIT_REPOSITORY)))
 GIT_UPSTREAM_USER               ?= $(MONOREPO)
 HOSTNAME                        ?= $(shell hostname |sed 's/\..*//')
 MAKE_ARGS                       ?= $(foreach var,$(MAKE_VARS),$(if $($(var)),$(var)='$($(var))'))
@@ -32,6 +33,7 @@ MONOREPO                        ?= $(if $(wildcard .git),$(if $(wildcard */.gitr
 MONOREPO_DIR                    ?= $(if $(wildcard .git),$(if $(wildcard */.gitrepo),$(CURDIR)),$(if $(SUBREPO),$(realpath $(CURDIR)/..)))
 PARAMETERS                      ?= parameters
 RECURSIVE                       ?= true
+SHARED                          ?= shared
 SUBREPO                         ?= $(if $(wildcard .gitrepo),$(notdir $(CURDIR)))
 SUBREPO_DIR                     ?= $(if $(SUBREPO),$(CURDIR))
 SUBREPO_COMMIT                  ?= $(if $(SUBREPO),$(shell git rev-parse subrepo/$(SUBREPO)/$(BRANCH) 2>/dev/null))
@@ -115,6 +117,8 @@ define force
 	while true; do [ $$(ps x |awk 'BEGIN {nargs=split("'"$$*"'",args)} $$field == args[1] { matched=1; for (i=1;i<=NF-field;i++) { if ($$(i+field) == args[i+1]) {matched++} } if (matched == nargs) {found++} } END {print found+0}' field=4) -eq 0 ] && $(ECHO) $(1) || sleep 1; done
 endef
 
+pop = $(patsubst %$(or $(2),/)$(lastword $(subst $(or $(2),/), ,$(1))),%,$(1))
+
 define sed
 $(call exec,sed -i $(SED_SUFFIX) '\''$(1)'\'' $(2))
 endef
@@ -149,8 +153,10 @@ endef
 
 ifneq ($(MONOREPO),)
 ifneq ($(wildcard .gitrepo),)
+INFRA                           := ../infra
 MAKE_SUBDIRS                    := subrepo
 else
+INFRA                           := infra
 MAKE_SUBDIRS                    := monorepo
 endif
 endif
