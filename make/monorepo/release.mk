@@ -19,12 +19,12 @@ endif
 	$(if $(findstring $(firstword $(subst /, ,$(RELEASE_BRANCH))),release),,$(error Please provide a VERSION or a release BRANCH))
 
 .PHONY: release-create
-release-create: bootstrap-infra release-check git-stash ## Create release [version]
+release-create: release-check git-stash ## Create release [version]
 	$(call make,branch-create-upstream-develop BRANCH=$(RELEASE_BRANCH))
 	$(call make,git-unstash,,STATUS)
 
 .PHONY: release-finish
-release-finish: bootstrap-infra release-check git-stash ## Finish release [version]
+release-finish: release-check git-stash ## Finish release [version]
 	$(call make,branch-merge-upstream-master BRANCH=$(RELEASE_BRANCH))
 	$(call make,update-subrepos)
 	$(call make,tag-create-upstream-master TAG=$(RELEASE_VERSION))

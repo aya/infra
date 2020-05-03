@@ -57,8 +57,8 @@ tests: $(APPS) ## Test applications
 up: $(APPS) ## Create application dockers
 
 .PHONY: $(APPS)
-$(APPS): bootstrap-infra docker-infra-base docker-infra-node docker-infra-services
-	$(call make,$(patsubst apps-%,%,$(MAKECMDGOALS)) STATUS=0,$(patsubst %/,%,$@),ENV_SUFFIX)
+$(APPS):
+	$(call make,-o install-infra $(patsubst apps-%,%,$(MAKECMDGOALS)) STATUS=0,$(patsubst %/,%,$@),ENV_SUFFIX)
 
 # run targets in $(APPS)
 .PHONY: apps-%

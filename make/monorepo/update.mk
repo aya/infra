@@ -11,7 +11,7 @@ endif
 .PHONY: update-$(PARAMETERS)
 update-$(PARAMETERS): $(PARAMETERS)
 
-$(PARAMETERS): bootstrap-infra
+$(PARAMETERS): infra-base
 	$(call exec,[ -d $(PARAMETERS) ] && cd $(PARAMETERS) && git pull --quiet || git clone --quiet $(GIT_PARAMETERS_REPOSITORY))
 
 ## Update release version number in .env
@@ -21,25 +21,25 @@ update-release:
 
 ## Update remotes
 .PHONY: update-remotes
-update-remotes: bootstrap-infra
+update-remotes: infra-base
 	$(call exec,git fetch --all --prune --tags -u)
 
 .PHONY: update-remote-%
-update-remote-%: bootstrap-infra
+update-remote-%: infra-base
 	$(call exec,git fetch --prune --tags -u $*)
 
 ## Update subrepos
 .PHONY: update-subrepos
-update-subrepos: bootstrap-infra git-stash $(APPS) update-subrepo-infra git-unstash ## Update subrepos
+update-subrepos: infra-base git-stash $(APPS) update-subrepo-infra git-unstash ## Update subrepos
 	$(call exec,git push upstream $(BRANCH))
 
 .PHONY: update-subrepo-%
-update-subrepo-%: bootstrap-infra
+update-subrepo-%:
 	$(if $(wildcard $*/Makefile),$(call make,update-subrepo,$*))
 
 .PHONY: update-upstream
-update-upstream: .git/refs/remotes/upstream/master
+update-upstream: infra-base .git/refs/remotes/upstream/master
 	$(call exec,git fetch upstream "+refs/tags/*:refs/tags/*")
 
-.git/refs/remotes/upstream/master: bootstrap-infra
+.git/refs/remotes/upstream/master: infra-base
 	$(call exec,git remote add upstream $(GIT_UPSTREAM_REPOSITORY) 2>/dev/null ||:)

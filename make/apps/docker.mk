@@ -1,14 +1,21 @@
 ##
 # DOCKER
 
-.PHONY: docker-build docker-build-images
-docker-build docker-build-images: $(DOCKER_IMAGES)
-
 .PHONY: $(DOCKER_IMAGES)
 $(DOCKER_IMAGES):
 ifeq ($(DOCKER), true)
 	$(call docker-build,$@)
 endif
+
+.PHONY: docker-build
+docker-build: $(DOCKER_IMAGES)
+
+.PHONY: docker-build-images-infra
+docker-build-images-infra:
+	$(eval DRYRUN_IGNORE := true)
+	$(eval DOCKER_IMAGES := $(or $(subst ',,$(DOCKER_IMAGES_INFRA)),$(shell $(call docker-compose,--log-level critical config --services))))
+	$(eval DRYRUN_IGNORE := false)
+	$(foreach image,$(DOCKER_IMAGES),$(call make,infra-docker-build-$(image)))
 
 .PHONY: docker-build-%
 docker-build-%:
@@ -31,11 +38,11 @@ docker-commit-%:
 	$(foreach service,$(SERVICE),$(call docker-commit,$(service),,,$*))
 
 .PHONY: docker-compose-build
-docker-compose-build: docker-infra-images
+docker-compose-build: docker-build-images-infra
 	$(call docker-compose,build $(SERVICE))
 
 .PHONY: docker-compose-build
-docker-compose-build-%: docker-infra-images
+docker-compose-build-%: docker-build-images-infra
 	$(eval ENV:=$*)
 	$(call docker-compose,build $(SERVICE))
 
@@ -70,11 +77,11 @@ docker-compose-ps:
 	$(call docker-compose,ps)
 
 .PHONY: docker-compose-rebuild
-docker-compose-rebuild: docker-infra-images
+docker-compose-rebuild: docker-build-images-infra
 	$(call docker-compose,build --pull --no-cache $(SERVICE))
 
 .PHONY: docker-compose-rebuild-%
-docker-compose-rebuild-%: docker-infra-images
+docker-compose-rebuild-%: docker-build-images-infra
 	$(eval DOCKER_BUILD_TARGET:=$*)
 	$(call docker-compose,build --pull --no-cache $(SERVICE))
 
@@ -95,7 +102,7 @@ docker-compose-scale:
 	$(call docker-compose,up $(DOCKER_COMPOSE_UP_OPTIONS) --scale $(SERVICE)=$(NUM))
 
 .PHONY: docker-compose-start
-docker-compose-start: docker-infra
+docker-compose-start:
 	$(call docker-compose,start $(SERVICE))
 
 .PHONY: docker-compose-stop
@@ -103,64 +110,27 @@ docker-compose-stop:
 	$(call docker-compose,stop $(SERVICE))
 
 .PHONY: docker-compose-up
-docker-compose-up: docker-infra
+docker-compose-up: docker-build-images-infra
 	$(call docker-compose,up $(DOCKER_COMPOSE_UP_OPTIONS) $(SERVICE))
 
-.PHONY: docker-infra
-docker-infra: docker-infra-base docker-infra-images
-
-.PHONY: docker-infra-base
-docker-infra-base: bootstrap-infra
-ifneq ($(wildcard ../infra),)
-ifneq (,$(filter $(MAKECMDGOALS),start up))
-	$(call make,base,../infra)
-endif
-endif
-
-.PHONY: docker-infra-images
-docker-infra-images: bootstrap-infra
-ifneq ($(wildcard ../infra),)
-	$(eval DRYRUN_IGNORE := true)
-	$(eval DOCKER_IMAGES_INFRA := $(or $(subst ',,$(DOCKER_IMAGES_INFRA)),$(shell $(call docker-compose,--log-level critical config --services))))
-	$(eval DRYRUN_IGNORE := false)
-	$(foreach image,$(DOCKER_IMAGES_INFRA),$(call make,docker-build-$(image),../infra))
-endif
-
-.PHONY: docker-infra-node
-docker-infra-node: bootstrap-infra
-ifneq ($(wildcard ../infra),)
-ifneq (,$(filter $(MAKECMDGOALS),start up))
-	$(call make,$(patsubst %,node-%,$(MAKECMDGOALS)) SERVICE= STACK_NODE=node,../infra)
-endif
-endif
-
-.PHONY: docker-infra-registry-login
-docker-infra-registry-login:
-	$(call make,aws-ecr-login)
-
-.PHONY: docker-infra-services
-docker-infra-services: bootstrap-infra
-ifneq ($(wildcard ../infra),)
-ifneq (,$(filter $(MAKECMDGOALS),install ps start up))
-	$(call make,$(MAKECMDGOALS) SERVICE= STACK=services,../infra)
-endif
-endif
-
 .PHONY: docker-login
-docker-login: bootstrap-infra
-ifneq ($(wildcard ../infra),)
-	$(call make,docker-infra-registry-login,../infra)
-endif
+docker-login: infra-aws-ecr-login
 
 .PHONY: docker-network-create
-docker-network-create:
-	[ -n "$(shell docker network ls -q --filter name='^$(DOCKER_NETWORK)$$' 2>/dev/null)" ] \
-	  || { echo -n "Creating docker network $(DOCKER_NETWORK) ... " && $(ECHO) docker network create $(DOCKER_NETWORK) >/dev/null 2>&1 && echo "done" || echo "ERROR"; }
+docker-network-create: docker-network-create-$(DOCKER_NETWORK)
+
+.PHONY: docker-network-create-%
+docker-network-create-%:
+	[ -n "$(shell docker network ls -q --filter name='^$*$$' 2>/dev/null)" ] \
+	  || { echo -n "Creating docker network $* ... " && $(ECHO) docker network create $* >/dev/null 2>&1 && echo "done" || echo "ERROR"; }
 
 .PHONY: docker-network-rm
-docker-network-rm:
-	[ -z "$(shell docker network ls -q --filter name='^$(DOCKER_NETWORK)$$' 2>/dev/null)" ] \
-	  || { echo -n "Removing docker network $(DOCKER_NETWORK) ... " && $(ECHO) docker network rm $(DOCKER_NETWORK) >/dev/null 2>&1 && echo "done" || echo "ERROR"; }
+docker-network-rm: docker-network-rm-$(DOCKER_NETWORK)
+
+.PHONY: docker-network-rm-%
+docker-network-rm-%:
+	[ -z "$(shell docker network ls -q --filter name='^$*$$' 2>/dev/null)" ] \
+	  || { echo -n "Removing docker network $* ... " && $(ECHO) docker network rm $* >/dev/null 2>&1 && echo "done" || echo "ERROR"; }
 
 .PHONY: docker-plugin-install
 docker-plugin-install:

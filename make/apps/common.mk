@@ -4,6 +4,11 @@
 .PHONY: bootstrap
 bootstrap: bootstrap-git bootstrap-docker ## Bootstrap application
 
+.PHONY: boostrap-docker
+bootstrap-docker: docker-network-create
+	$(if $(filter bootstrap-$(APP),$(MAKETARGETS)),$(call make,bootstrap-$(APP)))
+	$(call make,docker-compose-up)
+
 .PHONY: bootstrap-git
 bootstrap-git:
 ifneq ($(SUBREPO),)

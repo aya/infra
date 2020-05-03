@@ -13,13 +13,13 @@ endif
 
 ## Delete branch $(BRANCH) on $(SUBREPO) remote
 .PHONY: subrepo-branch-delete
-subrepo-branch-delete: bootstrap-infra subrepo-check
+subrepo-branch-delete: infra-base subrepo-check
 ifneq ($(words $(BRANCH)),0)
 	$(call exec,[ $$(git ls-remote --heads $(REMOTE) $(BRANCH) |wc -l) -eq 1 ] && git push $(REMOTE) :$(BRANCH) || echo Unable to delete branch $(BRANCH) on remote $(REMOTE).)
 endif
 
 .PHONY: subrepo-tag-create-%
-subrepo-tag-create-%: bootstrap-infra subrepo-check git-fetch-subrepo ## Create $(TAG) tag to reference $(REMOTE)/$* branch
+subrepo-tag-create-%: infra-base subrepo-check git-fetch-subrepo ## Create $(TAG) tag to reference $(REMOTE)/$* branch
 ifneq ($(words $(TAG)),0)
 	$(call exec,[ $$(git ls-remote --tags $(REMOTE) $(TAG) |wc -l) -eq 0 ] || git push $(REMOTE) :refs/tags/$(TAG))
 	$(call exec,git push $(REMOTE) refs/remotes/subrepo/$(SUBREPO)/$*:refs/tags/$(TAG))
@@ -27,7 +27,7 @@ endif
 
 ## Push to subrepo.
 .PHONY: subrepo-push
-subrepo-push: bootstrap-infra subrepo-check git-fetch-subrepo git-diff-subrepo
+subrepo-push: infra-base subrepo-check git-fetch-subrepo git-diff-subrepo
 # update .gitrepo only on master branch
 ifeq ($(BRANCH),master)
 	$(eval UPDATE_SUBREPO_OPTIONS += -u)
@@ -53,7 +53,7 @@ endif
 	fi
 
 .PHONY: subrepos-branch-delete
-subrepos-branch-delete: bootstrap-infra $(APPS) ;
+subrepos-branch-delete: $(APPS) ;
 
 .PHONY: subrepos-tag-create-%
-subrepos-tag-create-%: bootstrap-infra $(APPS) ;
+subrepos-tag-create-%: $(APPS) ;
