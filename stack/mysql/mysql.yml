@@ -21,4 +21,4 @@ volumes:
 networks:
   private:
     external: true
-    name: ${DOCKER_NETWORK}
+    name: ${DOCKER_NETWORK_PRIVATE}

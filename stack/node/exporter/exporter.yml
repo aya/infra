@@ -46,4 +46,4 @@ services:
 networks:
   public:
     external: true
-    name: node
+    name: ${DOCKER_NETWORK_PUBLIC}
