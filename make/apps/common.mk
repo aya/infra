@@ -94,11 +94,15 @@ ssh@%: ## Connect to remote server with ssh
 
 .PHONY: stack
 stack: $(patsubst %,stack-%,$(STACK))
-	$(call docker-stack,$(dependencies))
 
 .PHONY: stack-%
 stack-%:
-	$(call docker-stack,$*,)
+	$(eval stack   := $(subst -$(lastword $(subst -, ,$*)),,$*))
+	$(eval command := $(lastword $(subst -, ,$*)))
+	$(if $(findstring -,$*), \
+	  $(if $(filter $(command),$(filter-out %-%,$(patsubst docker-compose-%,%,$(filter docker-compose-%,$(MAKETARGETS))))), \
+	    $(call make,docker-compose-$(command) STACK="$(stack)" $(if $(filter node,$(stack)),COMPOSE_PROJECT_NAME=$(COMPOSE_PROJECT_NAME_INFRA_NODE)),,ARGS COMPOSE_IGNORE_ORPHANS SERVICE)), \
+	  $(call docker-stack,$*,))
 
 .PHONY: start
 start: docker-compose-start ## Start application dockers

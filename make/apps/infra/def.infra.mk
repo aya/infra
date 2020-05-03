@@ -20,8 +20,6 @@ SETUP_SYSCTL                    ?= false
 SETUP_SYSCTL_CONFIG             ?= vm.max_map_count=262144 vm.overcommit_memory=1 fs.file-max=8388608 net.core.somaxconn=1024
 SHELL                           ?= /bin/sh
 STACK                           ?= logs services
-STACK_BASE                      ?= base
-STACK_NODE                      ?= node
 
 define setup-nfsd-osx
 	$(eval dir:=$(or $(1),$(MONOREPO_DIR)))
