@@ -24,5 +24,6 @@ install-parameters-%:
 	$(call install-parameters,$*)
 
 .PHONY: install-$(SHARED)
+install-$(SHARED): SERVICE ?= $(DOCKER_SERVICE)
 install-$(SHARED): bootstrap
-	$(call docker-compose-exec,$(DOCKER_SERVICE),mkdir -p $(SHARED) && $(foreach folder,$(SHARED_FOLDERS),rm -rf $(folder) && ln -s $(SHARED)/$(notdir $(folder)) $(folder) &&) true)
+	$(call docker-compose-exec,$(SERVICE),mkdir -p $(SHARED) && $(foreach folder,$(SHARED_FOLDERS),rm -rf $(folder) && ln -s $(SHARED)/$(notdir $(folder)) $(folder) &&) true)

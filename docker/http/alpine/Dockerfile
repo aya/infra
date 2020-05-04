@@ -14,6 +14,8 @@ COPY ${DOCKER_BUILD_DIR}/docker-entrypoint.sh /
 COPY ${DOCKER_BUILD_DIR}/httpd-vhosts.ctmpl /usr/local/apache2/conf/extra/
 COPY --from=hashicorp/consul-template:alpine /bin/consul-template /usr/local/bin/
 
+WORKDIR /var/www
+
 ENTRYPOINT ["/docker-entrypoint.sh"]
 CMD /usr/local/bin/consul-template -log-level info -consul-addr consul:8500 -template "/usr/local/apache2/conf/extra/httpd-vhosts.ctmpl:/usr/local/apache2/conf/extra/httpd-vhosts.conf" -exec "/usr/local/bin/httpd-foreground"
 
