@@ -2,4 +2,4 @@ version: '3.6'
 
 services:
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:latest
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.6.2

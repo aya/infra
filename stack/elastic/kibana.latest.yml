@@ -2,4 +2,4 @@ version: '3.6'
 
 services:
   kibana:
-    image: docker.elastic.co/kibana/kibana:latest
+    image: docker.elastic.co/kibana/kibana:7.6.2

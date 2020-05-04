@@ -20,9 +20,6 @@ endif
 .PHONY: build
 build: docker-compose-build ## Build application docker images
 
-.PHONY: build-images
-build-images: docker-build-images ## Build docker/* images
-
 .PHONY: config
 config: docker-compose-config ## View docker compose file
 
@@ -97,17 +94,22 @@ ssh@%: ## Connect to remote server with ssh
 	$(eval ENV=$*)
 	$(call make,ssh,../infra)
 
+## stack: call docker-stack function with each value of $(STACK)
 .PHONY: stack
-stack: $(patsubst %,stack-%,$(STACK))
+stack:
+	$(foreach stackz,$(STACK),$(call docker-stack,$(stackz)))
 
+## stack-%: call docker-compose-* command on a given stack
+# calling stack-base-up will fire the docker-compose-up target on the base stack
+# it splits $* on dashes and extracts stack from the beginning of $* and command
+# from the last part of $*
 .PHONY: stack-%
 stack-%:
 	$(eval stack   := $(subst -$(lastword $(subst -, ,$*)),,$*))
 	$(eval command := $(lastword $(subst -, ,$*)))
 	$(if $(findstring -,$*), \
 	  $(if $(filter $(command),$(filter-out %-%,$(patsubst docker-compose-%,%,$(filter docker-compose-%,$(MAKETARGETS))))), \
-	    $(call make,docker-compose-$(command) STACK="$(stack)" $(if $(filter node,$(stack)),COMPOSE_PROJECT_NAME=$(COMPOSE_PROJECT_NAME_INFRA_NODE)),,ARGS COMPOSE_IGNORE_ORPHANS SERVICE)), \
-	  $(call docker-stack,$*,))
+	    $(call make,docker-compose-$(command) STACK="$(stack)" $(if $(filter node,$(stack)),COMPOSE_PROJECT_NAME=$(COMPOSE_PROJECT_NAME_INFRA_NODE)),,ARGS COMPOSE_IGNORE_ORPHANS SERVICE)))
 
 .PHONY: start
 start: docker-compose-start ## Start application dockers
@@ -118,15 +120,12 @@ stop: docker-compose-stop ## Stop application dockers
 .PHONY: up
 up: docker-compose-up start-up ## Create application dockers
 
-##
-# % target
-# this target is fired everytime make is runned, to hydrate the COMPOSE_FILE
-# variable with all the .yml files of the current project stack
+## %: always fired target
+# this target is fired everytime make is runned to call the stack target and
+# update COMPOSE_FILE variable with all .yml files of the current project stacks
 .PHONY: FORCE
 %: FORCE stack %-rule-exists ;
 
-##
-# %-rule-exists target
-# this target is fired to print a warning message if the $* target does not exists
+## %-rule-exists: print a warning message if $* target does not exists
 %-rule-exists:
 	$(if $(filter $*,$(MAKECMDGOALS)),$(if $(filter-out $*,$(MAKETARGETS)),printf "${COLOR_BROWN}WARNING${COLOR_RESET}: ${COLOR_GREEN}target${COLOR_RESET} $* ${COLOR_GREEN}not available in${COLOR_RESET} $(APP).\n" >&2))

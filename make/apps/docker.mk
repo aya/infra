@@ -1,21 +1,8 @@
 ##
 # DOCKER
 
-.PHONY: $(DOCKER_IMAGES)
-$(DOCKER_IMAGES):
-ifeq ($(DOCKER), true)
-	$(call docker-build,$@)
-endif
-
 .PHONY: docker-build
-docker-build: $(DOCKER_IMAGES)
-
-.PHONY: docker-build-images-infra
-docker-build-images-infra:
-	$(eval DRYRUN_IGNORE := true)
-	$(eval DOCKER_IMAGES := $(or $(subst ',,$(DOCKER_IMAGES_INFRA)),$(shell $(call docker-compose,--log-level critical config --services))))
-	$(eval DRYRUN_IGNORE := false)
-	$(foreach image,$(DOCKER_IMAGES),$(call make,infra-docker-build-$(image)))
+docker-build: docker-images-infra docker-images
 
 .PHONY: docker-build-%
 docker-build-%:
@@ -26,25 +13,31 @@ docker-build-%:
 .PHONY: docker-commit
 docker-commit:
 	$(eval DRYRUN_IGNORE := true)
-	$(eval SERVICE ?= $(shell $(call docker-compose,--log-level critical config --services)))
+	$(eval SERVICES      ?= $(shell $(call docker-compose,--log-level critical config --services)))
 	$(eval DRYRUN_IGNORE := false)
-	$(foreach service,$(SERVICE),$(call docker-commit,$(service)))
+	$(foreach service,$(or $(SERVICE),$(SERVICES)),$(call docker-commit,$(service)))
 
 .PHONY: docker-commit-%
 docker-commit-%:
 	$(eval DRYRUN_IGNORE := true)
-	$(eval SERVICE ?= $(shell $(call docker-compose,--log-level critical config --services)))
+	$(eval SERVICES      ?= $(shell $(call docker-compose,--log-level critical config --services)))
 	$(eval DRYRUN_IGNORE := false)
-	$(foreach service,$(SERVICE),$(call docker-commit,$(service),,,$*))
+	$(foreach service,$(or $(SERVICE),$(SERVICES)),$(call docker-commit,$(service),,,$*))
 
 .PHONY: docker-compose-build
-docker-compose-build: docker-build-images-infra
-	$(call docker-compose,build $(SERVICE))
+docker-compose-build: docker-images-infra
+	$(eval DRYRUN_IGNORE := true)
+	$(eval SERVICES      ?= $(shell $(call docker-compose,--log-level critical config --services)))
+	$(eval DRYRUN_IGNORE := false)
+	$(call docker-compose,build $(if $(filter $(SERVICE),$(SERVICES)),$(SERVICE)))
 
 .PHONY: docker-compose-build
-docker-compose-build-%: docker-build-images-infra
+docker-compose-build-%: docker-images-infra
+	$(eval DRYRUN_IGNORE := true)
+	$(eval SERVICES      ?= $(shell $(call docker-compose,--log-level critical config --services)))
+	$(eval DRYRUN_IGNORE := false)
 	$(eval ENV:=$*)
-	$(call docker-compose,build $(SERVICE))
+	$(call docker-compose,build $(if $(filter $(SERVICE),$(SERVICES)),$(SERVICE)))
 
 .PHONY: docker-compose-config
 docker-compose-config:
@@ -61,7 +54,10 @@ docker-compose-connect: docker-compose-up
 
 .PHONY: docker-compose-down
 docker-compose-down:
-	$(if $(SERVICE),$(call docker-compose,rm -fs $(SERVICE)),$(call docker-compose,down $(DOCKER_COMPOSE_DOWN_OPTIONS)))
+	$(eval DRYRUN_IGNORE := true)
+	$(eval SERVICES      ?= $(shell $(call docker-compose,--log-level critical config --services)))
+	$(eval DRYRUN_IGNORE := false)
+	$(if $(filter $(SERVICE),$(SERVICES)),$(call docker-compose,rm -fs $(SERVICE)),$(call docker-compose,down $(DOCKER_COMPOSE_DOWN_OPTIONS)))
 
 .PHONY: docker-compose-exec
 docker-compose-exec: SERVICE ?= $(DOCKER_SERVICE)
@@ -70,31 +66,46 @@ docker-compose-exec: docker-compose-up
 
 .PHONY: docker-compose-logs
 docker-compose-logs: docker-compose-up
-	$(call docker-compose,logs -f --tail=100 $(SERVICE)) || true
+	$(eval DRYRUN_IGNORE := true)
+	$(eval SERVICES      ?= $(shell $(call docker-compose,--log-level critical config --services)))
+	$(eval DRYRUN_IGNORE := false)
+	$(call docker-compose,logs -f --tail=100 $(if $(filter $(SERVICE),$(SERVICES)),$(SERVICE))) || true
 
 .PHONY: docker-compose-ps
 docker-compose-ps:
 	$(call docker-compose,ps)
 
 .PHONY: docker-compose-rebuild
-docker-compose-rebuild: docker-build-images-infra
-	$(call docker-compose,build --pull --no-cache $(SERVICE))
+docker-compose-rebuild: docker-images-infra
+	$(eval DRYRUN_IGNORE := true)
+	$(eval SERVICES      ?= $(shell $(call docker-compose,--log-level critical config --services)))
+	$(eval DRYRUN_IGNORE := false)
+	$(call docker-compose,build --pull --no-cache $(if $(filter $(SERVICE),$(SERVICES)),$(SERVICE)))
 
 .PHONY: docker-compose-rebuild-%
-docker-compose-rebuild-%: docker-build-images-infra
+docker-compose-rebuild-%: docker-images-infra
+	$(eval DRYRUN_IGNORE := true)
+	$(eval SERVICES      ?= $(shell $(call docker-compose,--log-level critical config --services)))
+	$(eval DRYRUN_IGNORE := false)
 	$(eval DOCKER_BUILD_TARGET:=$*)
-	$(call docker-compose,build --pull --no-cache $(SERVICE))
+	$(call docker-compose,build --pull --no-cache $(if $(filter $(SERVICE),$(SERVICES)),$(SERVICE)))
 
 .PHONY: docker-compose-recreate
 docker-compose-recreate: docker-compose-rm docker-compose-up
 
 .PHONY: docker-compose-restart
 docker-compose-restart:
-	$(call docker-compose,restart $(SERVICE))
+	$(eval DRYRUN_IGNORE := true)
+	$(eval SERVICES      ?= $(shell $(call docker-compose,--log-level critical config --services)))
+	$(eval DRYRUN_IGNORE := false)
+	$(call docker-compose,restart $(if $(filter $(SERVICE),$(SERVICES)),$(SERVICE)))
 
 .PHONY: docker-compose-rm
 docker-compose-rm:
-	$(call docker-compose,rm -fs $(SERVICE))
+	$(eval DRYRUN_IGNORE := true)
+	$(eval SERVICES      ?= $(shell $(call docker-compose,--log-level critical config --services)))
+	$(eval DRYRUN_IGNORE := false)
+	$(call docker-compose,rm -fs $(if $(filter $(SERVICE),$(SERVICES)),$(SERVICE)))
 
 .PHONY: docker-compose-scale
 docker-compose-scale: SERVICE ?= $(DOCKER_SERVICE)
@@ -103,15 +114,32 @@ docker-compose-scale:
 
 .PHONY: docker-compose-start
 docker-compose-start:
-	$(call docker-compose,start $(SERVICE))
+	$(eval DRYRUN_IGNORE := true)
+	$(eval SERVICES      ?= $(shell $(call docker-compose,--log-level critical config --services)))
+	$(eval DRYRUN_IGNORE := false)
+	$(call docker-compose,start $(if $(filter $(SERVICE),$(SERVICES)),$(SERVICE)))
 
 .PHONY: docker-compose-stop
 docker-compose-stop:
-	$(call docker-compose,stop $(SERVICE))
+	$(eval DRYRUN_IGNORE := true)
+	$(eval SERVICES      ?= $(shell $(call docker-compose,--log-level critical config --services)))
+	$(eval DRYRUN_IGNORE := false)
+	$(call docker-compose,stop $(if $(filter $(SERVICE),$(SERVICES)),$(SERVICE)))
 
 .PHONY: docker-compose-up
-docker-compose-up: docker-build-images-infra
-	$(call docker-compose,up $(DOCKER_COMPOSE_UP_OPTIONS) $(SERVICE))
+docker-compose-up: docker-images-infra
+	$(eval DRYRUN_IGNORE := true)
+	$(eval SERVICES      ?= $(shell $(call docker-compose,--log-level critical config --services)))
+	$(eval DRYRUN_IGNORE := false)
+	$(call docker-compose,up $(DOCKER_COMPOSE_UP_OPTIONS) $(if $(filter $(SERVICE),$(SERVICES)),$(SERVICE)))
+
+.PHONY: docker-images
+docker-images:
+	$(foreach image,$(DOCKER_IMAGES),$(call make,docker-build-$(image)))
+
+.PHONY: docker-images-infra
+docker-images-infra:
+	$(foreach image,$(subst $(quote),,$(DOCKER_IMAGES_INFRA)),$(call make,infra-docker-build-$(image)))
 
 .PHONY: docker-login
 docker-login: infra-aws-ecr-login
@@ -140,20 +168,20 @@ docker-plugin-install:
 .PHONY: docker-push
 docker-push:
 	$(eval DRYRUN_IGNORE := true)
-	$(eval SERVICE ?= $(shell $(call docker-compose,--log-level critical config --services)))
+	$(eval SERVICES      ?= $(shell $(call docker-compose,--log-level critical config --services)))
 	$(eval DRYRUN_IGNORE := false)
-	$(foreach service,$(SERVICE),$(call docker-push,$(service)))
+	$(foreach service,$(or $(SERVICE),$(SERVICES)),$(call docker-push,$(service)))
 
 .PHONY: docker-push-%
 docker-push-%:
 	$(eval DRYRUN_IGNORE := true)
-	$(eval SERVICE ?= $(shell $(call docker-compose,--log-level critical config --services)))
+	$(eval SERVICES      ?= $(shell $(call docker-compose,--log-level critical config --services)))
 	$(eval DRYRUN_IGNORE := false)
-	$(foreach service,$(SERVICE),$(call docker-push,$(service),,$*))
+	$(foreach service,$(or $(SERVICE),$(SERVICES)),$(call docker-push,$(service),,$*))
 
-.PHONY: docker-rebuild-images
-docker-rebuild-images:
-	$(call make,docker-build-images DOCKER_BUILD_CACHE=false)
+.PHONY: docker-rebuild
+docker-rebuild:
+	$(call make,docker-build DOCKER_BUILD_CACHE=false)
 
 .PHONY: docker-rebuild-%
 docker-rebuild-%:
@@ -162,13 +190,13 @@ docker-rebuild-%:
 .PHONY: docker-tag
 docker-tag:
 	$(eval DRYRUN_IGNORE := true)
-	$(eval SERVICE ?= $(shell $(call docker-compose,--log-level critical config --services)))
+	$(eval SERVICES      ?= $(shell $(call docker-compose,--log-level critical config --services)))
 	$(eval DRYRUN_IGNORE := false)
-	$(foreach service,$(SERVICE),$(call docker-tag,$(service)))
+	$(foreach service,$(or $(SERVICE),$(SERVICES)),$(call docker-tag,$(service)))
 
 .PHONY: docker-tag-%
 docker-tag-%:
 	$(eval DRYRUN_IGNORE := true)
-	$(eval SERVICE ?= $(shell $(call docker-compose,--log-level critical config --services)))
+	$(eval SERVICES      ?= $(shell $(call docker-compose,--log-level critical config --services)))
 	$(eval DRYRUN_IGNORE := false)
-	$(foreach service,$(SERVICE),$(call docker-tag,$(service),,,,$*))
+	$(foreach service,$(or $(SERVICE),$(SERVICES)),$(call docker-tag,$(service),,,,$*))
