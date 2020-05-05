@@ -26,4 +26,8 @@ install-parameters-%:
 .PHONY: install-$(SHARED)
 install-$(SHARED): SERVICE ?= $(DOCKER_SERVICE)
 install-$(SHARED): bootstrap
-	$(call docker-compose-exec,$(SERVICE),mkdir -p $(SHARED) && $(foreach folder,$(SHARED_FOLDERS),rm -rf $(folder) && ln -s $(SHARED)/$(notdir $(folder)) $(folder) &&) true)
+	$(call docker-compose-exec,$(SERVICE),mkdir -p $(SHARED) && $(foreach folder,$(SHARED_FOLDERS),rm -rf $(folder) && ln -s $(call ln_relative_path,$(folder),../)$(SHARED)/$(notdir $(folder)) $(folder) &&) true)
+
+## ln_relative_path = return ../ repeatedly to get relative path of $(1) for ln
+# if $(1) is a/sub/directory, relative_path will return ../../ to use it with ln
+ln_relative_path = $(if $(findstring /,$(1)),$(subst $(space),,$(foreach folder,$(subst /, ,$(call pop,$(1))),$(2))))
