@@ -30,7 +30,7 @@ update-remote-%: infra-base
 
 ## Update subrepos
 .PHONY: update-subrepos
-update-subrepos: infra-base git-stash $(APPS) update-subrepo-infra git-unstash ## Update subrepos
+update-subrepos: infra-base git-stash $(APPS) git-unstash ## Update subrepos
 	$(call exec,git push upstream $(BRANCH))
 
 .PHONY: update-subrepo-%

@@ -18,7 +18,7 @@ config: $(APPS)
 
 .PHONY: copy
 copy:
-	$(foreach app,$(APPS) infra,$(foreach file,$(ARGS),$(if $(wildcard $(file)),$(ECHO) $(if $(filter LINUX,$(HOST_SYSTEM)),cp -a --parents $(file) $(app)/,rsync -a $(file) $(app)/$(file)) &&)) true &&) true
+	$(foreach app,$(APPS),$(foreach file,$(ARGS),$(if $(wildcard $(file)),$(ECHO) $(if $(filter LINUX,$(HOST_SYSTEM)),cp -a --parents $(file) $(app)/,rsync -a $(file) $(app)/$(file)) &&)) true &&) true
 
 .PHONY: deploy
 deploy: $(APPS) ## Deploy applications
