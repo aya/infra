@@ -7,6 +7,7 @@
     executable=pip
     name=awscli
     state=latest
+    extra_args=--no-cache-dir
 
 - name: 'Install docker python'
   tags: 'aws-cli'
@@ -14,6 +15,7 @@
   pip: >
     name=docker
     state=latest
+    extra_args=--no-cache-dir
 
 - name: 'Install boto python'
   tags: 'aws-cli'
@@ -21,6 +23,7 @@
   pip: >
     name=boto3
     state=latest
+    extra_args=--no-cache-dir
 
 - name: Set home directory of the user
   set_fact:
