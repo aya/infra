@@ -4,9 +4,6 @@ services:
   drone-gc:
     image: drone/gc:latest
     environment:
-    # - GC_DEBUG=true
-    # - GC_DEBUG_COLOR=true
-    # - GC_DEBUG_PRETTY=true
     - GC_CACHE=20gb
     - GC_INTERVAL=5m
     networks:

@@ -2,16 +2,13 @@ version: '3.6'
 
 services:
   drone:
-    image: drone/drone:1.6.4
     environment:
     - DRONE_GIT_ALWAYS_AUTH=false
     - DRONE_GITHUB_SERVER=https://github.com
     - DRONE_GITHUB_CLIENT_ID=${DRONE_GITHUB_CLIENT_ID}
     - DRONE_GITHUB_CLIENT_SECRET=${DRONE_GITHUB_CLIENT_SECRET}
     - DRONE_LOGS_COLOR=true
-    # - DRONE_LOGS_DEBUG=true
     - DRONE_LOGS_PRETTY=true
-    # - DRONE_LOGS_TRACE=true
     - DRONE_PROMETHEUS_ANONYMOUS_ACCESS=true
     - DRONE_RPC_SECRET=${DRONE_RPC_SECRET}
     - DRONE_SERVER_HOST=${DRONE_SERVER_HOST}
