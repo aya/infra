@@ -1,3 +1,7 @@
+COMPOSER_ARGS                   ?= --optimize-autoloader
+COMPOSER_MEMORY_LIMIT           ?= -1
+CONTEXT                         += COMPOSER_ARGS
+
 ifeq ($(SYMFONY_ENV), prod)
 COMPOSER_ARGS                   += --classmap-authoritative --prefer-dist --no-dev --no-interaction
 endif
