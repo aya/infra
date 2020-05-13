@@ -1,5 +1,3 @@
-node ?= node/node
-
 .PHONY: node
 node: docker-network-create-$(DOCKER_NETWORK_PUBLIC) node-openssl stack-node-up
 

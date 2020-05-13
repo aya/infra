@@ -1,5 +1,3 @@
-base ?= base/base
-
 .PHONY: base
 base: docker-network-create stack-base-up base-ssh-add
 

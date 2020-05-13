@@ -1,4 +1,4 @@
-CMDS                            += base-exec node-exec openstack terraform
+CMDS                            += openstack terraform
 COMPOSE_IGNORE_ORPHANS          ?= true
 CONTEXT                         += GIT_AUTHOR_EMAIL GIT_AUTHOR_NAME
 DOCKER_SERVICE                  ?= mysql
