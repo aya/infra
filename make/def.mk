@@ -20,7 +20,7 @@ ENV_RESET                       ?= false
 ENV_VARS                        ?= APP APP_DIR BRANCH ENV HOSTNAME GID MONOREPO MONOREPO_DIR TAG UID USER VERSION
 GID                             ?= $(shell id -g)
 GIT_PARAMETERS_REPOSITORY       ?= $(call pop,$(GIT_UPSTREAM_REPOSITORY))/$(PARAMETERS)
-GIT_REPOSITORY                  ?= $(if $(SUBREPO),$(shell awk -F ' = ' '$$1 ~ /^[[:blank:]]*remote$$/ {print $$2}' .gitrepo),$(shell git config --get remote.origin.url))
+GIT_REPOSITORY                  ?= $(if $(SUBREPO),$(shell awk -F ' = ' '$$1 ~ /^[[\s\t]]*remote$$/ {print $$2}' .gitrepo),$(shell git config --get remote.origin.url))
 GIT_UPSTREAM_REPOSITORY         ?= $(call pop,$(call pop,$(GIT_REPOSITORY)))/$(GIT_UPSTREAM_USER)/$(lastword $(subst /, ,$(GIT_REPOSITORY)))
 GIT_UPSTREAM_USER               ?= $(MONOREPO)
 HOSTNAME                        ?= $(shell hostname |sed 's/\..*//')
@@ -143,7 +143,7 @@ define make
 	$(eval vars := $(3))
 	$(eval file := $(4))
 	$(if $(vars),$(eval MAKE_ARGS += $(foreach var,$(vars),$(if $($(var)),$(var)='$($(var))'))))
-	$(if $(wildcard $(file)),$(eval MAKE_ARGS += $(shell cat $(file) |sed '/^$$/d; /^#/d; /=/!d; s/^[[:blank:]]*//; s/[[:blank:]]*=[[:blank:]]*/=/;' |awk -F '=' '{print $$1"='\''"$$2"'\''"}')))
+	$(if $(wildcard $(file)),$(eval MAKE_ARGS += $(shell cat $(file) |sed '/^$$/d; /^#/d; /=/!d; s/^[[\s\t]]*//; s/[[\s\t]]*=[[\s\t]]*/=/;' |awk -F '=' '{print $$1"='\''"$$2"'\''"}')))
 	$(eval MAKE_DIR := $(if $(dir),-C $(dir)))
 	$(eval MAKE_OLDFILE += $(filter-out $(MAKE_OLDFILE), $^))
 	$(if $(filter $(VERBOSE),true),printf '${COLOR_GREEN}Running${COLOR_RESET} "'"make $(MAKE_ARGS) $(cmd)"'" $(if $(dir),${COLOR_BLUE}in folder${COLOR_RESET} $(dir) )\n')
