@@ -20,6 +20,7 @@ RUN apk upgrade --no-cache \
         make \
         mysql-client \
         openssh \
+        postgresql-client \
         sudo \
         zsh
 
