@@ -13,7 +13,7 @@ services:
     ports:
     - 5432
     volumes:
-    - postgres:/var/lib/postgresql
+    - postgres:/var/lib/postgresql/data
     restart: always
 
 volumes:
