@@ -169,7 +169,7 @@ endif
 include $(wildcard $(ENV_FILE))
 # include variables definitions
 include $(wildcard $(MAKE_DIR)/def.*.mk)
-include $(foreach subdir,$(MAKE_SUBDIRS),$(wildcard $(MAKE_DIR)/$(subdir)/def.*.mk))
+include $(foreach subdir,$(MAKE_SUBDIRS),$(wildcard $(MAKE_DIR)/$(subdir)/def.mk $(MAKE_DIR)/$(subdir)/def.*.mk))
 
 # Accept arguments for CMDS targets
 ifneq ($(filter $(CMDS),$(firstword $(MAKECMDGOALS))),)

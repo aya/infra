@@ -1,6 +1,7 @@
 BUILD_APP_VARS                  ?= APP BRANCH COMMIT DEPLOY_SLACK_HOOK ENV VERSION
 COMPOSE_IGNORE_ORPHANS          ?= false
 ENV_VARS                        += CONSUL_HTTP_TOKEN MOUNT_NFS_CONFIG
+MOUNT_DEBUG                     ?= false
 MOUNT_NFS                       ?= false
 MOUNT_SSH                       ?= true
 
