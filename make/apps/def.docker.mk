@@ -1,11 +1,11 @@
 CMDS                            += docker-compose-exec
-COMPOSE_FILE                    ?= $(wildcard docker/docker-compose.yml docker/docker-compose.$(ENV).yml $(foreach file,app nfs ssh subrepo tmpfs,$(if $(filter true,$(MOUNT_$(call UPPERCASE,$(file)))),docker/docker-compose.$(file).yml)))
+COMPOSE_FILE                    ?= $(wildcard docker/docker-compose.yml docker/docker-compose.$(ENV).yml $(foreach file,app nfs ssh subrepo tmpfs debug,$(if $(filter true,$(MOUNT_$(call UPPERCASE,$(file)))),docker/docker-compose.$(file).yml)))
 COMPOSE_PROJECT_NAME            ?= $(USER)_$(ENV)_$(APP)
 COMPOSE_SERVICE_NAME            ?= $(subst _,-,$(COMPOSE_PROJECT_NAME))
 CONTEXT                         += COMPOSE_FILE COMPOSE_PROJECT_NAME DOCKER_SERVICE
 DOCKER_BUILD_ARGS               ?= $(foreach var,$(DOCKER_BUILD_VARS),$(if $($(var)),--build-arg $(var)='$($(var))'))
 DOCKER_BUILD_CACHE              ?= true
-DOCKER_BUILD_TARGET             ?= $(if $(filter-out $(APP),infra),$(if $(filter $(ENV),local tests preprod prod),$(ENV),local),local)
+DOCKER_BUILD_TARGET             ?= $(if $(filter-out $(APP),infra),$(if $(filter $(ENV),local debug tests preprod prod),$(ENV),local),local)
 DOCKER_BUILD_VARS               ?= APP BRANCH DOCKER_GID DOCKER_REPOSITORY GID GIT_AUTHOR_EMAIL GIT_AUTHOR_NAME TARGET UID USER VERSION
 DOCKER_COMPOSE_DOWN_OPTIONS     ?=
 DOCKER_COMPOSE_UP_OPTIONS       ?= -d

@@ -107,6 +107,11 @@ docker-compose-rm:
 	$(eval DRYRUN_IGNORE := false)
 	$(call docker-compose,rm -fs $(if $(filter $(SERVICE),$(SERVICES)),$(SERVICE)))
 
+.PHONY: docker-compose-run
+docker-compose-run: SERVICE ?= $(DOCKER_SERVICE)
+docker-compose-run:
+	$(call docker-compose,run $(SERVICE) $(ARGS))
+
 .PHONY: docker-compose-scale
 docker-compose-scale: SERVICE ?= $(DOCKER_SERVICE)
 docker-compose-scale:

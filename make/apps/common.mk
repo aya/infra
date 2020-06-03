@@ -78,13 +78,18 @@ reinstall: clean ## Reinstall application
 restart: docker-compose-restart start-up ## Restart application
 
 .PHONY: run
-run: ## Run a command
-	$(call make,exec -- $(ARGS))
+run: ## Run a command in a new docker
+ifneq (,$(filter $(ENV),prod preprod))
+	$(call run,$(ARGS))
+else
+	$(call make,docker-compose-run,,ARGS)
+endif
 
 .PHONY: run@%
-run@%: ## Run a command on remote server
+run@%: SERVICE ?= $(DOCKER_SERVICE)
+run@%: ## Run a command in a new docker $(SERVICE) with ssh on remote ENV $*
 	$(eval ENV=$*)
-	$(call make,ssh-run,../infra,ARGS)
+	$(call make,ssh-run,../infra,ARGS SERVICE)
 
 .PHONY: scale
 scale: docker-compose-scale ## Start application dockers
