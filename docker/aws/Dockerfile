@@ -4,7 +4,6 @@ ARG DOCKER_BUILD_DIR
 RUN apk --no-cache add \
         groff \
         less \
-        python \
         py-pip \
  && pip install awscli
 

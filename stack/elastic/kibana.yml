@@ -3,10 +3,8 @@ version: '3.6'
 services:
   kibana:
     image: docker.elastic.co/kibana/kibana:5.3.3
-    depends_on:
-    - elasticsearch
     environment:
-    - ELASTICSEARCH_URL="http://elasticsearch:9200"
+    - ELASTICSEARCH_URL="${ELASTICSEARCH_PROTOCOL}://${ELASTICSEARCH_HOST}:${ELASTICSEARCH_PORT}"
     labels:
     - SERVICE_5601_CHECK_HTTP=/app/kibana
     - SERVICE_5601_NAME=${COMPOSE_SERVICE_NAME}-kibana-5601
