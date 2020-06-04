@@ -22,7 +22,7 @@ ENV_VARS                        ?= APP APP_DIR BRANCH ENV HOSTNAME GID MONOREPO 
 GID                             ?= $(shell id -g)
 GIT_PARAMETERS_REPOSITORY       ?= $(call pop,$(GIT_UPSTREAM_REPOSITORY))/$(PARAMETERS)
 GIT_REPOSITORY                  ?= $(if $(SUBREPO),$(shell awk -F ' = ' '$$1 ~ /^[[\s\t]]*remote$$/ {print $$2}' .gitrepo),$(shell git config --get remote.origin.url))
-GIT_UPSTREAM_REPOSITORY         ?= $(call pop,$(call pop,$(GIT_REPOSITORY)))/$(GIT_UPSTREAM_USER)/$(lastword $(subst /, ,$(GIT_REPOSITORY)))
+GIT_UPSTREAM_REPOSITORY         ?= $(if $(findstring ://,$(GIT_REPOSITORY)),$(call pop,$(call pop,$(GIT_REPOSITORY)))/,$(call pop,$(GIT_REPOSITORY),:):)$(GIT_UPSTREAM_USER)/$(lastword $(subst /, ,$(GIT_REPOSITORY)))
 GIT_UPSTREAM_USER               ?= $(MONOREPO)
 HOSTNAME                        ?= $(shell hostname |sed 's/\..*//')
 MAKE_ARGS                       ?= $(foreach var,$(MAKE_VARS),$(if $($(var)),$(var)='$($(var))'))

@@ -1,11 +1,12 @@
 CMDS                            += openstack ssh-run terraform
 COMPOSE_IGNORE_ORPHANS          ?= true
 CONTEXT                         += GIT_AUTHOR_EMAIL GIT_AUTHOR_NAME
+DOCKER_BUILD_VARS               += SSH_BASTION_HOSTNAME SSH_BASTION_USERNAME SSH_PUBLIC_HOST_KEYS SSH_PRIVATE_IP_RANGE
 DOCKER_SERVICE                  ?= mysql
 ELASTICSEARCH_HOST              ?= elasticsearch
 ELASTICSEARCH_PORT              ?= 9200
 ELASTICSEARCH_PROTOCOL          ?= http
-ENV_VARS                        += COMPOSE_IGNORE_ORPHANS DOCKER_IMAGE_CLI DOCKER_IMAGE_SSH DOCKER_NAME_CLI DOCKER_NAME_SSH ELASTICSEARCH_HOST ELASTICSEARCH_PASSWORD ELASTICSEARCH_PORT ELASTICSEARCH_PROTOCOL ELASTICSEARCH_USERNAME GIT_AUTHOR_EMAIL GIT_AUTHOR_NAME SETUP_SYSCTL_CONFIG
+ENV_VARS                        += COMPOSE_IGNORE_ORPHANS DOCKER_IMAGE_CLI DOCKER_IMAGE_SSH DOCKER_NAME_CLI DOCKER_NAME_SSH ELASTICSEARCH_HOST ELASTICSEARCH_PASSWORD ELASTICSEARCH_PORT ELASTICSEARCH_PROTOCOL ELASTICSEARCH_USERNAME GIT_AUTHOR_EMAIL GIT_AUTHOR_NAME SETUP_SYSCTL_CONFIG SSH_BASTION_HOSTNAME SSH_BASTION_USERNAME SSH_PUBLIC_HOST_KEYS SSH_PRIVATE_IP_RANGE
 GIT_AUTHOR_EMAIL                ?= $(shell git config user.email 2>/dev/null)
 GIT_AUTHOR_NAME                 ?= $(shell git config user.name 2>/dev/null)
 HOME                            ?= /home/$(USER)
@@ -19,6 +20,10 @@ SETUP_NFSD_OSX_CONFIG           ?= nfs.server.bonjour=0 nfs.server.mount.regular
 SETUP_SYSCTL                    ?= false
 SETUP_SYSCTL_CONFIG             ?= vm.max_map_count=262144 vm.overcommit_memory=1 fs.file-max=8388608 net.core.somaxconn=1024
 SHELL                           ?= /bin/sh
+SSH_BASTION_HOSTNAME            ?= bastion.ssh
+SSH_BASTION_USERNAME            ?= user
+SSH_PUBLIC_HOST_KEYS            ?= github.com
+SSH_PRIVATE_IP_RANGE            ?= 10.10.*
 STACK                           ?= logs services
 
 define setup-nfsd-osx

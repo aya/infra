@@ -41,6 +41,10 @@ FROM dist as local
 ARG DOCKER_BUILD_DIR
 ARG DOCKER_GID
 ARG SHELL=/bin/bash
+ARG SSH_BASTION_HOSTNAME
+ARG SSH_BASTION_USERNAME
+ARG SSH_PUBLIC_HOST_KEYS
+ARG SSH_PRIVATE_IP_RANGE
 ARG UID
 ARG USER
 ENV UID=${UID}
@@ -85,15 +89,14 @@ RUN echo -e "\n\
 Host *\n\
   LogLevel quiet\n\
   Compression yes\n\
-## AWS ##\n\
-Host 10.131.*\n\
-  ProxyCommand ssh -q aws-deploy nc -q0 %h 22\n\
+Host ${SSH_PRIVATE_IP_RANGE}\n\
+  ProxyCommand ssh -q ssh-bastion nc -q0 %h 22\n\
   HostName %h\n\
   StrictHostKeyChecking no\n\
   UserKnownHostsFile /dev/null\n\
-Host aws-deploy\n\
-  HostName 52.50.10.235\n\
-  User sshuser\n\
+Host ssh-bastion\n\
+  HostName ${SSH_BASTION_HOSTNAME}\n\
+  User ${SSH_BASTION_USERNAME}\n\
 " >> /etc/ssh/ssh_config
 
 USER $USER
@@ -102,9 +105,7 @@ WORKDIR /home/$USER
 
 # git config
 RUN mkdir -p ~/.ssh ~/.config/git \
- && ssh-keyscan -t rsa -H github.com >> ~/.ssh/known_hosts \
- && ssh-keyscan -t rsa -H 52.31.228.112 >> ~/.ssh/known_hosts \
- && ssh-keyscan -t rsa -H 52.50.10.235 >> ~/.ssh/known_hosts \
+ && ssh-keyscan -t rsa -H ${SSH_PUBLIC_HOST_KEYS} >> ~/.ssh/known_hosts \
  && echo -e "\
 .DS_Store\n\
 .idea/\n\

@@ -1,15 +1,3 @@
 new-session -A -s aws-prod
-neww -t aws-prod:1 -n deploy '/bin/bash -cli "force ssh sshuser@aws-prod-deploy"'
-neww -t aws-prod:2 -n devtools '/bin/bash -cli "force ssh admin@aws-prod-devtools"'
-neww -t aws-prod:3 -n syslog '/bin/bash -cli "force ssh sshuser@aws-prod-syslog"'
-neww -t aws-prod:4 -n tools '/bin/bash -cli "force ssh sshuser@aws-prod-tools"'
-neww -t aws-prod:5 -n front01 '/bin/bash -cli "force ssh sshuser@aws-prod-front01"'
-neww -t aws-prod:6 -n front02 '/bin/bash -cli "force ssh sshuser@aws-prod-front02"'
-neww -t aws-prod:7 -n cache01 '/bin/bash -cli "force ssh sshuser@aws-prod-cache01"'
-neww -t aws-prod:8 -n cache02 '/bin/bash -cli "force ssh sshuser@aws-prod-cache02"'
-neww -t aws-prod:9 -n mq01a '/bin/bash -cli "force ssh sshuser@aws-prod-mq01a"'
-neww -t aws-prod:10 -n mq01b '/bin/bash -cli "force ssh sshuser@aws-prod-mq01b"'
-neww -t aws-prod:11 -n es02a '/bin/bash -cli "force ssh sshuser@aws-prod-es02a"'
-neww -t aws-prod:12 -n es02b '/bin/bash -cli "force ssh sshuser@aws-prod-es02b"'
-neww -t aws-prod:13 -n es02c '/bin/bash -cli "force ssh sshuser@aws-prod-es02c"'
-run-shell "ssh sshuser@aws-prod-deploy make list-nodes |sed '1d' |awk '$1 ~ /enovasante.aws-eu-west-1.web.[a-z]+-xx$/' |while read host ip; do type=\${host#*web.}; type=\${type%%-*}; num=\$(printf '%0d' \${ip}); num=\$(echo \${ip} | tr . '\n' | awk '{n = n*256 + $1} END{print n}'); tmux neww -t aws-prod:\$num -n \$type '/bin/bash -cli \"force ssh -Aqt sshuser@aws-prod-deploy ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no 'sshuser@\$ip'\"'; done"
+run-shell "ssh sshuser@ssh-bastion make list-nodes |sed '1d' |awk '$1 ~ /^1001pharmacies\.prod\.[0-9a-z]+$/' |while read host ip; do type=\${host#*prod.}; num=\$(printf '%0d' \${ip}); num=\$(echo \${ip} | tr . '\n' | awk '{n = n*256 + $1} END{print n}'); tmux neww -t aws-prod:\$num -n \$type '/bin/bash -cli \"force ssh -Aqt ssh-bastion ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no 'root@\$ip'\"'; done"
+run-shell "ssh sshuser@ssh-bastion make list-nodes |sed '1d' |awk '$1 ~ /enovasante.aws-eu-west-1.web.[a-z]+[^pp]-[0-9a-z]+$/' |while read host ip; do type=\${host#*web.}; num=\$(printf '%0d' \${ip}); num=\$(echo \${ip} | tr . '\n' | awk '{n = n*256 + $1} END{print n}'); tmux neww -t aws-prod:\$num -n \$type '/bin/bash -cli \"force ssh -Aqt ssh-bastion ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no 'enovadmin@\$ip'\"'; done"

@@ -163,6 +163,10 @@ ARG DOCKER_GID
 ARG SHELL=/bin/bash
 ARG UID
 ARG GID
+ARG SSH_BASTION_HOSTNAME
+ARG SSH_BASTION_USERNAME
+ARG SSH_PUBLIC_HOST_KEYS
+ARG SSH_PRIVATE_IP_RANGE
 ARG USER
 ENV UID=${UID}
 ENV GID=${GID:-${UID}}
@@ -211,7 +215,15 @@ RUN chown $USER /home/$USER/package.json
 RUN echo -e "\n\
 Host *\n\
   LogLevel quiet\n\
-  Compression yes\
+  Compression yes\n\
+Host ${SSH_PRIVATE_IP_RANGE}\n\
+  ProxyCommand ssh -q ssh-bastion nc -q0 %h 22\n\
+  HostName %h\n\
+  StrictHostKeyChecking no\n\
+  UserKnownHostsFile /dev/null\n\
+Host ssh-bastion\n\
+  HostName ${SSH_BASTION_HOSTNAME}\n\
+  User ${SSH_BASTION_USERNAME}\n\
 " >> /etc/ssh/ssh_config
 
 # Custom prompt
@@ -227,8 +239,7 @@ RUN yarn --cache-folder ./ycache && rm -rf ./ycache \
 
 # git config
 RUN mkdir -p ~/.ssh ~/.config/git \
- && ssh-keyscan -t rsa -H github.com >> ~/.ssh/known_hosts \
-  && ssh-keyscan -t rsa -H 52.31.228.112 >> ~/.ssh/known_hosts \
+ && ssh-keyscan -t rsa -H ${SSH_PUBLIC_HOST_KEYS} >> ~/.ssh/known_hosts \
  && echo -e "\
 .DS_Store\n\
 .idea/\n\
@@ -242,7 +253,6 @@ Thumbs.db\n\
 
 # dot files
 COPY ${DOCKER_BUILD_DIR}/.* /home/$USER/
-COPY ${DOCKER_BUILD_DIR}/.ssh /home/$USER/.ssh/
 COPY ${DOCKER_BUILD_DIR}/.tmux /home/$USER/.tmux/
 
 ARG GIT_AUTHOR_NAME
