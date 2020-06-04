@@ -36,7 +36,6 @@ docker-compose-build-%: docker-images-infra
 	$(eval DRYRUN_IGNORE := true)
 	$(eval SERVICES      ?= $(shell $(call docker-compose,--log-level critical config --services)))
 	$(eval DRYRUN_IGNORE := false)
-	$(eval ENV:=$*)
 	$(call docker-compose,build $(if $(filter $(SERVICE),$(SERVICES)),$(SERVICE)))
 
 .PHONY: docker-compose-config
@@ -45,7 +44,7 @@ docker-compose-config:
 
 .PHONY: docker-compose-config-%
 docker-compose-config-%:
-	$(call make,docker-compose-config DOCKER_BUILD_TARGET=$* ENV=$*)
+	$(call make,docker-compose-config DOCKER_BUILD_TARGET=$*)
 
 .PHONY: docker-compose-connect
 docker-compose-connect: SERVICE ?= $(DOCKER_SERVICE)
@@ -172,17 +171,25 @@ docker-plugin-install:
 
 .PHONY: docker-push
 docker-push:
+ifneq ($(filter $(DEPLOY),true),)
 	$(eval DRYRUN_IGNORE := true)
 	$(eval SERVICES      ?= $(shell $(call docker-compose,--log-level critical config --services)))
 	$(eval DRYRUN_IGNORE := false)
 	$(foreach service,$(or $(SERVICE),$(SERVICES)),$(call docker-push,$(service)))
+else
+	printf "${COLOR_BROWN}WARNING${COLOR_RESET}: ${COLOR_GREEN}target${COLOR_RESET} $@ ${COLOR_GREEN}not enabled in${COLOR_RESET} $(APP).\n" >&2
+endif
 
 .PHONY: docker-push-%
 docker-push-%:
+ifneq ($(filter $(DEPLOY),true),)
 	$(eval DRYRUN_IGNORE := true)
 	$(eval SERVICES      ?= $(shell $(call docker-compose,--log-level critical config --services)))
 	$(eval DRYRUN_IGNORE := false)
 	$(foreach service,$(or $(SERVICE),$(SERVICES)),$(call docker-push,$(service),,$*))
+else
+	printf "${COLOR_BROWN}WARNING${COLOR_RESET}: ${COLOR_GREEN}target${COLOR_RESET} $@ ${COLOR_GREEN}not enabled in${COLOR_RESET} $(APP).\n" >&2
+endif
 
 .PHONY: docker-rebuild
 docker-rebuild:

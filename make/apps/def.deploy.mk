@@ -4,6 +4,7 @@ CODEDEPLOY_DEPLOYMENT_CONFIG    ?= CodeDeployDefault.AllAtOnce
 CODEDEPLOY_DESCRIPTION          ?= deploy $(ENV) $(APP) branch: $(BRANCH) commit: $(SUBREPO_COMMIT) tag: $(TAG) version: $(VERSION)
 CODEDEPLOY_GITHUB_REPO          ?= $(patsubst ssh://git@github.com/%,%,$(GIT_REPOSITORY))
 CODEDEPLOY_GITHUB_COMMIT_ID     ?= $(SUBREPO_COMMIT)
+DEPLOY                          ?= false
 DEPLOY_PING_TEXT                ?= app: *$(APP)* branch: *$(BRANCH)* env: *$(ENV)* version: *$(VERSION)* container: *$(CONTAINER)* host: *$(HOST)*
 DEPLOY_SLACK_HOOK               ?= https://hooks.slack.com/services/123456789/123456789/ABCDEFGHIJKLMNOPQRSTUVWX
 HASH                            ?= $(shell date +%s)

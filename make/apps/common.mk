@@ -25,7 +25,6 @@ config: docker-compose-config ## View docker compose file
 
 .PHONY: config@%
 config@%:
-	$(eval ENV=$*)
 	$(call make,docker-compose-config)
 
 .PHONY: connect
@@ -34,7 +33,6 @@ connect: docker-compose-connect ## Connect to docker $(SERVICE)
 .PHONY: connect@%
 connect@%: SERVICE ?= $(DOCKER_SERVICE)
 connect@%: ## Connect to docker $(SERVICE) with ssh on remote ENV $*
-	$(eval ENV=$*)
 	$(call make,ssh-connect,../infra,SERVICE)
 
 .PHONY: down
@@ -42,7 +40,7 @@ down: docker-compose-down ## Remove application dockers
 
 .PHONY: exec
 exec: ## Exec a command in docker $(SERVICE)
-ifneq (,$(filter $(ENV),prod preprod))
+ifneq (,$(filter $(ENV),$(ENV_DEPLOY)))
 	$(call exec,$(ARGS))
 else
 	$(call make,docker-compose-exec,,ARGS)
@@ -51,7 +49,6 @@ endif
 .PHONY: exec@%
 exec@%: SERVICE ?= $(DOCKER_SERVICE)
 exec@%: ## Exec a command in docker $(SERVICE) with ssh on remote ENV $*
-	$(eval ENV=$*)
 	$(call make,ssh-exec,../infra,ARGS SERVICE)
 
 .PHONY: logs
@@ -79,7 +76,7 @@ restart: docker-compose-restart start-up ## Restart application
 
 .PHONY: run
 run: ## Run a command in a new docker
-ifneq (,$(filter $(ENV),prod preprod))
+ifneq (,$(filter $(ENV),$(ENV_DEPLOY)))
 	$(call run,$(ARGS))
 else
 	$(call make,docker-compose-run,,ARGS)
@@ -88,7 +85,6 @@ endif
 .PHONY: run@%
 run@%: SERVICE ?= $(DOCKER_SERVICE)
 run@%: ## Run a command in a new docker $(SERVICE) with ssh on remote ENV $*
-	$(eval ENV=$*)
 	$(call make,ssh-run,../infra,ARGS SERVICE)
 
 .PHONY: scale
@@ -96,7 +92,6 @@ scale: docker-compose-scale ## Start application dockers
 
 .PHONY: ssh@%
 ssh@%: ## Connect to remote server with ssh
-	$(eval ENV=$*)
 	$(call make,ssh,../infra)
 
 ## stack: call docker-stack function with each value of $(STACK)

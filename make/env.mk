@@ -1,7 +1,14 @@
+##
+# target .env:
+# update .env file when .env.dist file is newer
 .env: .env.dist
 	$(call .env,,,$(wildcard ../$(PARAMETERS)/$(ENV)/$(APP)/.env .env.$(ENV)))
 
+# include .env file
 -include .env
+
+# set ENV=$(env) for each target ending with -$(env) or @$(env)
+$(foreach env,dev tests preprod prod,$(eval %-$(env) %@$(env): ENV:=$(env)))
 
 ifneq (,$(filter true,$(ENV_RESET)))
 env_reset := -i

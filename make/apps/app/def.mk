@@ -16,7 +16,7 @@ MOUNT_NFS_CONFIG                ?= addr=$(MOUNT_NFS_HOST),actimeo=3,intr,noacl,n
 MOUNT_NFS_HOST                  ?= host.docker.internal
 endif
 
-ifneq (,$(filter $(ENV),prod preprod))
+ifneq (,$(filter $(ENV),$(ENV_DEPLOY)))
 MOUNT_TMPFS                     ?= false
 else
 MOUNT_TMPFS                     ?= true

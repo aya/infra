@@ -5,12 +5,14 @@ COMPOSE_SERVICE_NAME            ?= $(subst _,-,$(COMPOSE_PROJECT_NAME))
 CONTEXT                         += COMPOSE_FILE COMPOSE_PROJECT_NAME DOCKER_SERVICE
 DOCKER_BUILD_ARGS               ?= $(foreach var,$(DOCKER_BUILD_VARS),$(if $($(var)),--build-arg $(var)='$($(var))'))
 DOCKER_BUILD_CACHE              ?= true
-DOCKER_BUILD_TARGET             ?= $(if $(filter-out $(APP),infra),$(if $(filter $(ENV),local debug tests preprod prod),$(ENV),local),local)
+DOCKER_BUILD_TARGET             ?= $(if $(filter-out $(APP),infra),$(if $(filter $(ENV),$(DOCKER_BUILD_TARGETS)),$(ENV),$(DOCKER_BUILD_TARGET_DEFAULT)),$(DOCKER_BUILD_TARGET_DEFAULT))
+DOCKER_BUILD_TARGET_DEFAULT     ?= local
+DOCKER_BUILD_TARGETS            ?= local debug tests preprod prod
 DOCKER_BUILD_VARS               ?= APP BRANCH DOCKER_GID DOCKER_REPOSITORY GID GIT_AUTHOR_EMAIL GIT_AUTHOR_NAME TARGET UID USER VERSION
 DOCKER_COMPOSE_DOWN_OPTIONS     ?=
 DOCKER_COMPOSE_UP_OPTIONS       ?= -d
 DOCKER_GID                      ?= $(call getent-group,docker)
-DOCKER_IMAGE_TAG                ?= $(if $(filter-out $(APP),infra),$(if $(filter $(ENV),preprod prod),$(VERSION),$(if $(DRONE_BUILD_NUMBER),$(DRONE_BUILD_NUMBER),latest)),latest)
+DOCKER_IMAGE_TAG                ?= $(if $(filter-out $(APP),infra),$(if $(filter $(ENV),$(ENV_DEPLOY)),$(VERSION),$(if $(DRONE_BUILD_NUMBER),$(DRONE_BUILD_NUMBER),latest)),latest)
 DOCKER_IMAGES                   ?= $(patsubst %/,%,$(patsubst docker/%,%,$(dir $(wildcard docker/*/Dockerfile))))
 DOCKER_PLUGIN                   ?= rexray/s3fs:latest
 DOCKER_PLUGIN_ARGS              ?= $(foreach var,$(DOCKER_PLUGIN_VARS),$(if $(DOCKER_PLUGIN_$(var)),$(var)='$(DOCKER_PLUGIN_$(var))'))
