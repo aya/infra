@@ -1,4 +1,4 @@
-CMDS                            += openstack terraform
+CMDS                            += openstack ssh-run terraform
 COMPOSE_IGNORE_ORPHANS          ?= true
 CONTEXT                         += GIT_AUTHOR_EMAIL GIT_AUTHOR_NAME
 DOCKER_SERVICE                  ?= mysql

@@ -98,7 +98,7 @@ aws-ec2-get-PrivateIpAddress: docker-build-aws
 .PHONY: aws-ec2-get-PrivateIpAddress-%
 aws-ec2-get-PrivateIpAddress-%: docker-build-aws
 	$(eval DRYRUN_IGNORE := true)
-	$(eval AWS_INSTANCE_IP := $(shell $(call aws,ec2 describe-instances --no-paginate --filter 'Name=tag:Name$(comma)Values=$*' --query 'Reservations[*].Instances[*].PrivateIpAddress' --output text) 2>/dev/null))
+	$(eval AWS_INSTANCE_IP := $(shell $(call aws,ec2 describe-instances --no-paginate --filter 'Name=tag:Name$(comma)Values=$**' --query 'Reservations[*].Instances[*].PrivateIpAddress' --output text) 2>/dev/null))
 	$(eval DRYRUN_IGNORE := false)
 	echo PrivateIpAddress: $(AWS_INSTANCE_IP)
 

@@ -25,6 +25,9 @@ logs:
 logs-nofollow:
 	@docker logs --tail 100 $(USER)_$(ENV)_$(APP)_$(SERVICE) || true
 
+run:
+	@$(ARGS)
+
 ifneq ($(filter $(CMDS),$(firstword $(MAKECMDGOALS))),)
 ARGS    := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
 ARGS    := $(subst :,\:,$(ARGS))
