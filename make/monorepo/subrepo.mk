@@ -43,11 +43,11 @@ endif
 	if [ $(DIFF) -eq 0 ]; then \
 		echo subrepo $(SUBREPO) already up to date.; \
 	else \
-		$(call exec,git subrepo fetch $(SUBREPO)); \
 		if [ $(DELETE) -eq 1 ]; then \
 			$(call exec,git push $(REMOTE) :$(BRANCH)); \
 			$(call exec,git push $(REMOTE) refs/remotes/$(REMOTE)/master:refs/heads/$(BRANCH)); \
 		fi; \
+		$(call exec,git subrepo fetch $(SUBREPO) -b $(BRANCH)); \
 		$(call exec,git subrepo push $(SUBREPO) -b $(BRANCH) $(UPDATE_SUBREPO_OPTIONS)); \
 		$(call exec,git subrepo clean $(SUBREPO)); \
 	fi
