@@ -73,40 +73,34 @@ load_average () {
 # export PS1
 custom_ps1 () {
     case "$0" in
-      sh)
-        HOSTNAME="$(hostname)"
-        USER="$(id -nu)"
-        ;;
       *ash)
-        DGRAY="\[\033[1;30m\]"
-        RED="\[\033[01;31m\]"
-        GREEN="\[\033[01;32m\]"
-        BROWN="\[\033[0;33m\]"
-        YELLOW="\[\033[01;33m\]"
-        BLUE="\[\033[01;34m\]"
-        CYAN="\[\033[0;36m\]"
-        GRAY="\[\033[0;37m\]"
-        NC="\[\033[0m\]"
+        local DGRAY="\[\033[1;30m\]"
+        local RED="\[\033[01;31m\]"
+        local GREEN="\[\033[01;32m\]"
+        local BROWN="\[\033[0;33m\]"
+        local YELLOW="\[\033[01;33m\]"
+        local BLUE="\[\033[01;34m\]"
+        local CYAN="\[\033[0;36m\]"
+        local GRAY="\[\033[0;37m\]"
+        local NC="\[\033[0m\]"
         ;;
       *)
         ;;
     esac
 
-    if [ "$(id -u)" = 0 ]; then
-        COLOR=${RED}
-        END="#"
-    else
-        COLOR=${BROWN}
-        END="\$"
-    fi
-
-    COUNT="${DGRAY}[${BLUE}\$(user_count 2>/dev/null)${DGRAY}|${BLUE}\$(process_count 2>/dev/null)${DGRAY}|${BLUE}\$(load_average 2>/dev/null)${DGRAY}]"
+    local COLOR="\$([ \"\$(id -u)\" = 0 ] && echo \"${RED}\" || echo \"${BROWN}\")"
+    local COUNT="${DGRAY}[${BLUE}\$(user_count 2>/dev/null)${DGRAY}|${BLUE}\$(process_count 2>/dev/null)${DGRAY}|${BLUE}\$(load_average 2>/dev/null)${DGRAY}]"
+    local END="\$([ \"\$(id -u)\" = 0 ] && echo \"#\" || echo \"\$\")"
+    local HOSTNAME="\$(hostname |sed 's/\..*//')"
 
     type __git_ps1 >/dev/null 2>&1 \
-     && GIT="\$(__git_ps1 2>/dev/null \" (%s)\")" \
-     || GIT="\$(BRANCH=\$(git rev-parse --abbrev-ref HEAD 2>/dev/null); [ -n \"\${BRANCH}\" ] && echo \" (\${BRANCH})\")"
+     && local GIT="\$(__git_ps1 2>/dev/null \" (%s)\")" \
+     || local GIT="\$(BRANCH=\$(git rev-parse --abbrev-ref HEAD 2>/dev/null); [ -n \"\${BRANCH}\" ] && echo \" (\${BRANCH})\")"
 
-    export PS1="${COUNT}${COLOR}${USER}${DGRAY}@${CYAN}${HOSTNAME%%.*}${DGRAY}:${GRAY}\$(pwd |sed 's|^${HOME}\(/.*\)*$|~\1|')${CYAN}${GIT}${DGRAY}${END}${NC} "
+    local USER="\$(id -nu)"
+    local WORKDIR="\$(pwd |sed 's|^'\${HOME}'\(/.*\)*$|~\1|')"
+
+    export PS1="${COUNT}${COLOR}${USER}${DGRAY}@${CYAN}${HOSTNAME}${DGRAY}:${GRAY}${WORKDIR}${CYAN}${GIT}${DGRAY}${END}${NC} "
 }
 
 # export PROMPT_COMMAND
