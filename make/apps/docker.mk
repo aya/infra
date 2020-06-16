@@ -182,14 +182,22 @@ docker-rebuild-%:
 
 .PHONY: docker-tag
 docker-tag:
+ifneq ($(filter $(DEPLOY),true),)
 	$(eval DRYRUN_IGNORE := true)
 	$(eval SERVICES      ?= $(shell $(call docker-compose,--log-level critical config --services)))
 	$(eval DRYRUN_IGNORE := false)
 	$(foreach service,$(or $(SERVICE),$(SERVICES)),$(call docker-tag,$(service)))
+else
+	printf "${COLOR_BROWN}WARNING${COLOR_RESET}: ${COLOR_GREEN}target${COLOR_RESET} $@ ${COLOR_GREEN}not enabled in${COLOR_RESET} $(APP).\n" >&2
+endif
 
 .PHONY: docker-tag-%
 docker-tag-%:
+ifneq ($(filter $(DEPLOY),true),)
 	$(eval DRYRUN_IGNORE := true)
 	$(eval SERVICES      ?= $(shell $(call docker-compose,--log-level critical config --services)))
 	$(eval DRYRUN_IGNORE := false)
 	$(foreach service,$(or $(SERVICE),$(SERVICES)),$(call docker-tag,$(service),,,,$*))
+else
+	printf "${COLOR_BROWN}WARNING${COLOR_RESET}: ${COLOR_GREEN}target${COLOR_RESET} $@ ${COLOR_GREEN}not enabled in${COLOR_RESET} $(APP).\n" >&2
+endif
