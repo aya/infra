@@ -2,7 +2,7 @@ ifneq (,$(filter true,$(DRONE)))
 # limit to APPS impacted by the commit
 ifneq (,$(filter $(DRONE_BUILD_EVENT),pull_request push))
 COMMIT_AFTER                    := $(DRONE_COMMIT_AFTER)
-COMMIT_BEFORE                   := $(if $(filter 0000000000000000000000000000000000000000,$(DRONE_COMMIT_BEFORE)),master,$(DRONE_COMMIT_BEFORE))
+COMMIT_BEFORE                   := $(if $(filter 0000000000000000000000000000000000000000,$(DRONE_COMMIT_BEFORE)),upstream/master,$(DRONE_COMMIT_BEFORE))
 endif
 ifneq (,$(filter $(DRONE_BUILD_EVENT),tag))
 COMMIT_AFTER                    := $(DRONE_TAG)

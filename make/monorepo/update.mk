@@ -41,7 +41,7 @@ update-subrepo-%:
 
 .PHONY: update-upstream
 update-upstream: infra-base .git/refs/remotes/upstream/master
-	$(call exec,git fetch upstream "+refs/tags/*:refs/tags/*")
+	$(call exec,git fetch --tags upstream)
 
 .git/refs/remotes/upstream/master: infra-base
 	$(call exec,git remote add upstream $(GIT_UPSTREAM_REPOSITORY) 2>/dev/null ||:)
