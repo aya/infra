@@ -5,7 +5,7 @@ quote                           ?= '
 APP                             ?= $(if $(wildcard .git),$(if $(wildcard */.gitrepo),,$(notdir $(CURDIR))),$(notdir $(CURDIR)))
 APP_DIR                         ?= $(if $(APP),$(CURDIR))
 BRANCH                          ?= $(shell git rev-parse --abbrev-ref HEAD)
-CMDS                            ?= exec exec@% run run@%
+CMDS                            ?= exec exec:% exec@% run run:% run@%
 COMMIT                          ?= $(shell git rev-parse $(BRANCH) 2>/dev/null)
 CONTEXT                         ?= $(shell awk 'BEGIN {FS="="}; $$1 !~ /^(\#|$$)/ {print $$1}' .env.dist 2>/dev/null) BRANCH ENV_FILE UID USER VERSION
 DEBUG                           ?= false
@@ -17,6 +17,7 @@ DRYRUN_RECURSIVE                ?= false
 ENV                             ?= local
 ENV_DEPLOY                      ?= preprod prod
 ENV_FILE                        ?= $(wildcard ../$(PARAMETERS)/$(ENV)/$(APP)/.env) .env
+ENV_LIST                        ?= local dev tests preprod prod
 ENV_RESET                       ?= false
 ENV_VARS                        ?= APP APP_DIR BRANCH ENV HOSTNAME GID MONOREPO MONOREPO_DIR TAG UID USER VERSION
 GID                             ?= $(shell id -g)
@@ -171,6 +172,20 @@ include $(wildcard $(ENV_FILE))
 # include variables definitions
 include $(wildcard $(MAKE_DIR)/def.*.mk)
 include $(foreach subdir,$(MAKE_SUBDIRS),$(wildcard $(MAKE_DIR)/$(subdir)/def.mk $(MAKE_DIR)/$(subdir)/def.*.mk))
+
+# set ENV=$(env) for each target ending with :$(env) and call $* target
+# set ../$(PARAMETERS)/$(env)/$(APP)/.env as last .env readed file to override values of .env file
+define TARGET:ENV
+.PHONY: $(TARGET)
+$(TARGET): $(ASSIGN_ENV)
+$(TARGET): $(ASSIGN_ENV_FILE)
+$(TARGET):
+	$$(call make,$$*,,ENV_FILE)
+endef
+$(foreach env,$(ENV_LIST),$(eval TARGET := %\:$(env)) $(eval ASSIGN_ENV := ENV:=$(env)) $(eval ASSIGN_ENV_FILE := ENV_FILE+=$(wildcard ../$(PARAMETERS)/$(env)/$(APP)/.env)) $(eval $(TARGET:ENV)))
+
+# set ENV=$(env) for each target ending with @$(env) or -$(env)
+$(foreach env,$(ENV_LIST),$(eval %@$(env) %-$(env): ENV:=$(env)))
 
 # Accept arguments for CMDS targets
 ifneq ($(filter $(CMDS),$(firstword $(MAKECMDGOALS))),)

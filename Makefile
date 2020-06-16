@@ -8,7 +8,6 @@ all: install ## Build and deploy infra
 
 .PHONY: build-%
 build-%:
-	$(eval ENV:=$*)
 	$(call make,docker-compose-build DOCKER_BUILD_TARGET=$*)
 	$(call make,up)
 	$(call make,docker-compose-exec ARGS='rm -Rf /root/.npm /log-buffer/*' SERVICE=logagent)
@@ -17,14 +16,14 @@ build-%:
 ##
 # CLEAN
 
-.PHONY: clean
-clean: docker-compose-down clean-env
+.PHONY: clean-app
+clean-app: ;
 
 ##
 # DEPLOY
 
-.PHONY: deploy
-deploy: deploy-ping
+.PHONY: deploy-hook
+deploy-hook: deploy-ping
 
 ##
 # INSTALL

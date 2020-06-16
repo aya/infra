@@ -11,6 +11,8 @@ endif
 .PHONY: update-$(PARAMETERS)
 update-$(PARAMETERS): $(PARAMETERS)
 
+$(PARAMETERS): SSH_PUBLIC_HOST_KEYS := github.com $(GIT_PARAMETERS_REMOTE_HOST)
+$(PARAMETERS): MAKE_VARS += SSH_PUBLIC_HOST_KEYS
 $(PARAMETERS): infra-base
 	$(call exec,[ -d $(PARAMETERS) ] && cd $(PARAMETERS) && git pull --quiet || git clone --quiet $(GIT_PARAMETERS_REPOSITORY))
 

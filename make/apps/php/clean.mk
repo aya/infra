@@ -1,8 +1,8 @@
 ##
 # CLEAN
 
-.PHONY: clean-app
-clean-app: bootstrap
+.PHONY: clean-php-app
+clean-php-app: bootstrap
 	$(call docker-compose-exec,$(DOCKER_SERVICE),rm -rf app/bootstrap.php.cache)
 	$(call docker-compose-exec,$(DOCKER_SERVICE),rm -rf app/cache/* app/cach~)
 	$(call docker-compose-exec,$(DOCKER_SERVICE),rm -rf app/logs/*)

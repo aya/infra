@@ -43,3 +43,7 @@ RUN [ "$UID" -eq "$UID" ] 2>/dev/null \
  || true
 
 USER $USER
+
+FROM local as tests
+FROM tests as preprod
+FROM preprod as prod

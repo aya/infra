@@ -4,14 +4,8 @@
 .PHONY: build
 build: $(APPS) ## Build applications
 
-.PHONY: build-%
-build-%: $(APPS) ; ## Build applications for (environment)
-
 .PHONY: clean
 clean: $(APPS) ## Clean applications
-
-.PHONY: clean-%
-clean-%: $(APPS) ; ## Clean applications for (environment)
 
 .PHONY: config
 config: $(APPS)
@@ -22,9 +16,6 @@ copy:
 
 .PHONY: deploy
 deploy: $(APPS) ## Deploy applications
-
-.PHONY: deploy-%
-deploy-%: $(APPS) ; ## Deploy applications for (environment)
 
 .PHONY: down
 down: $(APPS) ## Remove application dockers

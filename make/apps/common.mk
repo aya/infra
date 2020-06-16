@@ -17,15 +17,8 @@ ifneq ($(SUBREPO),)
 	fi
 endif
 
-.PHONY: build
-build: docker-compose-build ## Build application docker images
-
 .PHONY: config
 config: docker-compose-config ## View docker compose file
-
-.PHONY: config@%
-config@%:
-	$(call make,docker-compose-config)
 
 .PHONY: connect
 connect: docker-compose-connect ## Connect to docker $(SERVICE)

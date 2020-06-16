@@ -29,10 +29,7 @@ target:
 ## Show current context
 context:
 	printf "${COLOR_BROWN}Context:${COLOR_RESET}\n"
-	$(MAKE) context-list
-
-.PHONY: context-list
-context-list: $(CONTEXT)
+	$(MAKE) $(CONTEXT)
 
 .PHONY: $(CONTEXT)
 $(CONTEXT):

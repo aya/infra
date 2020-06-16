@@ -7,9 +7,6 @@
 # include .env file
 -include .env
 
-# set ENV=$(env) for each target ending with -$(env) or @$(env)
-$(foreach env,dev tests preprod prod,$(eval %-$(env) %@$(env): ENV:=$(env)))
-
 ifneq (,$(filter true,$(ENV_RESET)))
 env_reset := -i
 endif

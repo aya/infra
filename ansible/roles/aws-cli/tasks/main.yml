@@ -120,7 +120,7 @@
     pull: yes
     restart_policy: always
     volumes:
-    - "{{ lookup('env','ANSIBLE_DISKS_NFS_PATH') }}:/var/www/shared"
+    - "{{ lookup('env','ANSIBLE_DISKS_NFS_PATH') }}:/shared"
     - /etc/localtime:/etc/localtime:ro
     - /var/run/docker.sock:/tmp/docker.sock:ro
   tags: 'aws'
