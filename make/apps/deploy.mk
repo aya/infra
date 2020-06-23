@@ -8,16 +8,6 @@ ifneq ($(wildcard ../infra),)
 	$(call make,aws-codedeploy,../infra,CODEDEPLOY_APP_NAME CODEDEPLOY_DEPLOYMENT_CONFIG CODEDEPLOY_DEPLOYMENT_GROUP CODEDEPLOY_DESCRIPTION CODEDEPLOY_GITHUB_REPO CODEDEPLOY_GITHUB_COMMIT_ID)
 endif
 
-.PHONY: deploy
-deploy:
-ifneq (,$(filter $(ENV),$(ENV_DEPLOY)))
-ifneq ($(BUILD),true)
-	$(call make,deploy-$(ENV))
-else
-	$(call make,deploy-hook)
-endif
-endif
-
 .PHONY: deploy-old-%
 deploy-old-%:
 	$(call exec,git fetch subrepo/$(SUBREPO))
@@ -26,7 +16,7 @@ deploy-old-%:
 .PHONY: deploy-%
 deploy-%:
 	$(call make,docker-login docker-tag docker-push)
-	$(call make,infra-ansible-pull@$* ANSIBLE_DOCKER_IMAGE_TAG=$(VERSION),,APP AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY)
+	$(call make,infra-ansible-pull@$* ANSIBLE_DOCKER_IMAGE_TAG=$(VERSION) DOCKER_BUILD_TARGET=local,,APP AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY)
 	$(call make,docker-tag-latest docker-push-latest)
 
 .PHONY: deploy-assets-install
