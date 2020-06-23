@@ -89,15 +89,23 @@ RUN echo -e "\n\
 Host *\n\
   LogLevel quiet\n\
   Compression yes\n\
+" >> /etc/ssh/ssh_config \
+ && if [ -n "${SSH_PRIVATE_IP_RANGE}" ] && [ -n "${SSH_BASTION_HOSTNAME}" ]; then \
+      echo -e "\
 Host ${SSH_PRIVATE_IP_RANGE}\n\
   ProxyCommand ssh -q ssh-bastion nc -q0 %h 22\n\
   HostName %h\n\
   StrictHostKeyChecking no\n\
   UserKnownHostsFile /dev/null\n\
 Host ssh-bastion\n\
-  HostName ${SSH_BASTION_HOSTNAME}\n\
+  HostName ${SSH_BASTION_HOSTNAME}\
+" >> /etc/ssh/ssh_config; \
+      if [ -n "${SSH_BASTION_USERNAME}" ]; then \
+        echo -e "\
   User ${SSH_BASTION_USERNAME}\n\
-" >> /etc/ssh/ssh_config
+" >> /etc/ssh/ssh_config; \
+      fi \
+    fi
 
 USER $USER
 ENV SHELL=${SHELL}
