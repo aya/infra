@@ -184,8 +184,8 @@ $(TARGET):
 endef
 $(foreach env,$(ENV_LIST),$(eval TARGET := %\:$(env)) $(eval ASSIGN_ENV := ENV:=$(env)) $(eval ASSIGN_ENV_FILE := ENV_FILE+=$(wildcard ../$(PARAMETERS)/$(env)/$(APP)/.env)) $(eval $(TARGET:ENV)))
 
-# set ENV=$(env) for each target ending with @$(env) or -$(env)
-$(foreach env,$(ENV_LIST),$(eval %@$(env) %-$(env): ENV:=$(env)))
+# set ENV=$(env) for each target ending with @$(env)
+$(foreach env,$(ENV_LIST),$(eval %@$(env): ENV:=$(env)))
 
 # Accept arguments for CMDS targets
 ifneq ($(filter $(CMDS),$(firstword $(MAKECMDGOALS))),)

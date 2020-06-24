@@ -1,8 +1,8 @@
 ##
 # CLEAN
 
-.PHONY: clean-%
-clean-%:
+.PHONY: clean-all
+clean-all:
 	$(call make,docker-compose-down DOCKER_COMPOSE_DOWN_OPTIONS='--rmi all -v')
 
 .PHONY: clean-env

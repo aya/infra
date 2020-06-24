@@ -18,10 +18,10 @@ ifneq ($(SUBREPO),)
 endif
 
 .PHONY: build
-build: $(if $(filter $(ENV),$(ENV_DEPLOY)),build-$(ENV),docker-compose-build) ## Build application docker images
+build: $(if $(filter $(ENV),$(ENV_DEPLOY)),build-app,docker-compose-build) ## Build application docker images
 
 .PHONY: clean
-clean: $(if $(filter $(ENV),$(ENV_DEPLOY)),clean-$(ENV),clean-app docker-compose-down clean-env) ## Cleanup application and docker images
+clean: $(if $(filter $(ENV),$(ENV_DEPLOY)),clean-all,clean-app docker-compose-down clean-env) ## Cleanup application and docker images
 
 .PHONY: config
 config: docker-compose-config ## View docker compose file
@@ -38,7 +38,7 @@ connect@%: ## Connect to docker $(SERVICE) with ssh on remote ENV $*
 deploy: ## Deploy application docker images
 ifneq (,$(filter $(ENV),$(ENV_DEPLOY)))
 ifneq ($(BUILD),true)
-	$(call make,deploy-$(ENV))
+	$(call make,deploy-app)
 else
 	$(call make,deploy-hook)
 endif

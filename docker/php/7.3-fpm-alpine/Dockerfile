@@ -193,6 +193,7 @@ RUN docker-php-ext-enable ${PHP_EXT_ENABLE}
 # copy *.ini
 COPY ${DOCKER_BUILD_DIR}/*.ini /usr/local/etc/php/conf.d/
 COPY ${DOCKER_BUILD_DIR}/php-fpm-*.conf /usr/local/etc/php-fpm.d/
+RUN rm /usr/local/etc/php-fpm.d/www.conf
 
 # custom php config
 ARG PHP_INI_CONFIG
