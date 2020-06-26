@@ -35,14 +35,7 @@ connect@%: ## Connect to docker $(SERVICE) with ssh on remote ENV $*
 	$(call make,ssh-connect,../infra,SERVICE)
 
 .PHONY: deploy
-deploy: ## Deploy application docker images
-ifneq (,$(filter $(ENV),$(ENV_DEPLOY)))
-ifneq ($(BUILD),true)
-	$(call make,deploy-app)
-else
-	$(call make,deploy-hook)
-endif
-endif
+deploy: $(if $(filter $(ENV),$(ENV_DEPLOY)),$(if $(filter true,$(BUILD)),deploy-hook,deploy-app)) ## Deploy application docker images
 
 .PHONY: down
 down: docker-compose-down ## Remove application dockers
