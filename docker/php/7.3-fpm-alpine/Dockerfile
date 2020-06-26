@@ -216,6 +216,10 @@ RUN echo "FromLineOverride=YES" >> /etc/ssmtp/ssmtp.conf
 
 # default www-data homedir to /var/www for crontabs
 RUN sed -i 's|/home/www-data|/var/www|' /etc/passwd
+
+# link shared folder
+RUN ln -s /shared /var/www/shared
+
 WORKDIR /var/www
 CMD [ "sh", "-c", "(IFS=$'\n'; exec env $(cat .env 2>/dev/null) php-fpm)" ]
 
