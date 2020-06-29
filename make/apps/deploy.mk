@@ -16,7 +16,7 @@ deploy-old-%:
 .PHONY: deploy-app
 deploy-app:
 	$(call make,docker-login docker-tag docker-push)
-	$(call make,infra-ansible-pull@$* ANSIBLE_DOCKER_IMAGE_TAG=$(VERSION) DOCKER_BUILD_TARGET=local,,APP AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY)
+	$(call make,infra-ansible-pull@$(ENV) ANSIBLE_DOCKER_IMAGE_TAG=$(VERSION) DOCKER_BUILD_TARGET=local,,APP AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY)
 	$(call make,docker-tag-latest docker-push-latest)
 
 .PHONY: deploy-assets-install
