@@ -25,3 +25,8 @@
     runlevel: boot
   become: yes
   when: ansible_service_mgr|lower == "openrc" or ansible_os_family|lower == "alpine"
+
+- name: service - force docker restart
+  shell: "[ ! -d /var/lib/docker/tmp ] && service docker restart ||:"
+  become: yes
+  when: ansible_service_mgr|lower == "openrc" or ansible_os_family|lower == "alpine"
