@@ -18,10 +18,10 @@ ifneq ($(SUBREPO),)
 endif
 
 .PHONY: build
-build: $(if $(filter $(ENV),$(ENV_DEPLOY)),build-app,docker-compose-build) ## Build application docker images
+build: docker-compose-build ## Build application docker images
 
 .PHONY: clean
-clean: $(if $(filter $(ENV),$(ENV_DEPLOY)),clean-all,clean-app docker-compose-down clean-env) ## Cleanup application and docker images
+clean: clean-app docker-compose-down clean-env ## Cleanup application and docker images
 
 .PHONY: config
 config: docker-compose-config ## View docker compose file
@@ -35,7 +35,7 @@ connect@%: ## Connect to docker $(SERVICE) with ssh on remote ENV $*
 	$(call make,ssh-connect,../infra,SERVICE)
 
 .PHONY: deploy
-deploy: $(if $(filter $(ENV),$(ENV_DEPLOY)),$(if $(filter true,$(BUILD)),deploy-hook,deploy-app)) ## Deploy application docker images
+deploy: deploy-app ## Deploy application
 
 .PHONY: down
 down: docker-compose-down ## Remove application dockers

@@ -22,8 +22,9 @@ clean-app: ;
 ##
 # DEPLOY
 
-.PHONY: deploy-hook
-deploy-hook: deploy-ping
+## Called when application is deployed in prod/preprod
+.PHONY: deploy-app
+deploy-app: deploy-ping
 
 ##
 # INSTALL
