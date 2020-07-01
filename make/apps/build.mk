@@ -2,7 +2,8 @@
 # BUILD
 
 .PHONY: build@%
-build@%: $(if $(filter $(ENV),$(ENV_DEPLOY)),build-app); ## Build deployment application docker images
+build@%: ## Build deployment application docker images
+	$(call make,build-app)
 
 .PHONY: build-env
 build-env: SERVICE ?= $(DOCKER_SERVICE)
