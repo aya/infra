@@ -33,7 +33,7 @@ RUN apk --no-cache upgrade \
         bison \
         bzip2-dev \
         curl-dev \
-        enchant-dev \
+        enchant2-dev \
         flex \
         freetype-dev \
         gawk \
@@ -77,7 +77,7 @@ RUN apk --no-cache upgrade \
  && tar xzf /tmp/newrelic-${NEWRELIC_VERSION}.tar.gz -C /tmp/newrelic-${NEWRELIC_VERSION} --strip-components=1 \
  && mv /tmp/newrelic-${NEWRELIC_VERSION}/agent/x64/newrelic-20180731.so $(php -r "echo ini_get('extension_dir');")/newrelic.so \
  # snuffleupagus \
- && wget https://github.com/nbs-system/snuffleupagus/archive/v${SNUFFLEUPAGUS_VERSION}.tar.gz -O /tmp/snuffleupagus-${SNUFFLEUPAGUS_VERSION}.tar.gz \
+ && wget https://github.com/jvoisin/snuffleupagus/archive/v${SNUFFLEUPAGUS_VERSION}.tar.gz -O /tmp/snuffleupagus-${SNUFFLEUPAGUS_VERSION}.tar.gz \
  && mkdir -p /tmp/snuffleupagus-${SNUFFLEUPAGUS_VERSION} \
  && tar xzf /tmp/snuffleupagus-${SNUFFLEUPAGUS_VERSION}.tar.gz -C /tmp/snuffleupagus-${SNUFFLEUPAGUS_VERSION} --strip-components=1 \
  && docker-php-ext-configure /tmp/snuffleupagus-${SNUFFLEUPAGUS_VERSION}/src --prefix=/usr --enable-snuffleupagus \
