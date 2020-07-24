@@ -30,7 +30,6 @@ hosts_packages:
 hosts_ssh_private_keys:
 - "{{ lookup('env','ANSIBLE_SSH_PRIVATE_KEY') or '~/.ssh/id_rsa' }}"
 hosts_ssh_users:
-- 1001pharmadev
 - aya
 - crazyball
 - chribox

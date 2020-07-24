@@ -23,3 +23,9 @@ docker_registry: "{{ lookup('env','ANSIBLE_DOCKER_REGISTRY') }}"
 hosts_enable_local: true
 hosts_enable_rc: true
 hosts_enable_zram: true
+hosts_ssh_users:
+- 1001pharmadev
+- aya
+- crazyball
+- chribox
+- davidfoot
