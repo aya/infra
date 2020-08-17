@@ -1,6 +1,6 @@
 - name: 'Install Python PIP'
   package: >
-    name=py2-pip
+    name=py3-pip
     state=latest
   when: ansible_os_family|lower == "alpine"
 
