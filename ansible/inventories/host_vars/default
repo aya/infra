@@ -8,6 +8,7 @@ aws_secret_access_key: "{{ lookup('env','ANSIBLE_AWS_SECRET_ACCESS_KEY') }}"
 disks_additional_packages:
 - e2fsprogs-extra
 - nfs-utils
+hosts_enable_cloudinit: true
 hosts_enable_local: true
 hosts_enable_rc: true
 hosts_enable_zram: true

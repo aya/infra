@@ -7,6 +7,9 @@
 - import_tasks: boot.yml
   tags:
     - boot
+- import_tasks: cloudinit.yml
+  tags:
+    - cloudinit
 - import_tasks: packages.yml
   tags:
     - packages

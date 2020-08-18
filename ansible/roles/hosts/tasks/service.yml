@@ -5,7 +5,7 @@
   service:
     name: local
     enabled: yes
-  when: hosts_enable_local and ansible_service_mgr|lower == "openrc"
+  when: hosts_enable_local|default(false) and ansible_service_mgr|lower == "openrc"
   become: yes
 
 - name: service - activate zram
@@ -13,7 +13,7 @@
     name: zram
     state: started
     enabled: yes
-  when: hosts_enable_zram and ansible_service_mgr|lower != "openrc"
+  when: hosts_enable_zram|default(false) and ansible_service_mgr|lower != "openrc"
   become: yes
 
 - name: service - activate zram (openrc)
@@ -22,5 +22,5 @@
     state: started
     enabled: yes
     runlevel: boot
-  when: hosts_enable_zram and ansible_service_mgr|lower == "openrc"
+  when: hosts_enable_zram|default(false) and ansible_service_mgr|lower == "openrc"
   become: yes
