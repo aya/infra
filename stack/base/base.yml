@@ -28,8 +28,8 @@ services:
     restart: always
     volumes:
     - ssh:/tmp/ssh-agent:ro
-    - ${MONOREPO_DIR}:${MONOREPO_DIR}:cached
-    working_dir: ${MONOREPO_DIR}
+    - ${WORKING_DIR}:${WORKING_DIR}:cached
+    working_dir: ${WORKING_DIR}
   ssh:
     build:
       args:

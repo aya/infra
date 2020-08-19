@@ -19,7 +19,7 @@ ENV_DEPLOY                      ?= preprod prod
 ENV_FILE                        ?= $(wildcard ../$(PARAMETERS)/$(ENV)/$(APP)/.env) .env
 ENV_LIST                        ?= local dev tests preprod prod
 ENV_RESET                       ?= false
-ENV_VARS                        ?= APP APP_DIR BRANCH ENV HOSTNAME GID MONOREPO MONOREPO_DIR TAG UID USER VERSION
+ENV_VARS                        ?= APP APP_DIR BRANCH ENV HOSTNAME GID MONOREPO MONOREPO_DIR TAG UID USER VERSION WORKING_DIR
 GID                             ?= $(shell id -g)
 GIT_PARAMETERS_REPOSITORY       ?= $(call pop,$(GIT_UPSTREAM_REPOSITORY))/$(PARAMETERS)
 GIT_REPOSITORY                  ?= $(if $(SUBREPO),$(shell awk -F ' = ' '$$1 ~ /^[[\s\t]]*remote$$/ {print $$2}' .gitrepo),$(shell git config --get remote.origin.url))
@@ -44,6 +44,7 @@ UID                             ?= $(shell id -u)
 USER                            ?= $(shell id -nu)
 VERBOSE                         ?= true
 VERSION                         ?= $(shell git describe --tags $(BRANCH) 2>/dev/null || git rev-parse $(BRANCH) 2>/dev/null)
+WORKING_DIR                     ?= $(or $(MONOREPO_DIR),$(APP_DIR))
 
 ifeq ($(DOCKER), true)
 ENV_ARGS                         = $(foreach var,$(ENV_VARS),$(if $($(var)),-e $(var)='$($(var))')) $(shell printenv |awk -F '=' 'NR == FNR { if($$1 !~ /^(\#|$$)/) { A[$$1]; next } } ($$1 in A) {print "-e "$$0}' .env.dist - 2>/dev/null)

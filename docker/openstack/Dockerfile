@@ -1,13 +1,13 @@
 FROM alpine:latest as dist
 ARG DOCKER_BUILD_DIR
 
-RUN apk --no-cache add libffi openssl python py-pip py-netifaces
+RUN apk --no-cache add libffi openssl python3 py3-pip py3-netifaces
 
 RUN apk --no-cache add --virtual .build-deps \
         build-base \
         libffi-dev \
         openssl-dev \
-        python-dev \
+        python3-dev \
  && pip install --upgrade pip \
  && pip install python-openstackclient \
  && apk del .build-deps

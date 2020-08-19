@@ -2,7 +2,7 @@ CMDS                            += packer
 ENV_VARS                        += PACKER_CACHE_DIR PACKER_KEY_INTERVAL PACKER_LOG
 KVM_GID                         ?= $(call getent-group,kvm)
 PACKER_ARCH                     ?= $(PACKER_ALPINE_ARCH)
-PACKER_BOOT_WAIT                ?= 8s
+PACKER_BOOT_WAIT                ?= 16s
 PACKER_BUILD_ARGS               ?= -on-error=cleanup $(foreach var,$(PACKER_BUILD_VARS),$(if $($(var)),-var $(var)='$($(var))'))
 PACKER_BUILD_VARS               += accelerator boot_wait hostname iso_name iso_size output password qemuargs ssh_wait_timeout template username
 PACKER_CACHE_DIR                ?= build/cache
@@ -13,7 +13,7 @@ PACKER_ISO_FILE                  = $(PACKER_OUTPUT)/$(PACKER_ISO_NAME).iso
 PACKER_ISO_INFO                  = $(PACKER_OUTPUT)/$(PACKER_ISO_NAME).nfo
 PACKER_ISO_NAME                  = $(PACKER_TEMPLATE)-$(PACKER_RELEASE)-$(PACKER_ARCH)
 PACKER_ISO_SIZE                 ?= 1024
-PACKER_KEY_INTERVAL             ?= 10ms
+PACKER_KEY_INTERVAL             ?= 16ms
 PACKER_LOG                      ?= 1
 PACKER_OUTPUT                   ?= build/iso/$(ENV)/$(PACKER_TEMPLATE)/$(PACKER_RELEASE)-$(PACKER_ARCH)
 PACKER_PASSWORD                 ?= $(PACKER_TEMPLATE)
@@ -64,7 +64,7 @@ PACKER_QEMU_ACCELERATOR         := tcg
 PACKER_QEMU_ARGS                += -cpu max,vendor=GenuineIntel,vmware-cpuid-freq=on,+invtsc,+aes,+vmx
 endif
 else ifeq ($(HOST_SYSTEM),LINUX)
-DOCKER_RUN_OPTIONS_PACKER       := $(if $(KVM_GID),--group-add $(KVM_GID)) --device /dev/kvm
+DOCKER_RUN_OPTIONS_PACKER       := $(if $(KVM_GID),--group-add $(KVM_GID)) --device /dev/kvm -v $(SSH_DIR):$(SSH_DIR)
 else ifeq ($(HOST_SYSTEM),WINDOWS)
 PACKER_QEMU_ACCELERATOR         := hax
 endif
