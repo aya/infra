@@ -18,6 +18,7 @@ PACKER_LOG                      ?= 1
 PACKER_OUTPUT                   ?= build/iso/$(ENV)/$(PACKER_TEMPLATE)/$(PACKER_RELEASE)-$(PACKER_ARCH)
 PACKER_PASSWORD                 ?= $(PACKER_TEMPLATE)
 PACKER_QEMU_ACCELERATOR         ?= kvm
+PACKER_QEMU_ARCH                ?= $(PACKER_ARCH)
 PACKER_QEMU_ARGS                ?= -machine type=pc,accel=$(PACKER_QEMU_ACCELERATOR) -device virtio-rng-pci,rng=rng0,bus=pci.0,addr=0x7 -object rng-random,filename=/dev/urandom,id=rng0
 PACKER_RELEASE                  ?= $(PACKER_ALPINE_RELEASE)
 PACKER_SSH_ADDRESS              ?= $(if $(ssh_bind_address),$(ssh_bind_address),0.0.0.0)
@@ -80,7 +81,7 @@ define packer
 endef
 define packer-qemu
 	echo Running $(1)
-	$(call run,$(DOCKER_RUN_OPTIONS_PACKER) -p $(PACKER_SSH_PORT):$(PACKER_SSH_PORT) -p $(PACKER_VNC_PORT):$(PACKER_VNC_PORT) --entrypoint=qemu-system-x86_64 $(DOCKER_REPOSITORY)/packer:$(DOCKER_IMAGE_TAG) $(PACKER_QEMU_ARGS) -m 512m -drive file=$(1)$(comma)format=raw -net nic$(comma)model=virtio -net user$(comma)hostfwd=tcp:$(PACKER_SSH_ADDRESS):$(PACKER_SSH_PORT)-:22 -vnc $(PACKER_VNC_ADDRESS):$(subst 590,,$(PACKER_VNC_PORT)))
+	$(call run,$(DOCKER_RUN_OPTIONS_PACKER) -p $(PACKER_SSH_PORT):$(PACKER_SSH_PORT) -p $(PACKER_VNC_PORT):$(PACKER_VNC_PORT) --entrypoint=qemu-system-$(PACKER_QEMU_ARCH) $(DOCKER_REPOSITORY)/packer:$(DOCKER_IMAGE_TAG) $(PACKER_QEMU_ARGS) -m 512m -drive file=$(1)$(comma)format=raw -net nic$(comma)model=virtio -net user$(comma)hostfwd=tcp:$(PACKER_SSH_ADDRESS):$(PACKER_SSH_PORT)-:22 -vnc $(PACKER_VNC_ADDRESS):$(subst 590,,$(PACKER_VNC_PORT)))
 endef
 
 else
@@ -90,7 +91,7 @@ define packer
 endef
 define packer-qemu
 	echo Running $(1)
-	$(call run,qemu-system-x86_64 $(PACKER_QEMU_ARGS) -m 512m -drive file=$(1)$(comma)format=raw -net nic$(comma)model=virtio -net user$(comma)hostfwd=tcp:$(PACKER_SSH_ADDRESS):$(PACKER_SSH_PORT)-:22 -vnc $(PACKER_VNC_ADDRESS):$(subst 590,,$(PACKER_VNC_PORT)))
+	$(call run,qemu-system-$(PACKER_QEMU_ARCH) $(PACKER_QEMU_ARGS) -m 512m -drive file=$(1)$(comma)format=raw -net nic$(comma)model=virtio -net user$(comma)hostfwd=tcp:$(PACKER_SSH_ADDRESS):$(PACKER_SSH_PORT)-:22 -vnc $(PACKER_VNC_ADDRESS):$(subst 590,,$(PACKER_VNC_PORT)))
 endef
 
 endif
