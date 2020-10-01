@@ -1,7 +1,7 @@
 {
   "builders": [
     {
-      "accelerator": "{{user `accelerator`}}",
+      "accelerator": "{{user `qemu_machine_accel`}}",
       "boot_command": [
         "{{user `username`}}<enter>",
         "passwd<enter>{{user `password`}}<enter>{{user `password`}}<enter>",
@@ -21,6 +21,7 @@
       "host_port_min": "{{user `ssh_port_min`}}",
       "iso_checksum": "file:http://dl-cdn.alpinelinux.org/alpine/v{{user `alpine_version`}}/releases/{{user `alpine_arch`}}/alpine-virt-{{user `alpine_release`}}-{{user `alpine_arch`}}.iso.sha256",
       "iso_url": "http://dl-cdn.alpinelinux.org/alpine/v{{user `alpine_version`}}/releases/{{user `alpine_arch`}}/alpine-virt-{{user `alpine_release`}}-{{user `alpine_arch`}}.iso",
+      "machine_type": "{{user `qemu_machine_type`}}",
       "net_device": "virtio-net",
       "output_directory": "{{user `output`}}",
       "qemuargs": [
@@ -33,6 +34,7 @@
           "rng-random,filename=/dev/urandom,id=rng0"
         ]
       ],
+      "qemu_binary": "qemu-system-{{user `alpine_arch`}}",
       "shutdown_command": "/sbin/poweroff",
       "ssh_file_transfer_method": "sftp",
       "ssh_password": "{{user `password`}}",
@@ -78,7 +80,6 @@
     }
   ],
   "variables": {
-    "accelerator": "kvm",
     "alpine_arch": "x86_64",
     "alpine_release": "3.12.0",
     "alpine_version": "3.12",
@@ -91,7 +92,9 @@
     "iso_size": "1024",
     "output": "build/iso",
     "password": "alpine",
-    "qemuargs": "",
+    "qemu_args": "",
+    "qemu_machine_accel": "kvm",
+    "qemu_machine_type": "pc",
     "ssh_port_max": "2222",
     "ssh_port_min": "2222",
     "ssh_wait_timeout": "32s",

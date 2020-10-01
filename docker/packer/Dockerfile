@@ -10,6 +10,7 @@ RUN apk --no-cache add \
         bash \
         git \
         qemu \
+        qemu-system-aarch64 \
         qemu-system-x86_64 \
         qemu-img \
         openssl \
