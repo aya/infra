@@ -24,16 +24,7 @@
       "machine_type": "{{user `qemu_machine_type`}}",
       "net_device": "virtio-net",
       "output_directory": "{{user `output`}}",
-      "qemuargs": [
-        [
-          "-device",
-          "virtio-rng-pci,rng=rng0,bus=pci.0,addr=0x7"
-        ],
-        [
-          "-object",
-          "rng-random,filename=/dev/urandom,id=rng0"
-        ]
-      ],
+      "qemuargs": "{{user `qemu_args`}}",
       "qemu_binary": "qemu-system-{{user `alpine_arch`}}",
       "shutdown_command": "/sbin/poweroff",
       "ssh_file_transfer_method": "sftp",

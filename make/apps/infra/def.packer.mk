@@ -19,6 +19,7 @@ PACKER_OUTPUT                   ?= build/iso/$(ENV)/$(PACKER_TEMPLATE)/$(PACKER_
 PACKER_PASSWORD                 ?= $(PACKER_TEMPLATE)
 PACKER_QEMU_ARCH                ?= $(PACKER_ARCH)
 PACKER_QEMU_ARGS                ?= -machine type=$(PACKER_QEMU_MACHINE_TYPE),accel=$(PACKER_QEMU_MACHINE_ACCEL) -device virtio-rng-pci,rng=rng0,bus=pci.0,addr=0x7 -object rng-random,filename=/dev/urandom,id=rng0
+PACKER_QEMU_ARGS                := "-machine type=$(PACKER_QEMU_MACHINE_TYPE),accel=$(PACKER_QEMU_MACHINE_ACCEL)" "-device virtio-rng-pci,rng=rng0,bus=pci.0,addr=0x7"
 PACKER_QEMU_MACHINE_ACCEL       ?= kvm
 PACKER_QEMU_MACHINE_TYPE        ?= pc
 PACKER_RELEASE                  ?= $(PACKER_ALPINE_RELEASE)
@@ -47,6 +48,7 @@ iso_size                        ?= $(PACKER_ISO_SIZE)
 output                          ?= $(PACKER_OUTPUT)
 password                        ?= $(PACKER_PASSWORD)
 qemu_args                       ?= $(call arrays_of_dquoted_args, $(PACKER_QEMU_ARGS))
+qemu_args                       := $(PACKER_QEMU_ARGS)
 qemu_machine_accel              ?= $(PACKER_QEMU_MACHINE_ACCEL)
 qemu_machine_type               ?= $(PACKER_QEMU_MACHINE_TYPE)
 ssh_wait_timeout                ?= $(PACKER_SSH_WAIT_TIMEOUT)
@@ -73,6 +75,7 @@ PACKER_QEMU_MACHINE_ACCEL       := hax
 endif
 
 ifeq ($(PACKER_ARCH),aarch64)
+PACKER_QEMU_ARGS                ?= -machine type=$(PACKER_QEMU_MACHINE_TYPE),accel=$(PACKER_QEMU_MACHINE_ACCEL) -boot strict=off
 PACKER_QEMU_MACHINE_ACCEL       := tcg
 PACKER_QEMU_MACHINE_TYPE        := virt
 endif
@@ -128,5 +131,5 @@ define packer-build
 endef
 
 define arrays_of_dquoted_args
-[ $(subst $(dquote) $(dquote),$(dquote)$(comma) $(dquote),$(subst $(dquote) $(dquote)-,$(dquote) ]$(comma) [ $(dquote)-,$(patsubst %,$(dquote)%$(dquote),$1))) ]
+$(subst $(dquote),,$(subst $(dquote) $(dquote),$(dquote)$(comma) $(dquote),$(patsubst %,$(dquote)%$(dquote),$1)))
 endef
