@@ -1,2 +1,2 @@
 #!/bin/sh
-cd /root && make ansible-pull > /var/log/ansible.log &
+cd /root && ( make ansible-pull > /var/log/ansible.log || reboot ) &
