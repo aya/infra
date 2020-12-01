@@ -6,7 +6,7 @@
   pip: >
     executable=pip
     name=awscli
-    state=latest
+    state=present
     extra_args=--no-cache-dir
 
 - name: 'Install docker python'
@@ -14,7 +14,7 @@
   become: 'yes'
   pip: >
     name=docker
-    state=latest
+    state=present
     extra_args=--no-cache-dir
 
 - name: 'Install boto python'
@@ -22,7 +22,7 @@
   become: 'yes'
   pip: >
     name=boto3
-    state=latest
+    state=present
     extra_args=--no-cache-dir
 
 - name: Set home directory of the user

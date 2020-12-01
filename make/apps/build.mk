@@ -3,7 +3,11 @@
 
 .PHONY: build@%
 build@%: ## Build deployment application docker images
-	$(call make,build-app)
+	$(eval DRYRUN_IGNORE := true)
+	$(eval SERVICES      ?= $(shell $(call docker-compose,--log-level critical config --services)))
+	$(eval build_app     += $(foreach service,$(or $(SERVICE),$(SERVICES)),$(if $(shell docker images -q $(DOCKER_REPOSITORY)/$(service):$(DOCKER_IMAGE_TAG) 2>/dev/null),,$(service))))
+	$(eval DRYRUN_IGNORE := false)
+	$(if $(build_app),$(call make,build-app),echo app already built for env $*)
 
 .PHONY: build-env
 build-env: SERVICE ?= $(DOCKER_SERVICE)
