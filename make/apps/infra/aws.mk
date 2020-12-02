@@ -15,7 +15,7 @@ aws-codedeploy:
 aws-role-create-import-image: aws-iam-create-role-$(AWS_VM_IMPORT_ROLE_NAME)  aws-iam-put-role-policy-$(AWS_VM_IMPORT_ROLE_NAME)
 
 .PHONY: aws-ecr-login
-aws-ecr-login: docker-build-aws
+aws-ecr-login:
 	$(eval DRYRUN_IGNORE := true)
 	$(eval docker_login := $(shell $(call aws,ecr get-login --no-include-email --region $(AWS_DEFAULT_REGION))))
 	$(eval DRYRUN_IGNORE := FALSE)
@@ -96,7 +96,7 @@ aws-ec2-get-PrivateIpAddress: docker-build-aws
 	echo PrivateIpAddress: $(AWS_INSTANCE_IP)
 
 .PHONY: aws-ec2-get-PrivateIpAddress-%
-aws-ec2-get-PrivateIpAddress-%: docker-build-aws
+aws-ec2-get-PrivateIpAddress-%:
 	$(eval DRYRUN_IGNORE := true)
 	$(eval AWS_INSTANCE_IP := $(shell $(call aws,ec2 describe-instances --no-paginate --filter 'Name=tag:Name$(comma)Values=$**' --query 'Reservations[*].Instances[*].PrivateIpAddress' --output text) 2>/dev/null))
 	$(eval DRYRUN_IGNORE := false)

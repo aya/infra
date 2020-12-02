@@ -53,7 +53,7 @@ docker-compose-exec: docker-compose-up
 	$(call docker-compose-exec,$(SERVICE),$(ARGS)) || true
 
 .PHONY: docker-compose-logs
-docker-compose-logs: docker-compose-up
+docker-compose-logs:
 	$(eval DRYRUN_IGNORE := true)
 	$(eval SERVICES      ?= $(shell $(call docker-compose,--log-level critical config --services)))
 	$(eval DRYRUN_IGNORE := false)

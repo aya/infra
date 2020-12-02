@@ -6,8 +6,8 @@ all: install ## Build and deploy infra
 ##
 # BUILD
 
-.PHONY: build-%
-build-%:
+.PHONY: build-app
+build-app:
 	$(call make,docker-compose-build DOCKER_BUILD_TARGET=$*)
 	$(call make,up)
 	$(call make,docker-compose-exec ARGS='rm -Rf /root/.npm /log-buffer/*' SERVICE=logagent)
@@ -22,8 +22,9 @@ clean-app: ;
 ##
 # DEPLOY
 
-.PHONY: deploy-hook
-deploy-hook: deploy-ping
+## Called when application is deployed in prod/preprod
+.PHONY: deploy-app
+deploy-app: deploy-ping
 
 ##
 # INSTALL

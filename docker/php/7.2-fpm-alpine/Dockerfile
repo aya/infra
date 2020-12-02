@@ -5,7 +5,7 @@ ARG DOCKER_BUILD_DIR
 ARG AMQP_VERSION=stable
 ARG AST_VERSION=stable
 ARG APCU_VERSION=stable
-ARG BLACKFIRE_VERSION=1.31.0
+ARG BLACKFIRE_VERSION=1.34.3
 ARG CACHETOOL_VERSION=4.0.1
 ARG DS_VERSION=stable
 ARG EVENT_VERSION=stable
@@ -17,14 +17,14 @@ ARG MCRYPT_VERSION=stable
 ARG MEMCACHE_VERSION=4.0.1-php73
 ARG MEMCACHED_VERSION=stable
 ARG MONGODB_VERSION=stable
-ARG NEWRELIC_VERSION=9.6.1.256
+ARG NEWRELIC_VERSION=9.11.0.267
 ARG OAUTH_VERSION=stable
 ARG RAR_VERSION=stable
 ARG REDIS_VERSION=stable
-ARG SNUFFLEUPAGUS_VERSION=0.5.0
+ARG SNUFFLEUPAGUS_VERSION=0.5.1
 ARG UUID_VERSION=stable
 ARG XDEBUG_VERSION=stable
-ARG XHPROF_VERSION=2.1.3
+ARG XHPROF_VERSION=2.2.0
 ARG YAML_VERSION=stable
 
 RUN apk --no-cache upgrade \
@@ -34,7 +34,7 @@ RUN apk --no-cache upgrade \
         bison \
         bzip2-dev \
         curl-dev \
-        enchant-dev \
+        enchant2-dev \
         flex \
         freetype-dev \
         gawk \
@@ -55,6 +55,7 @@ RUN apk --no-cache upgrade \
         make \
         net-snmp-dev \
         openldap-dev \
+        patch \
         postgresql-dev \
         pcre-dev \
         rabbitmq-c-dev \
@@ -62,6 +63,10 @@ RUN apk --no-cache upgrade \
         zlib-dev \
  # blackfire \
  && wget https://packages.blackfire.io/binaries/blackfire-php/${BLACKFIRE_VERSION}/blackfire-php-alpine_amd64-php-$(php -r "echo PHP_MAJOR_VERSION.PHP_MINOR_VERSION;").so -O $(php -r "echo ini_get('extension_dir');")/blackfire.so \
+ # enchant \
+ && docker-php-source extract \
+ && wget "https://git.alpinelinux.org/aports/plain/community/php7/enchant-2.patch?id=3f8d7d2e5e558a975f79b6470423b32e01c0bfbc" -O /usr/src/php-enchant-2.patch \
+ && cd /usr/src/php && patch -p1 < ../php-enchant-2.patch \
  # gd \
  && docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ --with-png-dir=/usr/include/ \
  # memcache \
@@ -78,7 +83,7 @@ RUN apk --no-cache upgrade \
  && tar xzf /tmp/newrelic-${NEWRELIC_VERSION}.tar.gz -C /tmp/newrelic-${NEWRELIC_VERSION} --strip-components=1 \
  && mv /tmp/newrelic-${NEWRELIC_VERSION}/agent/x64/newrelic-20170718.so $(php -r "echo ini_get('extension_dir');")/newrelic.so \
  # snuffleupagus \
- && wget https://github.com/nbs-system/snuffleupagus/archive/v${SNUFFLEUPAGUS_VERSION}.tar.gz -O /tmp/snuffleupagus-${SNUFFLEUPAGUS_VERSION}.tar.gz \
+ && wget https://github.com/jvoisin/snuffleupagus/archive/v${SNUFFLEUPAGUS_VERSION}.tar.gz -O /tmp/snuffleupagus-${SNUFFLEUPAGUS_VERSION}.tar.gz \
  && mkdir -p /tmp/snuffleupagus-${SNUFFLEUPAGUS_VERSION} \
  && tar xzf /tmp/snuffleupagus-${SNUFFLEUPAGUS_VERSION}.tar.gz -C /tmp/snuffleupagus-${SNUFFLEUPAGUS_VERSION} --strip-components=1 \
  && docker-php-ext-configure /tmp/snuffleupagus-${SNUFFLEUPAGUS_VERSION}/src --prefix=/usr --enable-snuffleupagus \

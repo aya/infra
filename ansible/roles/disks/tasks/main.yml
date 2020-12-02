@@ -1,19 +1,19 @@
 - name: 'Install Python PIP'
   package: >
     name=py2-pip
-    state=latest
+    state=present
   when: ansible_os_family|lower == "alpine"
 
 - name: 'Install Python PIP'
   package: >
     name=python-pip
-    state=latest
+    state=present
   when: ansible_os_family|lower != "alpine"
 
 - name: 'Install python-pathlib'
   pip: >
     name=pathlib
-    state=latest
+    state=present
 
 - name: "Discover NVMe EBS"
   disks_ebs_config:

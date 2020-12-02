@@ -18,10 +18,10 @@ ifneq ($(SUBREPO),)
 endif
 
 .PHONY: build
-build: $(if $(filter $(ENV),$(ENV_DEPLOY)),build-$(ENV),docker-compose-build) ## Build application docker images
+build: docker-compose-build ## Build application docker images
 
 .PHONY: clean
-clean: $(if $(filter $(ENV),$(ENV_DEPLOY)),clean-$(ENV),clean-app docker-compose-down clean-env) ## Cleanup application and docker images
+clean: clean-app docker-compose-down clean-env ## Cleanup application and docker images
 
 .PHONY: config
 config: docker-compose-config ## View docker compose file
@@ -31,18 +31,11 @@ connect: docker-compose-connect ## Connect to docker $(SERVICE)
 
 .PHONY: connect@%
 connect@%: SERVICE ?= $(DOCKER_SERVICE)
-connect@%: ## Connect to docker $(SERVICE) with ssh on remote ENV $*
-	$(call make,ssh-connect,../infra,SERVICE)
+connect@%: ## Connect to docker $(SERVICE) with ssh on (first) remote ENV $* server
+	$(call make,ssh-connect,../infra,APP SERVICE)
 
 .PHONY: deploy
-deploy: ## Deploy application docker images
-ifneq (,$(filter $(ENV),$(ENV_DEPLOY)))
-ifneq ($(BUILD),true)
-	$(call make,deploy-$(ENV))
-else
-	$(call make,deploy-hook)
-endif
-endif
+deploy: deploy-app ## Deploy application
 
 .PHONY: down
 down: docker-compose-down ## Remove application dockers
@@ -57,8 +50,8 @@ endif
 
 .PHONY: exec@%
 exec@%: SERVICE ?= $(DOCKER_SERVICE)
-exec@%: ## Exec a command in docker $(SERVICE) with ssh on remote ENV $*
-	$(call make,ssh-exec,../infra,ARGS SERVICE)
+exec@%: ## Exec a command in docker $(SERVICE) with ssh on (all) remote ENV $* servers
+	$(call make,ssh-exec,../infra,APP ARGS SERVICE)
 
 .PHONY: logs
 logs: docker-compose-logs ## Display application dockers logs
@@ -93,15 +86,15 @@ endif
 
 .PHONY: run@%
 run@%: SERVICE ?= $(DOCKER_SERVICE)
-run@%: ## Run a command in a new docker $(SERVICE) with ssh on remote ENV $*
-	$(call make,ssh-run,../infra,ARGS SERVICE)
+run@%: ## Run a command with ssh on (all) remote ENV $* servers
+	$(call make,ssh-run,../infra,APP ARGS)
 
 .PHONY: scale
 scale: docker-compose-scale ## Start application dockers
 
 .PHONY: ssh@%
-ssh@%: ## Connect to remote server with ssh
-	$(call make,ssh,../infra)
+ssh@%: ## Connect with ssh to (first) remote ENV $* server
+	$(call make,ssh,../infra,APP)
 
 ## stack: call docker-stack function with each value of $(STACK)
 .PHONY: stack

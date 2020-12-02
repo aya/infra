@@ -66,7 +66,7 @@ RUN apk --no-cache upgrade \
  && mkdir -p /tmp/twig-${TWIG_VERSION} \
  && tar xzf /tmp/twig-${TWIG_VERSION}.tar.gz -C /tmp/twig-${TWIG_VERSION} --strip-components=1 \
  && rm /tmp/twig-${TWIG_VERSION}.tar.gz \
- && wget https://xcache.lighttpd.net/pub/Releases/${XCACHE_VERSION}/xcache-${XCACHE_VERSION}.tar.gz -O /tmp/xcache-${XCACHE_VERSION}.tar.gz \
+ && wget https://web.archive.org/web/20181118151821if_/http://xcache.lighttpd.net/pub/Releases/${XCACHE_VERSION}/xcache-${XCACHE_VERSION}.tar.gz -O /tmp/xcache-${XCACHE_VERSION}.tar.gz \
  && mkdir -p /tmp/xcache-${XCACHE_VERSION} \
  && tar xzf /tmp/xcache-${XCACHE_VERSION}.tar.gz -C /tmp/xcache-${XCACHE_VERSION} --strip-components=1 \
  && rm /tmp/xcache-${XCACHE_VERSION}.tar.gz \

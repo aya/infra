@@ -30,10 +30,11 @@ hosts_packages:
 hosts_ssh_private_keys:
 - "{{ lookup('env','ANSIBLE_SSH_PRIVATE_KEY') or '~/.ssh/id_rsa' }}"
 hosts_ssh_users:
-- 1001pharmadev
 - aya
 - crazyball
 - chribox
+- davidfoot
+- bvanderplanck
 hosts_user_env:
 - ANSIBLE_AWS_ACCESS_KEY_ID
 - ANSIBLE_AWS_SECRET_ACCESS_KEY
